@@ -1,0 +1,50 @@
+POST http://localhost:8080/products/2/comments?keywords=portatil
+Accept:*/*
+Cache-Control:no-cache
+
+user=me5&token=xqx1q7g9t1h55urt&title=A new comment&text=Its response&mark=6
+
+<> 2017-12-01T092854.200.json
+
+###
+
+POST http://localhost:8080/products/2/comments?keywords=portatil
+Accept:*/*
+Cache-Control:no-cache
+
+user=me5&token=xqx1q7g9t1h55urt&title=A new comment&text=Its response&mark=6
+
+<> 2017-12-01T092715.200.json
+
+###
+
+POST http://localhost:8080/products/2/comments?keywords=portatil
+Accept:*/*
+Cache-Control:no-cache
+
+user=me5&token=xqx1q7g9t1h55urt&title=A new comment&text=Its response&mark=6
+
+<> 2017-12-01T092036.500.html
+
+###
+
+POST http://localhost:8080/products/2/comments?keywords=portatil
+Accept:*/*
+Cache-Control:no-cache
+
+user=me5&token=xqx1q7g9t1h55urt&title=A new comment&text=Its response&mark=6
+
+<> 2017-12-01T091802.500.html
+
+###
+
+POST http://localhost:8080/products/2/comments?keywords=portatil
+Accept:*/*
+Cache-Control:no-cache
+
+user=me5&token=xqx1q7g9t1h55urt&title=A new comment&text=It's response&mark=6
+
+<> 2017-12-01T091500.500.html
+
+###
+
