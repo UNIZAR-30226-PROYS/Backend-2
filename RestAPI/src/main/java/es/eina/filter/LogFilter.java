@@ -1,52 +1,27 @@
 package es.eina.filter;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import es.eina.RestApp;
+
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.ext.Provider;
 import java.util.Date;
 
-public class LogFilter implements Filter {
+@Provider
+public class LogFilter implements ContainerRequestFilter {
 
-	@Override
-	public void init(FilterConfig filterConfig) throws ServletException {
+    @Override
+    public void filter(ContainerRequestContext containerRequest) {
+        //Get the IP address of client machine.
+        String ipAddress = containerRequest.getHeaderString("REMOTE_ADDR");
+        MultivaluedMap<String, String> map = containerRequest.getHeaders();
+        for (String k : map.keySet()) {
+            RestApp.getInstance().getLogger().info("Key: " + k + " - Value: " + map.get(k));
+        }
 
-	}
-
-	public void doFilter(ServletRequest req, ServletResponse res,
-						 FilterChain chain) throws IOException, ServletException {
-
-		HttpServletRequest request = (HttpServletRequest) req;
-		request.getHeader("");
-		HttpServletResponse response = (HttpServletResponse) res;
-		response.sendError(403);
-
-
-		//Get the IP address of client machine.
-		String ipAddress = request.getRemoteAddr();
-
-		//Log the IP address and current timestamp.
-		System.out.println("IP "+ipAddress + ", Time "
-				+ new Date().toString());
-
-		chain.doFilter(req, res);
-	}
-
-	@Override
-	public void destroy() {
-
-	}
-
-	/*
-	public void init(FilterConfig config) throws ServletException {
-
-		//Get init parameter
-		//String testParam = config.getInitParameter("test-param");
-
-		//Print the init parameter
-		//System.out.println("Test Param: " + testParam);
-	}
-	public void destroy() {
-		//add code to release any resource
-	}*/
+        //Log the IP address and current timestamp.
+        System.out.println("IP " + ipAddress + ", Time "
+                + new Date().toString());
+    }
 }
