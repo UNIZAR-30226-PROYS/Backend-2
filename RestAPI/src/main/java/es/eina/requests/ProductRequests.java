@@ -2,6 +2,7 @@ package es.eina.requests;
 
 import es.eina.RestApp;
 import es.eina.cache.UserCache;
+import es.eina.filter.AuthRequired;
 import es.eina.search.Index;
 import es.eina.search.IndexProduct;
 import es.eina.sql.MySQLConnection;
@@ -367,6 +368,14 @@ public class ProductRequests {
 		obj.put("vendors", vendors);
 		return obj.toString();
 
+	}
+
+	@POST
+	@Path("/dummy")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @AuthRequired
+	public String dummyPetition(@FormParam("a") String a){
+        return "{\"a\":1}";
 	}
 
 	static {

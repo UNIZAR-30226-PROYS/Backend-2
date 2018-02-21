@@ -2,6 +2,8 @@ package es.eina.requests;
 
 import es.eina.RestApp;
 import es.eina.cache.TokenManager;
+import es.eina.filter.LogFilter;
+import es.eina.filter.ResponseFilter;
 import es.eina.sql.MySQLConnection;
 import es.eina.sql.MySQLQueries;
 import es.eina.sql.parameters.SQLParameterInteger;
