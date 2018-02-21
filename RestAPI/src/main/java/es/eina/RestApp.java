@@ -13,7 +13,7 @@ public class RestApp {
 
 	private static RestApp instance;
 	//private static MySQLConnection sql = new MySQLConnection("host", "user", "pass", "db");
-	private static MySQLConnection sql = new MySQLConnection("host", "user", "pass", "db");
+    private static MySQLConnection sql = new MySQLConnection("dev.langelp.net", "postgres", "Admin123", "postgres");
 	private final Logger logger = Logger.getLogger("webLogger");
 	private static final Index index = new IndexProduct();
 
