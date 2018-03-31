@@ -1,5 +1,0 @@
-host=localhost
-user=postgres
-pass=I'm_postgres
-db=postgres
-port=2007
