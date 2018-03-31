@@ -1,5 +1,6 @@
 package es.eina.sql;
 
+import com.zaxxer.hikari.HikariConfig;
 import es.eina.RestApp;
 import es.eina.sql.parameters.ISQLParameter;
 import com.zaxxer.hikari.HikariDataSource;
@@ -18,8 +19,10 @@ public class MySQLConnection {
 	 * @param pass : Password of the database
 	 * @param db : Database to connect
 	 */
+	@Deprecated
 	public MySQLConnection(String host, String user, String pass, String db) {
 		System.out.println("Attempting to connect to SQL.");
+
 		con = new HikariDataSource();
 		con.setMaximumPoolSize(10);
 		//con.setDataSourceClassName("com.mysql.jdbc.jdbc2.optional.MysqlDataSource");

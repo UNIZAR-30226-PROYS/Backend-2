@@ -65,6 +65,11 @@ public class MySQLQueries {
 	}
 
 	static{
+
+		GET_USER_TOKEN = registerQuery("SELECT * FROM sessions WHERE user_id = ?", 1);
+		UPDATE_USER_TOKEN = registerQuery("INSERT INTO sessions (user_id, token, time) VALUES (?, ?, ?) ON CONFLICT (user_id) DO UPDATE SET token = ?, time = ?;", 5);
+
+		///OLD QUERIES
 		GET_PRODUCT = registerQuery("SELECT * FROM product WHERE id = ?", 1);
 		GET_PRODUCT_COMMENTS = registerQuery("SELECT nick, product_id, opinions.id, opinions.title, opinions.product_mark, opinions.opinion_text FROM opinions INNER JOIN users ON opinions.user_id = users.id WHERE product_id = ? LIMIT ?;", 2);
 		GET_PRODUCT_COMMENT = registerQuery("SELECT nick AS nick, product_id, opinions.id, opinions.title, opinions.product_mark, opinions.opinion_text FROM opinions INNER JOIN users ON opinions.user_id = users.id WHERE product_id = ? AND opinions.id = ?;", 2);
@@ -73,11 +78,9 @@ public class MySQLQueries {
 		DELETE_USER_TOKEN = registerQuery("DELETE FROM sessions WHERE nick = ?;", 1);
 		DELETE_EXPIRED_TOKENS = registerQuery("DELETE FROM sessions WHERE time < ?", 1);
 
-		INSERT_USER = registerQuery("INSERT INTO users(nick, mail, pass) VALUES(?, ?, ?);", 3);
+		INSERT_USER = registerQuery("INSERT INTO users(nick, username, mail, pass, birth_date, bio, country, register_date) VALUES(?, ?, ?);", 3);
 
 		GET_USER_DATA_BY_NAME = registerQuery("SELECT * FROM users WHERE nick = ?;", 1);
-        GET_USER_TOKEN = registerQuery("SELECT * FROM sessions WHERE nick = ?", 1);
-        UPDATE_USER_TOKEN = registerQuery("INSERT INTO sessions (nick, token, time) VALUES (?, ?, ?) ON CONFLICT (nick) DO UPDATE SET token = ?, time = ?;", 5);
         GET_USER_COMMENTS = registerQuery("SELECT users.id AS user_id, opinions.id AS opinion_id, opinions.product_id, opinions.title, opinions.product_mark, opinions.opinion_text FROM opinions INNER JOIN users ON opinions.user_id = users.id WHERE users.nick = ? LIMIT ?;", 2);
 
         GET_USER_COMMENT = registerQuery("SELECT users.id AS user_id, opinions.id AS opinion_id, opinions.product_id, opinions.title, opinions.product_mark, opinions.opinion_text FROM opinions INNER JOIN users ON opinions.user_id = users.id WHERE users.nick = ? AND opinions.id = ?;", 2);

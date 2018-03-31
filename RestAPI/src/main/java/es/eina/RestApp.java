@@ -19,7 +19,8 @@ public class RestApp {
 
 	public RestApp() {
 		instance = this;
-		index.openIndex("index/");
+		//index.openIndex("index/");
+
 	}
 
 	public static RestApp getInstance() {

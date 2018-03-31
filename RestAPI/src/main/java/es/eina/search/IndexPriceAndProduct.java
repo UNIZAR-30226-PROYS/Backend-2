@@ -14,8 +14,8 @@ public class IndexPriceAndProduct extends Index {
         priceIndex = new IndexPrice();
         productIndex = new IndexProduct();
 
-        priceIndex.openIndex(new File(basePath, "price").getAbsolutePath());
-        productIndex.openIndex(new File(basePath, "product").getAbsolutePath());
+        //priceIndex.openIndex(new File(basePath, "price").getAbsolutePath());
+        //productIndex.openIndex(new File(basePath, "product").getAbsolutePath());
     }
 
     @Override
