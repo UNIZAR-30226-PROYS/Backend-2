@@ -116,4 +116,8 @@ public class EntityUser extends EntityBase {
     public EntityToken getToken() {
         return token;
     }
+
+    public EntityUserValues getUserValues() {
+        return userValues;
+    }
 }

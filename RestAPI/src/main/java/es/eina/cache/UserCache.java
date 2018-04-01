@@ -1,6 +1,8 @@
 package es.eina.cache;
 
+import es.eina.sql.entities.EntityToken;
 import es.eina.sql.entities.EntityUser;
+import es.eina.sql.entities.EntityUserValues;
 import es.eina.sql.utils.HibernateUtils;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -37,7 +39,7 @@ public class UserCache {
     }
 
     public static void forceSave(){
-        saveEntities(users.values());
+        saveEntities(users.valgiues());
     }
 
     private static void saveEntities(Collection<EntityUser> remove){
@@ -45,12 +47,17 @@ public class UserCache {
         try (Session session = HibernateUtils.getSessionFactory().openSession()) {
             for (EntityUser data : remove) {
                 System.err.println("Check " + data.getNick());
-                if(data.isDirty() || data.getToken().isDirty()) {
+                if(data.isDirty() || data.getToken().isDirty() || data.getUserValues().isDirty()) {
                     System.err.println(data.getNick() + " is dirty, updating");
                     try {
                         tr = session.beginTransaction();
                         session.saveOrUpdate(data);
-                        session.saveOrUpdate(data.getToken());
+                        EntityToken token = data.getToken();
+                        EntityUserValues userValues = data.getUserValues();
+
+                        if(token != null && token.isDirty()) session.saveOrUpdate(token);
+                        if(userValues != null && userValues.isDirty()) session.saveOrUpdate(userValues);
+
                         tr.commit();
                         users.remove(data.getId());
                         nameToId.remove(data.getNick());
