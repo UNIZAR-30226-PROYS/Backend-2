@@ -2,6 +2,7 @@ package es.eina.utils;
 
 import es.eina.RestApp;
 import es.eina.cache.TokenManager;
+import es.eina.cache.UserCache;
 import es.eina.crypt.Crypter;
 import es.eina.sql.MySQLConnection;
 import es.eina.sql.MySQLQueries;
@@ -74,11 +75,12 @@ public class UserUtils {
             entityUser = new EntityUser(nick, user, mail,
                     Crypter.hashPassword(pass, false), birth, bio, country);
             session.save(entityUser);
-            EntityToken token = new EntityToken(entityUser);
-            entityUser.setToken(token);
-            session.save(token);
+            entityUser.updateToken();
+            session.save(entityUser.getToken()); //TODO: DO NOT SAVE HERE
 
             transaction.commit();
+
+            UserCache.addUser(entityUser);
         } catch (Exception e) {
             if (transaction != null) {
                 transaction.rollback();
@@ -92,22 +94,12 @@ public class UserUtils {
 
 	/**
 	 * Check if a password matches with the password a user used to register.
-	 * @param user : Username of the user
+	 * @param user : User to check
 	 * @param pass : Password to check.
 	 * @return True if the password belongs to this user, false otherwise.
 	 */
-	public static boolean checkPassword(String user, String pass) {
-        ResultSet set = RestApp.getSql().runAsyncQuery(MySQLQueries.GET_USER_DATA_BY_NAME, new SQLParameterString(user));
-        String hashedPass = null;
-
-        try {
-            set.first();
-            hashedPass = set.getString("pass");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }finally {
-			MySQLConnection.closeStatement(set);
-		}
+	public static boolean checkPassword(EntityUser user, String pass) {
+        String hashedPass = user != null ? user.getPass() : null;
 
         return hashedPass != null && Crypter.checkPassword(pass, hashedPass);
 	}
