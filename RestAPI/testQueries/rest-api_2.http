@@ -18,3 +18,21 @@ pass=1234
 
 ###
 
+GET http://localhost:8080/users/lAngelP
+Accept: */*
+Cache-Control: no-cache
+
+###
+
+GET http://localhost:8080/users/lAngelP?token=0svskl6burhffiai
+Accept: */*
+Cache-Control: no-cache
+
+###
+
+GET http://localhost:8080/users/lAngel
+Accept: */*
+Cache-Control: no-cache
+
+###
+
