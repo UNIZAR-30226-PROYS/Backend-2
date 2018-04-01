@@ -8,12 +8,12 @@ import es.eina.sql.parameters.SQLParameterString;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class UserCache {
+@Deprecated
+public class UserIdCache {
 
     private static final long CACHE_INVALIDATE_TIME = 1800000L;
 
@@ -22,7 +22,7 @@ public class UserCache {
 
     /**
      * Removes from cache all values that has been stored first and have expired.
-     * A value is considered expired if it was stored at least {@link UserCache#CACHE_INVALIDATE_TIME} ms before.
+     * A value is considered expired if it was stored at least {@link UserIdCache#CACHE_INVALIDATE_TIME} ms before.
      * @param time : Current epoch time in ms.
      */
     public static void cleanUp(long time){

@@ -7,7 +7,6 @@ import es.eina.sql.parameters.SQLParameterInteger;
 import es.eina.sql.parameters.SQLParameterLong;
 import es.eina.sql.parameters.SQLParameterString;
 import es.eina.utils.RandomString;
-import es.eina.utils.UserUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -47,7 +46,7 @@ public class TokenManager {
      * @return Returns a {@link Token} object containing the values loaded for this username.
      */
     private static Token loadToken(String user){
-        int user_id = UserCache.getUserId(user);
+        int user_id = UserIdCache.getUserId(user);
         ResultSet set = RestApp.getSql().runAsyncQuery(MySQLQueries.GET_USER_TOKEN, new SQLParameterInteger(user_id));
         String token;
         long time = 0;
@@ -135,7 +134,7 @@ public class TokenManager {
          */
         private Token(String user, String token, long token_time, boolean dirty){
             this.token = token;
-            this.user_id = UserCache.getUserId(user);
+            this.user_id = UserIdCache.getUserId(user);
             this.user = user;
             this.token_time = token_time;
             loadTime = System.currentTimeMillis();
