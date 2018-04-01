@@ -1,7 +1,7 @@
 package es.eina.requests;
 
 import es.eina.RestApp;
-import es.eina.cache.UserCache;
+import es.eina.cache.UserIdCache;
 import es.eina.filter.AuthRequired;
 import es.eina.search.Index;
 import es.eina.search.IndexProduct;
@@ -211,7 +211,7 @@ public class ProductRequests {
 		if(StringUtils.isValid(user) && StringUtils.isValid(token) &&
                 StringUtils.isValid(title) && StringUtils.isValid(text)){
             if(UserUtils.validateUserToken(user, token)){
-                int userId = UserCache.getUserId(user);
+                int userId = UserIdCache.getUserId(user);
 
                 if(!RestApp.getSql().runAsyncUpdate(MySQLQueries.INSERT_COMMENT,
                         new SQLParameterString(title), new SQLParameterString(text),
