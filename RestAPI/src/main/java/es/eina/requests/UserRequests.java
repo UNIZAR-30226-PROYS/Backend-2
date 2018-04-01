@@ -2,6 +2,7 @@ package es.eina.requests;
 
 import es.eina.RestApp;
 import es.eina.cache.TokenManager;
+import es.eina.cache.UserCache;
 import es.eina.geolocalization.Geolocalizer;
 import es.eina.sql.MySQLConnection;
 import es.eina.sql.MySQLQueries;
@@ -23,7 +24,6 @@ import javax.ws.rs.core.MediaType;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.ZonedDateTime;
 
 @Path("/users/")
 @Produces(MediaType.APPLICATION_JSON)
@@ -46,27 +46,27 @@ public class UserRequests {
     /**
      * Try login a user in the system.
      * <p>
-     * URI: /users/{user}/login
+     * URI: /users/{nick}/login
      * </p>
      *
-     * @param user : Username of a user to search
+     * @param nick : Username of a user to search
      * @param pass : Password of the User whose username is provided.
      * @return The result of this search as specified in API.
      */
-    @Path("/{user}/login")
+    @Path("/{nick}/login")
     @POST
-    public String login(@PathParam("user") String user, @FormParam("pass") String pass) {
+    public String login(@PathParam("nick") String nick, @FormParam("pass") String pass) {
         JSONObject response = new JSONObject();
-        response.put("user", user);
+        response.put("user", nick);
         response.put("token", "");
         response.put("error", "");
 
-        response.put("ip", request.getRemoteAddr());
-
-        if (user != null && pass != null) {
-            if (UserUtils.userExists(user)) {
+        if (StringUtils.isValid(nick) && StringUtils.isValid(pass)) {
+            if (UserUtils.userExists(nick)) {
+                EntityUser user = UserCache.getUser(nick);
                 if (UserUtils.checkPassword(user, pass)) {
-                    response.put("token", TokenManager.getToken(user).getToken());
+                    user.updateToken();
+                    response.put("token", user.getToken().getToken());
                     response.put("error", "ok");
                 } else {
                     response.put("error", "passError");
@@ -112,7 +112,7 @@ public class UserRequests {
                 Date birth_date = new Date(birth);
                 if (!StringUtils.isValid(bio)) bio = "";
                 if (pass0.equals(pass1)) {
-                    if (!UserUtils.userExists(nick)) { //TODO: Check with Hibernate
+                    if (!UserUtils.userExists(nick)) {
                         String country = Geolocalizer.getInstance().getCountryCode(request.getRemoteAddr());
                         EntityUser userData = UserUtils.addUser(nick, mail, pass0, user, bio, birth_date, country);
                         if (userData != null) {
