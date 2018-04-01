@@ -1,5 +1,6 @@
 package es.eina.sql.utils;
 
+import es.eina.RestApp;
 import es.eina.sql.entities.EntityToken;
 import es.eina.sql.entities.EntityUser;
 import org.hibernate.SessionFactory;
@@ -23,7 +24,7 @@ public class HibernateUtils {
     public static SessionFactory configureDatabase(String f) {
         if (sessionFactory == null) {
             try {
-                ClassLoader loader = HibernateUtils.class.getClassLoader();
+                ClassLoader loader = RestApp.class.getClassLoader();
                 Properties login = new Properties();
                 try (FileReader in = new FileReader(new File(loader.getResource(f).toURI()))) {
                     login.load(in);
