@@ -1,12 +1,10 @@
 package es.eina.requests;
 
 import es.eina.RestApp;
-import es.eina.cache.TokenManager;
 import es.eina.cache.UserCache;
 import es.eina.geolocalization.Geolocalizer;
 import es.eina.sql.MySQLConnection;
 import es.eina.sql.MySQLQueries;
-import es.eina.sql.entities.EntityToken;
 import es.eina.sql.entities.EntityUser;
 import es.eina.sql.parameters.SQLParameterInteger;
 import es.eina.sql.parameters.SQLParameterString;
@@ -163,35 +161,34 @@ public class UserRequests {
      * URI: /users/{user}
      * </p>
      *
-     * @param user  : Username of a user to search
+     * @param nick  : Nick of a user to search
      * @param token : Token string of this user.
      * @return The result of this search as specified in API.
      */
-    @Path("/{user}")
+    @Path("/{nick}")
     @GET
     public String getUserData(
-            @PathParam("user") String user,
+            @PathParam("nick") String nick,
             @DefaultValue("") @QueryParam("token") String token
     ) {
         JSONObject obj = new JSONObject();
         JSONObject userJSON = new JSONObject(defaultUserJSON, JSONObject.getNames(defaultUserJSON));
-        ResultSet set = RestApp.getSql().runAsyncQuery(MySQLQueries.GET_USER_DATA_BY_NAME, new SQLParameterString(user));
 
-        try {
-            if (set.first()) {
-                if (UserUtils.validateUserToken(user, token)) {
-                    userJSON.put("public_profile", true);
-                    userJSON.put("name", set.getString("real_name"));
-                    userJSON.put("mail", set.getString("mail"));
-                    userJSON.put("mail_visible", true);
-                }
-                userJSON.put("user", user);
-                double valuation = set.getDouble("valuation_amount") / set.getDouble("valuation_sum");
-                userJSON.put("public_rate", Double.isFinite(valuation) ? valuation : -1.0);
-                userJSON.put("description", set.getString("description"));
+        EntityUser user = UserCache.getUser(nick);
+        if(user != null) {
+            userJSON.put("id", user.getId());
+            userJSON.put("nick", user.getNick());
+            userJSON.put("user", user.getUsername());
+            userJSON.put("bio", user.getBio());
+            if (user.getToken().isValid(token)) {
+                userJSON.put("mail_visible", true);
+                userJSON.put("mail", user.getMail());
+                userJSON.put("country", user.getCountry());
+                userJSON.put("birth_date", user.getBirthDate());
+                userJSON.put("register_date", user.getRegisterDate());
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+            obj.put("error", 0);
+        }else{
             obj.put("error", 1);
         }
 
@@ -363,13 +360,15 @@ public class UserRequests {
 
     static {
         defaultUserJSON = new JSONObject();
-        defaultUserJSON.put("public_profile", false);
+        defaultUserJSON.put("id", -1);
+        defaultUserJSON.put("nick", "");
         defaultUserJSON.put("user", "");
-        defaultUserJSON.put("name", "");
-        defaultUserJSON.put("mail", "");
         defaultUserJSON.put("mail_visible", false);
-        defaultUserJSON.put("public_rate", -1.0);
-        defaultUserJSON.put("description", "");
+        defaultUserJSON.put("mail", "");
+        defaultUserJSON.put("bio", "");
+        defaultUserJSON.put("country", Geolocalizer.DEFAULT_COUNTRY);
+        defaultUserJSON.put("birth_date", -1);
+        defaultUserJSON.put("register_date", -1);
 
         defaultCommentJSON = new JSONObject();
         defaultCommentJSON.put("id", -1);
