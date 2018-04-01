@@ -2,7 +2,7 @@ package es.eina.sql.entities;
 
 import org.json.JSONObject;
 
-public abstract class Entity {
+public abstract class EntityBase {
     public static final long CACHE_INVALIDATE_TIME = 1800000L;
 
     private long invalidateTime;
@@ -22,7 +22,11 @@ public abstract class Entity {
     }
 
     public final boolean isEntityValid(){
-        return System.currentTimeMillis() <= invalidateTime;
+        return isEntityValid(System.currentTimeMillis());
+    }
+
+    public final boolean isEntityValid(long time){
+        return time <= invalidateTime;
     }
 
 }
