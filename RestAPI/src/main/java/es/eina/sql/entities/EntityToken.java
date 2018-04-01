@@ -56,4 +56,8 @@ public class EntityToken extends EntityBase{
         this.time = System.currentTimeMillis() + TOKEN_VALID_TIME;
         update();
     }
+
+    public boolean isValid(String token) {
+        return time >= System.currentTimeMillis() && this.token.equals(token);
+    }
 }

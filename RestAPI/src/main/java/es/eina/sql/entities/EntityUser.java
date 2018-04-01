@@ -43,6 +43,9 @@ public class EntityUser extends EntityBase {
     @OneToOne(mappedBy = "user")
     private EntityToken token;
 
+    @OneToOne(mappedBy = "user")
+    private EntityUserValues userValues;
+
     /**
      * DO NOT use this method as it can only be used by Hibernate
      */
@@ -106,7 +109,7 @@ public class EntityUser extends EntityBase {
         return country;
     }
 
-    public long getRegister_date() {
+    public long getRegisterDate() {
         return register_date;
     }
 
