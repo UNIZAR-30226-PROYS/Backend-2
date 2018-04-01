@@ -106,7 +106,7 @@ public class UserRequests {
         response.put("error", "");
         //String birth_date = StringUtils.isValid(birth) ? StringUtils.isDate(birth) : null;
 
-        if (StringUtils.isValid(nick) && StringUtils.isValid(mail) && StringUtils.isValid(pass0) &&
+        if (StringUtils.isValid(nick, 3, 32) && StringUtils.isValid(mail) && StringUtils.isValid(pass0) &&
                 StringUtils.isValid(pass1) && StringUtils.isValid(nick)) {
             if(mailValidator.isValid(mail)) {
                 Date birth_date = new Date(birth);

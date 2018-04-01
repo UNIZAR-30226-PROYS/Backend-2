@@ -15,6 +15,20 @@ public class StringUtils {
         return s != null && !s.isEmpty();
     }
 
+    /**
+     * Check {s} is valid.
+     *      Any string is valid if:
+     *          - Is not null
+     *          - Is not empty
+     *          - Has between @param minChars and @param maxChars characters (both inclusive).
+     * @return True if {s} is valid, false otherwise
+     */
+    public static boolean isValid(String s, int minChars, int maxChars) {
+        minChars = Math.max(0, minChars);
+        int len = s != null ? s.length() : -1;
+        return s != null && !s.isEmpty() && len >= minChars && len <= maxChars;
+    }
+
     public static int parseInt(String value) {
         try {
             return Integer.parseInt(value);
