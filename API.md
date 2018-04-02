@@ -166,3 +166,32 @@ Types:
 | *"user"* | String |
 
 #### DELETE /users/{nick}?token={TOKEN}
+
+This requests deletes a user with the nick {nick}. That means the system will no longer know this user even existed.
+
+Accepts the following parameters in an HTTP DELETE encoded request (application/x-www-form-urlencoded):
+  - nick => Nick of this user.
+  - token => Login token. If this token matches {nick}'s token, current session will be invalidated.
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "error" : "{ERROR_CODE}"
+  }
+```
+
+Error codes are specified as follows:
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| ok | User has been logged out successfully |
+| invalidArgs | Token parameter is null or empty. |
+| invalidToken | Given {TOKEN} doesn't match {nick}'s token. |
+| unknownUser | No user with that nick exists in the Database. |
+| unknownError | An unknown error happened when trying to delete user session |
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"error"* | String |
