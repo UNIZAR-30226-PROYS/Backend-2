@@ -3,8 +3,10 @@
 ## Table of contents
 
  - [GET /users/{nick}?token={token}](#get-usersnicktokentoken)
+ - [DELETE /users/{nick}?token={TOKEN}](#delete-usersnicktokentoken)
  - [POST /users/{nick}/signup](#post-usersnicksignup)
  - [POST /users/{nick}/login](#post-usersnicklogin)
+ - [DELETE /users/{nick}/login?token={TOKEN}](#delete-usersnicklogintokentoken)
 
 ## Requests
 
@@ -15,7 +17,7 @@ This requests gets the data of a user with the nick {nick}.
 
 Accepts the following parameters in an HTTP GET request:
   - nick => Nick of this user.
-  - token (Optional) => Login token. It this token matches {nick}'s token, sensible information (mail, country, birth_date and register_date) will be returned.
+  - token (Optional) => Login token. If this token matches {nick}'s token, sensible information (mail, country, birth_date and register_date) will be returned.
 
 RestAPI will answer with this JSON response:
 ```json
@@ -56,6 +58,39 @@ Types:
 | *"birth_date"* | Date |
 | *"register_date"* | Long |
 | *"error"* | Boolean |
+
+#### DELETE /users/{nick}/login?token={TOKEN}
+
+This requests logouts a user with the nick {nick}. That means previous token will not be valid.
+
+Accepts the following parameters in an HTTP DELETE encoded request (application/x-www-form-urlencoded):
+  - nick => Nick of this user.
+  - token => Login token. If this token matches {nick}'s token, current session will be invalidated.
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "error" : "{ERROR_CODE}"
+  }
+```
+
+Error codes are specified as follows:
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| ok | User has been logged out successfully |
+| invalidArgs | Token parameter is null or empty. |
+| invalidToken | Given {TOKEN} doesn't match {nick}'s token. |
+| closedSession | This user had already closed his session. |
+| unknownUser | No user with that nick exists in the Database. |
+| unknownError | An unknown error happened when trying to delete user session |
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"error"* | String |
+
 
 #### POST /users/{nick}/signup
 This requests registers a new user in the database with the nick {nick}. That nick **MUST** be unique.
@@ -129,3 +164,5 @@ Types:
 | *"token"* | String |
 | *"error"* | String |
 | *"user"* | String |
+
+#### DELETE /users/{nick}?token={TOKEN}
