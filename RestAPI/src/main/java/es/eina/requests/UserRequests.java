@@ -187,9 +187,9 @@ public class UserRequests {
                 userJSON.put("birth_date", user.getBirthDate());
                 userJSON.put("register_date", user.getRegisterDate());
             }
-            obj.put("error", 0);
+            obj.put("error", false);
         }else{
-            obj.put("error", 1);
+            obj.put("error", true);
         }
 
         obj.put("profile", userJSON);
