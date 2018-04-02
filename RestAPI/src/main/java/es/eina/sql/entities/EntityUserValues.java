@@ -7,14 +7,14 @@ import javax.persistence.*;
 public class EntityUserValues extends EntityBase{
 
     @Id
-    @Column(name = "userId")
+    @Column(name = "user_id")
     private long userId;
 
     @Column(name = "admin")
     private boolean admin;
 
     @OneToOne
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "user_id")
     private EntityUser user;
 
     /**

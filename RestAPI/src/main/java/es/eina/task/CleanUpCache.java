@@ -10,7 +10,7 @@ import es.eina.sql.parameters.SQLParameterLong;
 public class CleanUpCache extends TaskBase {
 
     public CleanUpCache() {
-        super(900000, true);
+        super(900000, false);
     }
 
     /**
