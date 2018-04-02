@@ -1,9 +1,17 @@
-POST http://localhost:8080/users/lAngelP/login
+POST http://localhost:8080/users/test-user/signup
 Accept: */*
 Cache-Control: no-cache
 Content-Type: application/x-www-form-urlencoded
 
-pass=1234
+mail=random@example.com&pass0=1234&pass1=1234&birth=824601600000&user=Angel
+
+<> 2018-04-01T034504.200.json
 
 ###
 
+DELETE http://localhost:8080/users/test-user?token=gwjh632xrsuz4dtm
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/x-www-form-urlencoded
+
+###

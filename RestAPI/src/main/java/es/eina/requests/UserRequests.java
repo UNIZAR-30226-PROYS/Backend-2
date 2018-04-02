@@ -208,13 +208,36 @@ public class UserRequests {
         return null; //TODO REPLACE
     }
 
-    @Path("/{user}")
+    @Path("/{nick}")
     @DELETE
     public String deleteUserData(
-            @PathParam("user") String user,
-            @FormParam("token") String token
+            @PathParam("nick") String nick,
+            @DefaultValue("") @FormParam("token") String token
     ) {
-        return null; //TODO REPLACE
+        JSONObject obj = new JSONObject();
+        obj.put("token", token);
+        obj.put("nick", nick);
+
+        if(StringUtils.isValid(token)) {
+            EntityUser user = UserCache.getUser(nick);
+            if (user != null) {
+                if (user.getToken().isValid(token)) {
+                    if (UserCache.deleteUser(user)) {
+                        obj.put("error", "ok");
+                    } else {
+                        obj.put("error", "unknownError");
+                    }
+                } else {
+                    obj.put("error", "invalidToken");
+                }
+            } else {
+                obj.put("error", "unknownUser");
+            }
+        }else{
+            obj.put("error", "invalidParams");
+        }
+
+        return obj.toString(); //TODO REPLACE
     }
 
     /**
