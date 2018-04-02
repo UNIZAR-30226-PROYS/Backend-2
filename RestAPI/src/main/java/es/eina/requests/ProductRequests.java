@@ -270,58 +270,6 @@ public class ProductRequests {
 		return obj.toString();
 	}
 
-	@Path("/{product_id}/comments/{comment_id}")
-	@DELETE
-	public void deleteProductComment(
-			@PathParam("product_id") int productId,
-			@PathParam("comment_id") int commentId,
-			String body
-	){
-
-	}
-
-
-	@Path("/{product_id}/comments/{comment_id}/likes")
-	@GET
-	public String getProductCommentLikes(
-			@PathParam("product_id") int product,
-			@PathParam("comment_id") int comment,
-			@DefaultValue("" + PRODUCT_DEFAULT_COMMENT_LIKES_NUMBER) @QueryParam("n") int comments
-	){
-		return null;
-	}
-
-	@Path("/{product_id}/comments/{comment_id}/likes")
-	@POST
-	public String addProductCommentLike(
-			@PathParam("product_id") int product,
-			@PathParam("comment_id") int comment,
-			String body
-	){
-		return null;
-	}
-
-	@Path("/{product_id}/comments/{comment_id}/likes/{like_id}")
-	@GET
-	public String getProductCommentLike(
-			@PathParam("product_id") int product,
-			@PathParam("comment_id") int comment,
-			@PathParam("like_id") int like
-	){
-		return null;
-	}
-
-	@Path("/{product_id}/comments/{comment_id}/likes/{like_id}")
-	@DELETE
-	public String deleteProductCommentLike(
-			@PathParam("product_id") int product,
-			@PathParam("comment_id") int comment,
-			@PathParam("like_id") int like,
-			String body
-	){
-		return null;
-	}
-
     /**
      * Search the prices of a product for all the vendors who sell it.
      * <p>
@@ -368,14 +316,6 @@ public class ProductRequests {
 		obj.put("vendors", vendors);
 		return obj.toString();
 
-	}
-
-	@POST
-	@Path("/dummy")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @AuthRequired
-	public String dummyPetition(@FormParam("a") String a){
-        return "{\"a\":1}";
 	}
 
 	static {

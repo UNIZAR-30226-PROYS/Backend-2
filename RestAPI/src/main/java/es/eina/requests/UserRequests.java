@@ -300,64 +300,6 @@ public class UserRequests {
         return object.toString();
     }
 
-    @Path("/{user}/comments/{comment_id}")
-    @DELETE
-    public String deleteUserComment(
-            @PathParam("user") String user,
-            @PathParam("comment_id") int comment_id,
-            @FormParam("token") String token
-    ) {
-        return null; //TODO REPLACE
-    }
-
-    @Path("/{user}/comments/{comment_id}/likes")
-    @GET
-    public String getUserCommentLikes(
-            @PathParam("user") String user,
-            @PathParam("comment_id") int comment_id,
-            @DefaultValue("" + DEFAULT_COMMENT_LIKES_NUMBER) @QueryParam("n") int number
-    ) {
-        return null; //TODO REPLACE
-    }
-
-    @Path("/{user}/comments/{comment_id}/likes/{like_id}")
-    @GET
-    public String getUserCommentLike(
-            @PathParam("user") String user,
-            @PathParam("comment_id") int comment_id,
-            @PathParam("like_id") int like_id
-    ) {
-        return null; //TODO REPLACE
-    }
-
-    @Path("/{user}/likes")
-    @GET
-    public String getUserLikes(
-            @PathParam("user") String user,
-            @DefaultValue("" + DEFAULT_COMMENT_LIKES_NUMBER) @QueryParam("n") int number
-    ) {
-        return null; //TODO REPLACE
-    }
-
-    @Path("/{user}/likes/{like_id}")
-    @GET
-    public String getUserLike(
-            @PathParam("user") String user,
-            @PathParam("like_id") int likeId
-    ) {
-        return null; //TODO REPLACE
-    }
-
-    @Path("/{user}/likes/{like_id}")
-    @DELETE
-    public String deleteUserLikes(
-            @PathParam("user") String user,
-            @PathParam("like_id") int likeId,
-            @FormParam("token") String token
-    ) {
-        return null; //TODO REPLACE
-    }
-
     static {
         defaultUserJSON = new JSONObject();
         defaultUserJSON.put("id", -1);
