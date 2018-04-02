@@ -1,8 +1,16 @@
-### Backend API Documentation
+## Backend API Documentation
+
+### Table of contents
+
+ - [GET /users/{nick}?token={token}](GETusersnicktokentoken)
+ - [POST /users/{nick}/signup](POSTusersnicksignup)
+ - [POST /users/{nick}/login](POSTusersnicklogin)
+
+### Requests
 
 #### **/users**
 
-##### /{nick}/signup?token={token}
+##### GET /users/{nick}?token={token}
 This requests gets the data of a user with the nick {nick}.
 
 Accepts the following parameters in an HTTP GET request:
@@ -49,7 +57,7 @@ Types:
 | *"register_date"* | Long |
 | *"error"* | Boolean |
 
-##### /{nick}/signup
+##### POST /users/{nick}/signup
 This requests registers a new user in the database with the nick {nick}. That nick **MUST** be unique.
 
 Accepts the following parameters in an HTTP POST encoded request (application/x-www-form-urlencoded):
@@ -87,7 +95,7 @@ Types:
 | *"token"* | String |
 | *"error"* | String |
 
-##### /{nick}/login
+##### POST /users/{nick}/login
 This requests creates a new session for a user with the nick {nick}. If that user had another opened session before, it will be removed (aka "closed").
 
 Accepts the following parameters in an HTTP POST encoded request (application/x-www-form-urlencoded):
