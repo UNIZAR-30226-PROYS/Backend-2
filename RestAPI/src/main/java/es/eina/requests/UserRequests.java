@@ -106,7 +106,7 @@ public class UserRequests {
 
         if (StringUtils.isValid(nick, 3, 32) && StringUtils.isValid(mail) && StringUtils.isValid(pass0) &&
                 StringUtils.isValid(pass1) && StringUtils.isValid(nick)) {
-            if(mailValidator.isValid(mail)) {
+            if (mailValidator.isValid(mail)) {
                 Date birth_date = new Date(birth);
                 if (!StringUtils.isValid(bio)) bio = "";
                 if (pass0.equals(pass1)) {
@@ -125,7 +125,7 @@ public class UserRequests {
                 } else {
                     response.put("error", "notEqualPass");
                 }
-            }else{
+            } else {
                 response.put("error", "wrongMail");
             }
         } else {
@@ -142,17 +142,39 @@ public class UserRequests {
      * URI: /users/{user}/login
      * </p>
      *
-     * @param user  : Username of a user to search
+     * @param nick  : Username of a user to search
      * @param token : Token string of this User.
      * @return The result of this search as specified in API.
      */
-    @Path("/{user}/login")
+    @Path("/{nick}/login")
     @DELETE
-    public String deleteLogin(@PathParam("user") String user, @FormParam("token") String token) {
-        JSONObject response = new JSONObject();
-        boolean error = !UserUtils.validateUserToken(user, token) && !UserUtils.deleteUserToken(user);
-        response.put("error", error);
-        return response.toString();
+    public String deleteLogin(@PathParam("nick") String nick,
+                              @DefaultValue("") @FormParam("token") String token) {
+        JSONObject obj = new JSONObject();
+
+        if (StringUtils.isValid(token)) {
+            EntityUser user = UserCache.getUser(nick);
+            if (user != null) {
+                if (user.getToken() != null && user.getToken().isValid(token)) {
+                    int code = user.deleteToken();
+                    if (code == 0) {
+                        obj.put("error", "ok");
+                    } else if (code == -2) {
+                        obj.put("error", "closedSession");
+                    } else {
+                        obj.put("error", "unknownError");
+                    }
+                } else {
+                    obj.put("error", "invalidToken");
+                }
+            } else {
+                obj.put("error", "unknownUser");
+            }
+        } else {
+            obj.put("error", "invalidParams");
+        }
+
+        return obj.toString();
     }
 
     /**
@@ -175,7 +197,7 @@ public class UserRequests {
         JSONObject userJSON = new JSONObject(defaultUserJSON, JSONObject.getNames(defaultUserJSON));
 
         EntityUser user = UserCache.getUser(nick);
-        if(user != null) {
+        if (user != null) {
             userJSON.put("id", user.getId());
             userJSON.put("nick", user.getNick());
             userJSON.put("user", user.getUsername());
@@ -188,7 +210,7 @@ public class UserRequests {
                 userJSON.put("register_date", user.getRegisterDate());
             }
             obj.put("error", false);
-        }else{
+        } else {
             obj.put("error", true);
         }
 
@@ -215,13 +237,11 @@ public class UserRequests {
             @DefaultValue("") @FormParam("token") String token
     ) {
         JSONObject obj = new JSONObject();
-        obj.put("token", token);
-        obj.put("nick", nick);
 
-        if(StringUtils.isValid(token)) {
+        if (StringUtils.isValid(token)) {
             EntityUser user = UserCache.getUser(nick);
             if (user != null) {
-                if (user.getToken().isValid(token)) {
+                if (user.getToken() != null && user.getToken().isValid(token)) {
                     if (UserCache.deleteUser(user)) {
                         obj.put("error", "ok");
                     } else {
@@ -233,11 +253,11 @@ public class UserRequests {
             } else {
                 obj.put("error", "unknownUser");
             }
-        }else{
+        } else {
             obj.put("error", "invalidParams");
         }
 
-        return obj.toString(); //TODO REPLACE
+        return obj.toString();
     }
 
     /**

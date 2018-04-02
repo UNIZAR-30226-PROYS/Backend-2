@@ -1,5 +1,8 @@
 package es.eina.sql.entities;
 
+import es.eina.sql.utils.HibernateUtils;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.*;
@@ -68,13 +71,33 @@ public class EntityUser extends EntityBase {
 
     public void updateToken(){
         if(this.token != null){
-            System.err.println("Updating token for user " + nick);
             this.token.updateToken();
         }else{
-            System.err.println("Creating new token for user " + nick);
             this.token = new EntityToken(this);
         }
         update();
+    }
+
+    public int deleteToken(){
+        if(this.token != null) {
+            Transaction tr = null;
+            try (Session session = HibernateUtils.getSessionFactory().openSession()) {
+                tr = session.beginTransaction();
+                session.delete(token);
+                tr.commit();
+            } catch (Exception e) {
+                e.printStackTrace();
+                if (tr != null && tr.isActive()) {
+                    tr.rollback();
+                }
+                return -1;
+            }
+
+            this.token = null;
+            update();
+            return 0;
+        }
+        return -2;
     }
 
     public Long getId() {
