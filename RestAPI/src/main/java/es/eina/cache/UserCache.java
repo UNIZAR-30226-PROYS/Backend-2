@@ -39,7 +39,7 @@ public class UserCache {
     }
 
     public static void forceSave(){
-        saveEntities(users.valgiues());
+        saveEntities(users.values());
     }
 
     private static void saveEntities(Collection<EntityUser> remove){
@@ -136,6 +136,36 @@ public class UserCache {
         }
 
         return user;
+    }
+
+    public static boolean deleteUser(EntityUser user){
+        Transaction tr = null;
+        try (Session session = HibernateUtils.getSessionFactory().openSession()) {
+            String nick = user.getNick();
+            long id = user.getId();
+            tr = session.beginTransaction();
+            session.delete(user);
+            tr.commit();
+            users.remove(id);
+            nameToId.remove(nick);
+            idToName.remove(id);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (tr != null && tr.isActive()) {
+                tr.rollback();
+            }
+        }
+
+        return false;
+    }
+
+    public static long getId(String nick){
+        return nameToId.get(nick);
+    }
+
+    public static String getNick(long id){
+        return idToName.get(id);
     }
 
 }
