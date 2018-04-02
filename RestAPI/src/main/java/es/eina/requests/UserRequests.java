@@ -171,7 +171,7 @@ public class UserRequests {
                 obj.put("error", "unknownUser");
             }
         } else {
-            obj.put("error", "invalidParams");
+            obj.put("error", "invalidArgs");
         }
 
         return obj.toString();
@@ -254,7 +254,7 @@ public class UserRequests {
                 obj.put("error", "unknownUser");
             }
         } else {
-            obj.put("error", "invalidParams");
+            obj.put("error", "invalidArgs");
         }
 
         return obj.toString();
