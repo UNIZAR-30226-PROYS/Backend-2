@@ -59,9 +59,9 @@ Types:
 | *"register_date"* | Long |
 | *"error"* | Boolean |
 
-#### DELETE /users/{nick}/login?token={TOKEN}
+#### DELETE /users/{nick}?token={TOKEN}
 
-This requests logouts a user with the nick {nick}. That means previous token will not be valid.
+This requests deletes a user with the nick {nick}. That means the system will no longer know this user even existed.
 
 Accepts the following parameters in an HTTP DELETE encoded request (application/x-www-form-urlencoded):
   - nick => Nick of this user.
@@ -81,7 +81,6 @@ Error codes are specified as follows:
 | ok | User has been logged out successfully |
 | invalidArgs | Token parameter is null or empty. |
 | invalidToken | Given {TOKEN} doesn't match {nick}'s token. |
-| closedSession | This user had already closed his session. |
 | unknownUser | No user with that nick exists in the Database. |
 | unknownError | An unknown error happened when trying to delete user session |
 
@@ -90,7 +89,6 @@ Types:
 | Parameter | Type |
 | :---: |:---|
 | *"error"* | String |
-
 
 #### POST /users/{nick}/signup
 This requests registers a new user in the database with the nick {nick}. That nick **MUST** be unique.
@@ -165,9 +163,9 @@ Types:
 | *"error"* | String |
 | *"user"* | String |
 
-#### DELETE /users/{nick}?token={TOKEN}
+#### DELETE /users/{nick}/login?token={TOKEN}
 
-This requests deletes a user with the nick {nick}. That means the system will no longer know this user even existed.
+This requests logouts a user with the nick {nick}. That means previous token will not be valid.
 
 Accepts the following parameters in an HTTP DELETE encoded request (application/x-www-form-urlencoded):
   - nick => Nick of this user.
@@ -187,6 +185,7 @@ Error codes are specified as follows:
 | ok | User has been logged out successfully |
 | invalidArgs | Token parameter is null or empty. |
 | invalidToken | Given {TOKEN} doesn't match {nick}'s token. |
+| closedSession | This user had already closed his session. |
 | unknownUser | No user with that nick exists in the Database. |
 | unknownError | An unknown error happened when trying to delete user session |
 
