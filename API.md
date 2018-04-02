@@ -2,6 +2,37 @@
 
 #### **/users**
 
+##### /{nick}/signup?token={token}
+This requests gets the data of a user with the nick {nick}.
+
+Accepts the following parameters in an HTTP GET request:
+  - nick => Nick of this user.
+  - token (Optional) => Login token. It this token matches {nick}'s token, sensible information (mail, country, birth_date and register_date) will be returned.
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "profile" : {
+      "id": "{ID}",
+      "nick": "{NICK}",
+      "user": "{USER}",
+      "bio": "{BIO}",
+
+      "mail_visible" : "true/false",
+      "mail" : "{MAIL}",
+      "country" : "{COUNTRY}",
+      "birth_date" : "{BIRTH_DATE}",
+      "register_date" : "{REGISTER_DATE}"
+    },
+    "error" : "true/false"
+  }
+```
+
+If *"error"* is true, the profile will be empty, this means, all fields will be defined **but** its value is unspecified.
+
+Also, if *"mail_visible"* is false, all private fields will be defined but its value is also unspecified.
+
+
 ##### /{nick}/signup
 This requests registers a new user in the database with the nick {nick}. That nick **MUST** be unique.
 
