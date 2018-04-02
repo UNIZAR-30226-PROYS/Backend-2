@@ -32,6 +32,22 @@ If *"error"* is true, the profile will be empty, this means, all fields will be 
 
 Also, if *"mail_visible"* is false, all private fields will be defined but its value is also unspecified.
 
+*"country"* contains the 2 character ISO Code specified in ISO_3166-1
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"id"* | Integer |
+| *"nick"* | String |
+| *"user"* | String |
+| *"bio"* | String |
+| *"mail_visible"* | Boolean |
+| *"mail"* | String |
+| *"country"* | String |
+| *"birth_date"* | Date |
+| *"register_date"* | Long |
+| *"error"* | Boolean |
 
 ##### /{nick}/signup
 This requests registers a new user in the database with the nick {nick}. That nick **MUST** be unique.
@@ -64,6 +80,13 @@ Other error codes are specified as follows:
 | userExists | Another user with that nick exists in the Database. |
 | unknownError | An unknown error happened when trying to push the new user to the database |
 
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"token"* | String |
+| *"error"* | String |
+
 ##### /{nick}/login
 This requests creates a new session for a user with the nick {nick}. If that user had another opened session before, it will be removed (aka "closed").
 
@@ -90,3 +113,11 @@ Other error codes are specified as follows:
 | invalidArgs | Provided pass is null or empty. |
 | passError | Given pass is not valid for this user. |
 | userNotExists | There is no user with that nick in the Database. |
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"token"* | String |
+| *"error"* | String |
+| *"user"* | String |
