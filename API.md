@@ -2,9 +2,9 @@
 
 ### Table of contents
 
- - [GET /users/{nick}?token={token}](#GET-usersnicktokentoken)
- - [POST /users/{nick}/signup](#POST-usersnicksignup)
- - [POST /users/{nick}/login](#POST-usersnicklogin)
+ - [GET /users/{nick}?token={token}](#get-usersnicktokentoken)
+ - [POST /users/{nick}/signup](#post-usersnicksignup)
+ - [POST /users/{nick}/login](#post-usersnicklogin)
 
 ### Requests
 
