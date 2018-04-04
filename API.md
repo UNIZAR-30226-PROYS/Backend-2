@@ -10,6 +10,8 @@
  - [DELETE /users/{nick}/login?token={TOKEN}](#delete-usersnicklogintokentoken)
  - [POST /users/{nick}/verify](#post-usersnickverify)
 
+ - [GET /songs/{id}](#get-songsid)
+
 ## Requests
 
 ### **/users**
@@ -303,4 +305,46 @@ Types:
 
 | Parameter | Type |
 | :---: |:---|
+| *"error"* | String |
+
+### **/songs**
+
+#### GET /songs/{id}
+This requests gets the data of a song with the id {id}.
+
+Accepts the following parameters in an HTTP GET request:
+  - id => Song id.
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "profile" : {
+      "id": "{ID}",
+      "user_id": "{AUTHOR}",
+      "title": "{TITLE}",
+      "country": "{COUNTRY}",
+      "upload_time" : "{UPLOAD_TIME}",
+    },
+    "error" : "{ERROR_CODE}"
+  }
+```
+
+If *"error"* is not "ok", the song will be empty, this means, all fields will be defined **but** its value is unspecified.
+
+Other {ERROR_CODE}s are:
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| invalidArgs | *id* is lower or equal to zero. |
+| unknownSong | No song is registered with that id |
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"id"* | Long |
+| *"user_id"* | Long |
+| *"title"* | String |
+| *"country"* | String |
+| *"upload_time"* | Long |
 | *"error"* | String |
