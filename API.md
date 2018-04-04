@@ -7,6 +7,7 @@
  - [POST /users/{nick}/signup](#post-usersnicksignup)
  - [POST /users/{nick}/login](#post-usersnicklogin)
  - [DELETE /users/{nick}/login?token={TOKEN}](#delete-usersnicklogintokentoken)
+ - [POST /users/{nick}/verify](POST-usersnickverify)
 
 ## Requests
 
@@ -27,6 +28,7 @@ RestAPI will answer with this JSON response:
       "nick": "{NICK}",
       "user": "{USER}",
       "bio": "{BIO}",
+      "verified": "true/false",
 
       "mail_visible" : "true/false",
       "mail" : "{MAIL}",
@@ -188,6 +190,41 @@ Error codes are specified as follows:
 | closedSession | This user had already closed his session. |
 | unknownUser | No user with that nick exists in the Database. |
 | unknownError | An unknown error happened when trying to delete user session |
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"error"* | String |
+
+#### POST /users/{nick}/verify
+
+This requests verifies/unverifies a user with the nick {nick}.
+
+Accepts the following parameters in an HTTP POST encoded request (application/x-www-form-urlencoded):
+  - self => Nick of the admin user
+  - token => Admin login session token. If this token matches {self}'s token, {nick} will be verified / unverified.
+  - verify => True to verify, false to unverify.
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "error" : "{ERROR_CODE}"
+  }
+```
+
+Error codes are specified as follows:
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| ok | User has been verified/unverified successfully |
+| invalidArgs | Token, user or admin parameters are null or empty. |
+| invalidToken | Given {TOKEN} doesn't match {nick}'s token. |
+| closedSession | This user had already closed his session. |
+| unknownUser | No user with that nick exists in the Database. |
+| unknownError | An unknown error happened when trying to update user data. |
+| noPermission | {self} is not an admin and therefore doesn't have permission to verify/unverify any account. |
+| cannotUnverify | **ONLY IF "verify" = false** Cannot unverify an unverified account. |
 
 Types:
 
