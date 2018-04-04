@@ -1,9 +1,14 @@
 package es.eina.sql.entities;
 
+import es.eina.crypt.Crypter;
 import es.eina.sql.utils.HibernateUtils;
+import es.eina.utils.StringUtils;
+import es.eina.utils.UserUtils;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.annotations.NaturalId;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import javax.persistence.*;
 import javax.persistence.Entity;
@@ -100,6 +105,52 @@ public class EntityUser extends EntityBase {
             return code;
         }
         return 0;
+    }
+
+    public int updateUser(String key, Object value){
+        int code = -1;
+        if("username".equals(key)){
+            if(value instanceof String){
+                username = (String) value;
+                code = 0;
+            }
+        }else if("mail".equals(key)){
+            if(value instanceof String){
+                mail = (String) value;
+                code = 0;
+            }
+        }else if("bio".equals(key)){
+            if(value instanceof String){
+                bio = (String) value;
+                code = 0;
+            }
+        }else if("birth_date".equals(key)){
+            if(value instanceof Number){
+                this.birthDate = new Date((Long) value);
+                code = 0;
+            }
+        }else if("pass".equals(key)){
+            if(value instanceof JSONObject){
+                JSONObject obj = (JSONObject) value;
+                if(obj.has("pass0") && obj.has("pass1") && obj.has("old_pass")) {
+                    try {
+                        String pass = obj.getString("old_pass");
+                        String pass0 = obj.getString("pass0");
+                        String pass1 = obj.getString("pass1");
+                        if(StringUtils.isValid(pass0) && pass0.equals(pass1) &&
+                                UserUtils.checkPassword(this, pass)){
+                            this.pass = Crypter.hashPassword(pass0, false);
+                            code = 0;
+                        }else{
+                            code = -2;
+                        }
+                    }catch (JSONException ignored){}
+                }
+            }
+        }
+
+        if(code == 0) update();
+        return code;
     }
 
     public int deleteToken(){

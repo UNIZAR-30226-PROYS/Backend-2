@@ -13,6 +13,7 @@ import es.eina.utils.StringUtils;
 import es.eina.utils.UserUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
@@ -269,15 +270,62 @@ public class UserRequests {
         return obj.toString();
     }
 
-    @Path("/{user}")
+    @Path("/{nick}")
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     public String putUserData(
-            @PathParam("user") String user,
+            @PathParam("nick") String nick,
+            @DefaultValue("") @QueryParam("token") String token,
             String c
     ) {
-        JSONObject obj = new JSONObject(c);
-        return null; //TODO REPLACE
+        JSONObject result = new JSONObject();
+
+        if(StringUtils.isValid(c) && StringUtils.isValid(token)) {
+            JSONObject obj = new JSONObject(c);
+            if (obj.has("updates")) {
+                JSONObject updateObject = null;
+                try {
+                    updateObject = obj.getJSONObject("updates");
+                } catch (JSONException ex) {
+                    result.put("error", "parseError");
+                }
+
+                if (updateObject != null) {
+                    EntityUser user = UserCache.getUser(nick);
+                    if (user != null) {
+                        if(user.getToken() != null) {
+                            if (user.getToken().isValid(token)) {
+                                JSONObject updateResult = new JSONObject();
+                                for (String key : updateObject.keySet()) {
+                                    Object data = updateObject.get(key);
+                                    int code = user.updateUser(key, data);
+                                    if (code == 0) {
+                                        updateResult.put(key, "ok");
+                                    } else if (code == -1) {
+                                        updateResult.put(key, "invalidValue");
+                                    } else if (code == -2) {
+                                        updateResult.put(key, "passError");
+                                    }
+                                }
+                                result.put("error", updateResult);
+                            } else {
+                                result.put("error", "invalidToken");
+                            }
+                        }else{
+                            result.put("error", "closedSession");
+                        }
+                    } else {
+                        result.put("error", "unknownUser");
+                    }
+                }
+            } else {
+                result.put("error", "noUpdate");
+            }
+        }else{
+            result.put("error", "invalidArgs");
+        }
+
+        return result.toString();
     }
 
     @Path("/{nick}")

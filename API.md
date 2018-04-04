@@ -4,10 +4,11 @@
 
  - [GET /users/{nick}?token={token}](#get-usersnicktokentoken)
  - [DELETE /users/{nick}?token={TOKEN}](#delete-usersnicktokentoken)
+ - [PUT /users/{nick}?token={token}](#put-usersnicktokentoken)
  - [POST /users/{nick}/signup](#post-usersnicksignup)
  - [POST /users/{nick}/login](#post-usersnicklogin)
  - [DELETE /users/{nick}/login?token={TOKEN}](#delete-usersnicklogintokentoken)
- - [POST /users/{nick}/verify](POST-usersnickverify)
+ - [POST /users/{nick}/verify](#post-usersnickverify)
 
 ## Requests
 
@@ -91,6 +92,78 @@ Types:
 | Parameter | Type |
 | :---: |:---|
 | *"error"* | String |
+
+#### PUT /users/{nick}?token={token}
+
+This requests updates the data associated to a user with the nick {nick} in the database.
+
+Accepts the following parameters in an HTTP PUT encoded request (**application/json**):
+  - nick => User's nick.
+  - token => User's session token.
+  - *request_body* =>
+    ```json
+      {
+        "updates" : {
+          "update_key0" : "value",
+          "update_key1" : "value",
+
+          "update_keyN" : "value"
+        }
+      }
+    ```
+
+Request body update keys and its values **MUST** be one of the following:
+
+| *update_key* | Type | Example |
+| ---: | :---: | :--- |
+| username | String | `"username" : "Newname"` |
+| mail | String | `"mail" : "NewMail"` |
+| bio | String | `"bio" : "NewBio"` |
+| birth_date | Long | `"birth_date" : -1` |
+| pass | JSONObject | `{"pass0" : "NewPass", "pass1" : "NewPass(again)", "old_pass" : "OldPass"}` |
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "error" : "{ERROR_CODE}"
+  }
+```
+or this one
+```json
+  {
+    "error" : {
+      "update_key0" : "{ERROR_CODE}",
+      "update_key1" : "{ERROR_CODE}",
+
+      "update_keyN" : "{ERROR_CODE}"
+    }
+  }
+```
+
+If "error" is a String, no update has been made. "error" will be one of:
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| invalidArgs | At least one of the given arguments or request body are null or empty. |
+| noUpdate | Request body doesn't have "updates" JSON Object
+| unknownUser | No user with that nick exists in the Database. |
+| invalidToken | Given {TOKEN} doesn't match {nick}'s token. |
+| closedSession | This user had already closed his session. |
+
+
+If "error" is a JSONObject, each key matches exactly the same keys provided for updating and its value shows if the update has been made or not and why. Each key is associated one of this values
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| ok | Update has been made successfully |
+| passError | **ONLY for pass**. pass0 and pass1 don't match or old_pass is not user's password. |
+| invalidValue | Wrong type. This means String is provided when expecting Integer or vice versa |
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"error"* | String or JSONObject |
 
 #### POST /users/{nick}/signup
 This requests registers a new user in the database with the nick {nick}. That nick **MUST** be unique.
