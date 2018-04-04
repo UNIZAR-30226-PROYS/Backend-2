@@ -1,7 +1,7 @@
 package es.eina.requests;
 
 import es.eina.RestApp;
-import es.eina.cache.TokenManager;
+import es.eina.cache.UserCache;
 import es.eina.geolocalization.Geolocalizer;
 import es.eina.sql.MySQLConnection;
 import es.eina.sql.MySQLQueries;
@@ -23,7 +23,6 @@ import javax.ws.rs.core.MediaType;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.ZonedDateTime;
 
 @Path("/users/")
 @Produces(MediaType.APPLICATION_JSON)
@@ -46,27 +45,27 @@ public class UserRequests {
     /**
      * Try login a user in the system.
      * <p>
-     * URI: /users/{user}/login
+     * URI: /users/{nick}/login
      * </p>
      *
-     * @param user : Username of a user to search
+     * @param nick : Username of a user to search
      * @param pass : Password of the User whose username is provided.
      * @return The result of this search as specified in API.
      */
-    @Path("/{user}/login")
+    @Path("/{nick}/login")
     @POST
-    public String login(@PathParam("user") String user, @FormParam("pass") String pass) {
+    public String login(@PathParam("nick") String nick, @FormParam("pass") String pass) {
         JSONObject response = new JSONObject();
-        response.put("user", user);
+        response.put("user", nick);
         response.put("token", "");
         response.put("error", "");
 
-        response.put("ip", request.getRemoteAddr());
-
-        if (user != null && pass != null) {
-            if (UserUtils.userExists(user)) {
+        if (StringUtils.isValid(nick) && StringUtils.isValid(pass)) {
+            if (UserUtils.userExists(nick)) {
+                EntityUser user = UserCache.getUser(nick);
                 if (UserUtils.checkPassword(user, pass)) {
-                    response.put("token", TokenManager.getToken(user).getToken());
+                    user.updateToken();
+                    response.put("token", user.getToken().getToken());
                     response.put("error", "ok");
                 } else {
                     response.put("error", "passError");
@@ -106,13 +105,13 @@ public class UserRequests {
         response.put("error", "");
         //String birth_date = StringUtils.isValid(birth) ? StringUtils.isDate(birth) : null;
 
-        if (StringUtils.isValid(nick) && StringUtils.isValid(mail) && StringUtils.isValid(pass0) &&
+        if (StringUtils.isValid(nick, 3, 32) && StringUtils.isValid(mail) && StringUtils.isValid(pass0) &&
                 StringUtils.isValid(pass1) && StringUtils.isValid(nick)) {
-            if(mailValidator.isValid(mail)) {
+            if (mailValidator.isValid(mail)) {
                 Date birth_date = new Date(birth);
                 if (!StringUtils.isValid(bio)) bio = "";
                 if (pass0.equals(pass1)) {
-                    if (!UserUtils.userExists(nick)) { //TODO: Check with Hibernate
+                    if (!UserUtils.userExists(nick)) {
                         String country = Geolocalizer.getInstance().getCountryCode(request.getRemoteAddr());
                         EntityUser userData = UserUtils.addUser(nick, mail, pass0, user, bio, birth_date, country);
                         if (userData != null) {
@@ -127,7 +126,7 @@ public class UserRequests {
                 } else {
                     response.put("error", "notEqualPass");
                 }
-            }else{
+            } else {
                 response.put("error", "wrongMail");
             }
         } else {
@@ -144,17 +143,39 @@ public class UserRequests {
      * URI: /users/{user}/login
      * </p>
      *
-     * @param user  : Username of a user to search
+     * @param nick  : Username of a user to search
      * @param token : Token string of this User.
      * @return The result of this search as specified in API.
      */
-    @Path("/{user}/login")
+    @Path("/{nick}/login")
     @DELETE
-    public String deleteLogin(@PathParam("user") String user, @FormParam("token") String token) {
-        JSONObject response = new JSONObject();
-        boolean error = !UserUtils.validateUserToken(user, token) && !UserUtils.deleteUserToken(user);
-        response.put("error", error);
-        return response.toString();
+    public String deleteLogin(@PathParam("nick") String nick,
+                              @DefaultValue("") @FormParam("token") String token) {
+        JSONObject obj = new JSONObject();
+
+        if (StringUtils.isValid(token)) {
+            EntityUser user = UserCache.getUser(nick);
+            if (user != null) {
+                if (user.getToken() != null && user.getToken().isValid(token)) {
+                    int code = user.deleteToken();
+                    if (code == 0) {
+                        obj.put("error", "ok");
+                    } else if (code == -2) {
+                        obj.put("error", "closedSession");
+                    } else {
+                        obj.put("error", "unknownError");
+                    }
+                } else {
+                    obj.put("error", "invalidToken");
+                }
+            } else {
+                obj.put("error", "unknownUser");
+            }
+        } else {
+            obj.put("error", "invalidArgs");
+        }
+
+        return obj.toString();
     }
 
     /**
@@ -163,39 +184,87 @@ public class UserRequests {
      * URI: /users/{user}
      * </p>
      *
-     * @param user  : Username of a user to search
+     * @param nick  : Nick of a user to search
      * @param token : Token string of this user.
      * @return The result of this search as specified in API.
      */
-    @Path("/{user}")
+    @Path("/{nick}")
     @GET
     public String getUserData(
-            @PathParam("user") String user,
+            @PathParam("nick") String nick,
             @DefaultValue("") @QueryParam("token") String token
     ) {
         JSONObject obj = new JSONObject();
         JSONObject userJSON = new JSONObject(defaultUserJSON, JSONObject.getNames(defaultUserJSON));
-        ResultSet set = RestApp.getSql().runAsyncQuery(MySQLQueries.GET_USER_DATA_BY_NAME, new SQLParameterString(user));
 
-        try {
-            if (set.first()) {
-                if (UserUtils.validateUserToken(user, token)) {
-                    userJSON.put("public_profile", true);
-                    userJSON.put("name", set.getString("real_name"));
-                    userJSON.put("mail", set.getString("mail"));
-                    userJSON.put("mail_visible", true);
-                }
-                userJSON.put("user", user);
-                double valuation = set.getDouble("valuation_amount") / set.getDouble("valuation_sum");
-                userJSON.put("public_rate", Double.isFinite(valuation) ? valuation : -1.0);
-                userJSON.put("description", set.getString("description"));
+        EntityUser user = UserCache.getUser(nick);
+        if (user != null) {
+            userJSON.put("id", user.getId());
+            userJSON.put("nick", user.getNick());
+            userJSON.put("user", user.getUsername());
+            userJSON.put("bio", user.getBio());
+            userJSON.put("verified", user.isVerified());
+            if (user.getToken().isValid(token)) {
+                userJSON.put("mail_visible", true);
+                userJSON.put("mail", user.getMail());
+                userJSON.put("country", user.getCountry());
+                userJSON.put("birth_date", user.getBirthDate());
+                userJSON.put("register_date", user.getRegisterDate());
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            obj.put("error", 1);
+            obj.put("error", false);
+        } else {
+            obj.put("error", true);
         }
 
         obj.put("profile", userJSON);
+
+        return obj.toString();
+    }
+
+    @Path("/{nick}/verify")
+    @POST
+    public String verifyAccount(@PathParam("nick") String nick,
+                                @FormParam("self") String adminUser,
+                                @DefaultValue("") @FormParam("token") String token,
+                                @FormParam("verify") boolean verify){
+        JSONObject obj = new JSONObject();
+
+        if(StringUtils.isValid(nick) && StringUtils.isValid(adminUser) && StringUtils.isValid(token)){
+            EntityUser user = UserCache.getUser(nick);
+            EntityUser admin = UserCache.getUser(adminUser);
+            if(user != null && admin != null){
+                EntityToken adminToken = admin.getToken();
+                if(adminToken != null){
+                    if(adminToken.isValid(token)){
+                        if(admin.isAdmin()){
+                            if(verify){
+                                user.verifyAccount();
+                                obj.put("error", "ok");
+                            }else{
+                                int code = user.unverifyAccount();
+                                if(code == 0){
+                                    obj.put("error", "ok");
+                                }else if(code == -1){
+                                    obj.put("error", "unknownError");
+                                }else if(code == -2){
+                                    obj.put("error", "cannotUnverify");
+                                }
+                            }
+                        }else{
+                            obj.put("error", "noPermission");
+                        }
+                    }else{
+                        obj.put("error", "invalidToken");
+                    }
+                }else{
+                    obj.put("error", "closedSession");
+                }
+            }else{
+                obj.put("error", "unknownUser");
+            }
+        }else{
+            obj.put("error", "invalidArgs");
+        }
 
         return obj.toString();
     }
@@ -211,13 +280,34 @@ public class UserRequests {
         return null; //TODO REPLACE
     }
 
-    @Path("/{user}")
+    @Path("/{nick}")
     @DELETE
     public String deleteUserData(
-            @PathParam("user") String user,
-            @FormParam("token") String token
+            @PathParam("nick") String nick,
+            @DefaultValue("") @FormParam("token") String token
     ) {
-        return null; //TODO REPLACE
+        JSONObject obj = new JSONObject();
+
+        if (StringUtils.isValid(token)) {
+            EntityUser user = UserCache.getUser(nick);
+            if (user != null) {
+                if (user.getToken() != null && user.getToken().isValid(token)) {
+                    if (UserCache.deleteUser(user)) {
+                        obj.put("error", "ok");
+                    } else {
+                        obj.put("error", "unknownError");
+                    }
+                } else {
+                    obj.put("error", "invalidToken");
+                }
+            } else {
+                obj.put("error", "unknownUser");
+            }
+        } else {
+            obj.put("error", "invalidArgs");
+        }
+
+        return obj.toString();
     }
 
     /**
@@ -303,73 +393,17 @@ public class UserRequests {
         return object.toString();
     }
 
-    @Path("/{user}/comments/{comment_id}")
-    @DELETE
-    public String deleteUserComment(
-            @PathParam("user") String user,
-            @PathParam("comment_id") int comment_id,
-            @FormParam("token") String token
-    ) {
-        return null; //TODO REPLACE
-    }
-
-    @Path("/{user}/comments/{comment_id}/likes")
-    @GET
-    public String getUserCommentLikes(
-            @PathParam("user") String user,
-            @PathParam("comment_id") int comment_id,
-            @DefaultValue("" + DEFAULT_COMMENT_LIKES_NUMBER) @QueryParam("n") int number
-    ) {
-        return null; //TODO REPLACE
-    }
-
-    @Path("/{user}/comments/{comment_id}/likes/{like_id}")
-    @GET
-    public String getUserCommentLike(
-            @PathParam("user") String user,
-            @PathParam("comment_id") int comment_id,
-            @PathParam("like_id") int like_id
-    ) {
-        return null; //TODO REPLACE
-    }
-
-    @Path("/{user}/likes")
-    @GET
-    public String getUserLikes(
-            @PathParam("user") String user,
-            @DefaultValue("" + DEFAULT_COMMENT_LIKES_NUMBER) @QueryParam("n") int number
-    ) {
-        return null; //TODO REPLACE
-    }
-
-    @Path("/{user}/likes/{like_id}")
-    @GET
-    public String getUserLike(
-            @PathParam("user") String user,
-            @PathParam("like_id") int likeId
-    ) {
-        return null; //TODO REPLACE
-    }
-
-    @Path("/{user}/likes/{like_id}")
-    @DELETE
-    public String deleteUserLikes(
-            @PathParam("user") String user,
-            @PathParam("like_id") int likeId,
-            @FormParam("token") String token
-    ) {
-        return null; //TODO REPLACE
-    }
-
     static {
         defaultUserJSON = new JSONObject();
-        defaultUserJSON.put("public_profile", false);
+        defaultUserJSON.put("id", -1);
+        defaultUserJSON.put("nick", "");
         defaultUserJSON.put("user", "");
-        defaultUserJSON.put("name", "");
-        defaultUserJSON.put("mail", "");
         defaultUserJSON.put("mail_visible", false);
-        defaultUserJSON.put("public_rate", -1.0);
-        defaultUserJSON.put("description", "");
+        defaultUserJSON.put("mail", "");
+        defaultUserJSON.put("bio", "");
+        defaultUserJSON.put("country", Geolocalizer.DEFAULT_COUNTRY);
+        defaultUserJSON.put("birth_date", -1);
+        defaultUserJSON.put("register_date", -1);
 
         defaultCommentJSON = new JSONObject();
         defaultCommentJSON.put("id", -1);

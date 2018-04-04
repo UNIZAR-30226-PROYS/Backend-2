@@ -1,7 +1,9 @@
 package es.eina.sql.utils;
 
+import es.eina.RestApp;
 import es.eina.sql.entities.EntityToken;
 import es.eina.sql.entities.EntityUser;
+import es.eina.sql.entities.EntityUserValues;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -23,7 +25,7 @@ public class HibernateUtils {
     public static SessionFactory configureDatabase(String f) {
         if (sessionFactory == null) {
             try {
-                ClassLoader loader = HibernateUtils.class.getClassLoader();
+                ClassLoader loader = RestApp.class.getClassLoader();
                 Properties login = new Properties();
                 try (FileReader in = new FileReader(new File(loader.getResource(f).toURI()))) {
                     login.load(in);
@@ -59,6 +61,7 @@ public class HibernateUtils {
 
                 sources.addAnnotatedClass(EntityUser.class);
                 sources.addAnnotatedClass(EntityToken.class);
+                sources.addAnnotatedClass(EntityUserValues.class);
 
                 Metadata metadata = sources.getMetadataBuilder().build();
                 sessionFactory = metadata.getSessionFactoryBuilder().build();

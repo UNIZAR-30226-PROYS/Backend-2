@@ -4,11 +4,13 @@ import com.maxmind.geoip2.DatabaseReader;
 import com.maxmind.geoip2.exception.GeoIp2Exception;
 import com.maxmind.geoip2.model.CityResponse;
 import com.maxmind.geoip2.model.CountryResponse;
+import es.eina.RestApp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -25,8 +27,12 @@ public class Geolocalizer {
         // This creates the DatabaseReader object. To improve performance, reuse
         // the object across lookups. The object is thread-safe.
         try {
-            ClassLoader loader = getClass().getClassLoader();
-            reader = new DatabaseReader.Builder(loader.getResourceAsStream(f)).build();
+            ClassLoader loader = RestApp.class.getClassLoader();
+            InputStream stream = loader.getResourceAsStream(f);
+            if(stream == null){
+                throw new RuntimeException("Cannot read inner file: " + f);
+            }
+            reader = new DatabaseReader.Builder(stream).build();
             logger.info("Read GeoIP database from " + f);
         } catch (IOException e) {
             logger.error("Cannot read database file, all requests will return O1 ISO country code.");
