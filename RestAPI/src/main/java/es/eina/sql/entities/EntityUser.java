@@ -162,4 +162,8 @@ public class EntityUser extends EntityBase {
     public boolean isAdmin() {
         return userValues != null && userValues.isAdmin();
     }
+
+    public boolean isVerified() {
+        return userValues != null && userValues.isVerified();
+    }
 }

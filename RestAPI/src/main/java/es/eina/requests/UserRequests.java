@@ -203,6 +203,7 @@ public class UserRequests {
             userJSON.put("nick", user.getNick());
             userJSON.put("user", user.getUsername());
             userJSON.put("bio", user.getBio());
+            userJSON.put("verified", user.isVerified());
             if (user.getToken().isValid(token)) {
                 userJSON.put("mail_visible", true);
                 userJSON.put("mail", user.getMail());
