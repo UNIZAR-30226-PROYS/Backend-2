@@ -257,7 +257,7 @@ public class UserRequests {
                         obj.put("error", "invalidToken");
                     }
                 }else{
-                    obj.put("error", "sessionClosed");
+                    obj.put("error", "closedSession");
                 }
             }else{
                 obj.put("error", "unknownUser");
