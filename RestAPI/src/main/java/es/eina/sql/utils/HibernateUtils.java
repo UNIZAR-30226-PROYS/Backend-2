@@ -1,6 +1,7 @@
 package es.eina.sql.utils;
 
 import es.eina.RestApp;
+import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntityToken;
 import es.eina.sql.entities.EntityUser;
 import es.eina.sql.entities.EntityUserValues;
@@ -62,6 +63,7 @@ public class HibernateUtils {
                 sources.addAnnotatedClass(EntityUser.class);
                 sources.addAnnotatedClass(EntityToken.class);
                 sources.addAnnotatedClass(EntityUserValues.class);
+                sources.addAnnotatedClass(EntitySong.class);
 
                 Metadata metadata = sources.getMetadataBuilder().build();
                 sessionFactory = metadata.getSessionFactoryBuilder().build();
