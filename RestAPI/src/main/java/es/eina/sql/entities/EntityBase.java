@@ -1,5 +1,8 @@
 package es.eina.sql.entities;
 
+import es.eina.sql.utils.HibernateUtils;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.json.JSONObject;
 
 public abstract class EntityBase {
@@ -27,6 +30,22 @@ public abstract class EntityBase {
 
     public final boolean isEntityValid(long time){
         return time <= invalidateTime;
+    }
+
+    protected int deleteEntity(){
+        Transaction tr = null;
+        try (Session session = HibernateUtils.getSessionFactory().openSession()) {
+            tr = session.beginTransaction();
+            session.delete(this);
+            tr.commit();
+            return 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (tr != null && tr.isActive()) {
+                tr.rollback();
+            }
+            return -1;
+        }
     }
 
 }
