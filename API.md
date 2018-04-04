@@ -224,7 +224,7 @@ Error codes are specified as follows:
 | unknownUser | No user with that nick exists in the Database. |
 | unknownError | An unknown error happened when trying to update user data. |
 | noPermission | {self} is not an admin and therefore doesn't have permission to verify/unverify any account. |
-| cannotUnverify | **ONLY IF "verify" = false** Cannot unverify an unverified account. |
+| cannotUnverify | **ONLY if "verify" = false**. Cannot unverify an unverified account. |
 
 Types:
 
