@@ -5,6 +5,7 @@ import es.eina.cache.UserCache;
 import es.eina.geolocalization.Geolocalizer;
 import es.eina.sql.MySQLConnection;
 import es.eina.sql.MySQLQueries;
+import es.eina.sql.entities.EntityToken;
 import es.eina.sql.entities.EntityUser;
 import es.eina.sql.parameters.SQLParameterInteger;
 import es.eina.sql.parameters.SQLParameterString;
@@ -215,6 +216,54 @@ public class UserRequests {
         }
 
         obj.put("profile", userJSON);
+
+        return obj.toString();
+    }
+
+    @Path("/{nick}/verify")
+    @POST
+    public String verifyAccount(@PathParam("nick") String nick,
+                                @FormParam("self") String adminUser,
+                                @DefaultValue("") @FormParam("token") String token,
+                                @FormParam("verify") boolean verify){
+        JSONObject obj = new JSONObject();
+
+        if(StringUtils.isValid(nick) && StringUtils.isValid(adminUser) && StringUtils.isValid(token)){
+            EntityUser user = UserCache.getUser(nick);
+            EntityUser admin = UserCache.getUser(adminUser);
+            if(user != null && admin != null){
+                EntityToken adminToken = admin.getToken();
+                if(adminToken != null){
+                    if(adminToken.isValid(token)){
+                        if(admin.isAdmin()){
+                            if(verify){
+                                user.verifyAccount();
+                                obj.put("error", "ok");
+                            }else{
+                                int code = user.unverifyAccount();
+                                if(code == 0){
+                                    obj.put("error", "ok");
+                                }else if(code == -1){
+                                    obj.put("error", "unknownError");
+                                }else if(code == -2){
+                                    obj.put("error", "cannotUnverify");
+                                }
+                            }
+                        }else{
+                            obj.put("error", "noPermission");
+                        }
+                    }else{
+                        obj.put("error", "invalidToken");
+                    }
+                }else{
+                    obj.put("error", "sessionClosed");
+                }
+            }else{
+                obj.put("error", "unknownUser");
+            }
+        }else{
+            obj.put("error", "invalidArgs");
+        }
 
         return obj.toString();
     }
