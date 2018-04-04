@@ -78,24 +78,39 @@ public class EntityUser extends EntityBase {
         update();
     }
 
+    public void verifyAccount(){
+        if(userValues == null){
+            userValues = new EntityUserValues(this);
+        }
+
+        userValues.setVerified(true);
+        update();
+    }
+
+    public int unverifyAccount(){
+        if(userValues == null) return -2;
+
+        userValues.setVerified(false);
+        if(userValues.cleanUp()){
+            int code = userValues.deleteEntity();
+            if(code == 0) {
+                userValues = null;
+                update();
+            }
+            return code;
+        }
+        return 0;
+    }
+
     public int deleteToken(){
         if(this.token != null) {
-            Transaction tr = null;
-            try (Session session = HibernateUtils.getSessionFactory().openSession()) {
-                tr = session.beginTransaction();
-                session.delete(token);
-                tr.commit();
-            } catch (Exception e) {
-                e.printStackTrace();
-                if (tr != null && tr.isActive()) {
-                    tr.rollback();
-                }
-                return -1;
-            }
+            int code = token.deleteEntity();
 
-            this.token = null;
-            update();
-            return 0;
+            if(code == 0) {
+                this.token = null;
+                update();
+            }
+            return code;
         }
         return -2;
     }
@@ -142,5 +157,9 @@ public class EntityUser extends EntityBase {
 
     public EntityUserValues getUserValues() {
         return userValues;
+    }
+
+    public boolean isAdmin() {
+        return userValues != null && userValues.isAdmin();
     }
 }

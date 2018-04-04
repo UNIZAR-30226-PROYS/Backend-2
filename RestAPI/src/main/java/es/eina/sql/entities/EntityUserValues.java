@@ -13,6 +13,9 @@ public class EntityUserValues extends EntityBase{
     @Column(name = "admin")
     private boolean admin;
 
+    @Column(name = "verified")
+    private boolean verified;
+
     @OneToOne
     @JoinColumn(name = "user_id")
     private EntityUser user;
@@ -25,13 +28,14 @@ public class EntityUserValues extends EntityBase{
     }
 
     public EntityUserValues(EntityUser user){
-        this(user, false);
+        this(user, false, false);
     }
 
-    public EntityUserValues(EntityUser user, boolean admin){
+    public EntityUserValues(EntityUser user, boolean admin, boolean verified){
         this.user = user;
         this.userId = user.getId();
         this.admin = admin;
+        this.verified = verified;
     }
 
     public void setAdmin(boolean admin) {
@@ -44,5 +48,17 @@ public class EntityUserValues extends EntityBase{
 
     public EntityUser getUser() {
         return user;
+    }
+
+    public void setVerified(boolean verified) {
+        this.verified = verified;
+    }
+
+    public boolean isVerified() {
+        return verified;
+    }
+
+    public boolean cleanUp() {
+        return verified || admin;
     }
 }
