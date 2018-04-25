@@ -26,6 +26,9 @@ public class EntitySong extends EntityBase {
     @JoinColumn(name = "user_id", insertable=false, updatable=false)
     private EntityUser user;
 
+    @ManyToOne
+    @JoinColumn(name = "album_id", insertable=false, updatable=false)
+    private EntityAlbum album;
 
     /**
      * DO NOT use this method as it can only be used by Hibernate
@@ -52,4 +55,5 @@ public class EntitySong extends EntityBase {
     public long getUploadTime() {
         return uploadTime;
     }
+
 }
