@@ -11,6 +11,8 @@ public abstract class EntityBase {
     private long invalidateTime;
     private boolean dirty;
 
+    public abstract long getId();
+
     public final boolean isDirty(){
         return dirty;
     }
