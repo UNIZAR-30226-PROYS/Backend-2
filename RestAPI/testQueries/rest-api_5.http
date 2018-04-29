@@ -1,0 +1,166 @@
+# For a quick start check out our HTTP Requests collection (Tools|HTTP Client|Open HTTP Requests Collection).
+#
+# Following HTTP Request Live Templates are available:
+# * 'gtrp' and 'gtr' create a GET request with or without query parameters;
+# * 'ptr' and 'ptrp' create a POST request with a simple or parameter-like body;
+# * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
+
+POST http://localhost:8080/users/test-user/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/x-www-form-urlencoded
+
+pass=1234
+
+###
+
+PUT http://localhost:8080/users/test-user?token=INVALIDTOKEN
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+###
+
+PUT http://localhost:8080/users/test-user/
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{}
+
+###
+
+PUT http://localhost:8080/users/test-user/?token=g2xoxjg2kbu2sdwa
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+    "update" : {
+        "bio" : "Random BIO"
+    }
+}
+
+###
+
+PUT http://localhost:8080/users/test-user/?token=g2xoxjg2kbu2sdwa
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{"update" : {
+    "bio" : "Random BIO"
+},
+    "updates" : 1
+}
+
+###
+
+PUT http://localhost:8080/users/test-user2/?token=g2xoxjg2kbu2sdwa
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+    "updates" : {
+        "bio" : "Random BIO"
+    }
+}
+
+###
+
+PUT http://localhost:8080/users/test-user/?token=g2xoxjg2kbu2sdwa
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+    "updates" : {
+        "pass" : "INVALIDVALUE",
+        "birth_date" : "INVALIDVALUE",
+        "bio" : 5
+    }
+}
+
+###
+
+PUT http://localhost:8080/users/test-user/?token=g2xoxjg2kbu2sdwa
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+    "updates" : {
+        "pass" : {
+            "pass0" : "a",
+            "pass1" : "a",
+            "old_pass" : "INVALIDVALUE"
+        }
+    }
+}
+
+###
+
+PUT http://localhost:8080/users/test-user/?token=g2xoxjg2kbu2sdwa
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+    "updates" : {
+        "pass" : {
+            "pass0" : "1234",
+            "pass1" : "12345",
+            "old_pass" : "1234"
+        }
+    }
+}
+
+###
+
+PUT http://localhost:8080/users/test-user/?token=INVALIDTOKEN
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+    "updates" : {
+        "pass" : {
+            "pass0" : "1234",
+            "pass1" : "1234",
+            "old_pass" : "1234"
+        }
+    }
+}
+
+###
+
+PUT http://localhost:8080/users/test-user/?token=g2xoxjg2kbu2sdwa
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+    "updates" : {
+        "pass" : {
+            "pass0" : "1234",
+            "pass1" : "1234",
+            "old_pass" : "1234"
+        }
+    }
+}
+
+###
+
+PUT http://localhost:8080/users/test-user/?token=g2xoxjg2kbu2sdwa
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+    "updates" : {
+        "bio" : "Random new bio"
+    }
+}
+
+###

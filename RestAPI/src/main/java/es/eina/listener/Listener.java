@@ -2,6 +2,9 @@ package es.eina.listener;
 
 import es.eina.RestApp;
 import es.eina.cache.TokenManager;
+import es.eina.cache.UserCache;
+import es.eina.geolocalization.Geolocalizer;
+import es.eina.sql.utils.HibernateUtils;
 import es.eina.task.CleanUpCache;
 import es.eina.task.TaskBase;
 
@@ -35,6 +38,8 @@ public class Listener implements ServletContextListener,
          initialized(when the Web application is deployed). 
          You can initialize servlet context related data here.
       */
+	  Geolocalizer.build("/GeoLite2-Country.mmdb");
+	  HibernateUtils.configureDatabase("database.dat");
 	  restApp = new RestApp();
 	  cache = new CleanUpCache();
 
@@ -53,6 +58,8 @@ public class Listener implements ServletContextListener,
 		cache.cancel();
 		TokenManager.checkRemove();
 		TaskBase.cleanUp();
+		UserCache.forceSave();
+		HibernateUtils.shutdown();
 		RestApp.getSql().onDisable();
 	}
 

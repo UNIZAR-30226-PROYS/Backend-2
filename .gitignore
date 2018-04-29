@@ -70,3 +70,11 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 fabric.properties
+
+.idea/
+.idea/*
+RestAPI/target/*
+RestAPI/*.iml
+Tests/target/*
+Tests/*.iml
+RestAPI/src/main/resources/database.dat

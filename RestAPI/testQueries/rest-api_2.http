@@ -1,0 +1,38 @@
+POST http://localhost:8080/users/lAngelP/signup
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/x-www-form-urlencoded
+
+mail=angelcanal97@gmail.com&pass0=1234&pass1=1234&birth=824601600000&user=Angel
+
+<> 2018-04-01T034504.200.json
+
+###
+
+POST http://localhost:8080/users/lAngelP/login
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/x-www-form-urlencoded
+
+pass=1234
+
+###
+
+GET http://localhost:8080/users/lAngelP
+Accept: */*
+Cache-Control: no-cache
+
+###
+
+GET http://localhost:8080/users/lAngelP?token=0svskl6burhffiai
+Accept: */*
+Cache-Control: no-cache
+
+###
+
+GET http://localhost:8080/users/lAngel
+Accept: */*
+Cache-Control: no-cache
+
+###
+

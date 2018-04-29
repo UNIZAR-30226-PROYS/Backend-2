@@ -5,11 +5,32 @@
          version="3.1">
     <servlet>
         <servlet-name>RestAPI</servlet-name>
-        <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+        <!--<servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>-->
+        <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
 
         <init-param>
             <param-name>com.sun.jersey.config.property.packages</param-name>
             <param-value>es.eina.requests</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>jersey.config.server.provider.packages</param-name>
+            <param-value>es.eina.filter;es.eina.requests</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>jersey.config.server.provider.classnames</param-name>
+            <param-value>es.eina.filter.LogFilter;es.eina.filter.ResponseFilter</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>com.sun.jersey.spi.container.ContainerResponseFilters</param-name>
+            <param-value>es.eina.filter.ResponseFilter</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>com.sun.jersey.spi.container.ContainerRequestFilters</param-name>
+            <param-value>es.eina.filter.LogFilter</param-value>
         </init-param>
 
         <init-param>

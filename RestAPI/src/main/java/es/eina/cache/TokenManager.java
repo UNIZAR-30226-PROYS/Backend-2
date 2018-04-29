@@ -3,6 +3,7 @@ package es.eina.cache;
 import es.eina.RestApp;
 import es.eina.sql.MySQLConnection;
 import es.eina.sql.MySQLQueries;
+import es.eina.sql.parameters.SQLParameterInteger;
 import es.eina.sql.parameters.SQLParameterLong;
 import es.eina.sql.parameters.SQLParameterString;
 import es.eina.utils.RandomString;
@@ -45,7 +46,8 @@ public class TokenManager {
      * @return Returns a {@link Token} object containing the values loaded for this username.
      */
     private static Token loadToken(String user){
-        ResultSet set = RestApp.getSql().runAsyncQuery(MySQLQueries.GET_USER_TOKEN, new SQLParameterString(user));
+        int user_id = UserIdCache.getUserId(user);
+        ResultSet set = RestApp.getSql().runAsyncQuery(MySQLQueries.GET_USER_TOKEN, new SQLParameterInteger(user_id));
         String token;
         long time = 0;
         boolean dirty = false;
@@ -107,6 +109,7 @@ public class TokenManager {
         private static long CACHE_LOAD_TIME = 3600000L;
 
         private String token;
+        private final int user_id;
         private final String user;
         private long token_time;
         private boolean dirty;
@@ -131,6 +134,7 @@ public class TokenManager {
          */
         private Token(String user, String token, long token_time, boolean dirty){
             this.token = token;
+            this.user_id = UserIdCache.getUserId(user);
             this.user = user;
             this.token_time = token_time;
             loadTime = System.currentTimeMillis();
@@ -177,7 +181,9 @@ public class TokenManager {
          */
         private void onRemove(){
             if(dirty){
-                RestApp.getSql().runAsyncUpdate(MySQLQueries.UPDATE_USER_TOKEN, new SQLParameterString(user), new SQLParameterString(token), new SQLParameterLong(token_time), new SQLParameterString(token), new SQLParameterLong(token_time));
+                RestApp.getSql().runAsyncUpdate(MySQLQueries.UPDATE_USER_TOKEN,
+                        new SQLParameterInteger(user_id), new SQLParameterString(token), new SQLParameterLong(token_time),
+                        new SQLParameterString(token), new SQLParameterLong(token_time));
             }
         }
 
