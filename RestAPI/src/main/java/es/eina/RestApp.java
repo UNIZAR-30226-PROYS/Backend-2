@@ -6,6 +6,8 @@ import es.eina.search.IndexProduct;
 import es.eina.search.IndexSongs;
 import es.eina.sql.MySQLConnection;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 public class RestApp {
@@ -20,6 +22,12 @@ public class RestApp {
 	public RestApp() {
 		instance = this;
 		//index.openIndex("index/");
+        try {
+            new File("indices/songIndex/").createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        songsIndex.openIndex("indices/songIndex/");
 
 	}
 
