@@ -16,13 +16,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 
 import javax.annotation.Nullable;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.ZonedDateTime;
-import java.sql.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 public class AlbumUtils {
 
@@ -30,10 +24,12 @@ public class AlbumUtils {
 
     /**
      * Add a new album in the database.
-     * @param nick : Username of this nick.
-     * @param mail : Email of this nick.
-     * @param pass : Crypted password of this nick (see {@link Crypter}
-     * @return Null if the user couldn't be added, the actual user if it could be added.
+     * @param userID : Creator's ID.
+     * @param title : Title given to the album.
+     * @param year : Publish year of the album.
+     * @param image : Path to the album cover image.
+     * @param song : First song of the new album.
+     * @return Null if the album couldn't be created, the actual album if it could be created.
      */
     public static @Nullable EntityAlbum createAlbum(long userID, String title, int year, String image, EntitySong song) {
 
@@ -70,13 +66,11 @@ public class AlbumUtils {
     public static boolean deleteAlbum(long albumID) {
     	boolean OK = true;
         Transaction transaction = null;
-        EntityAlbum entityAlbum;
         try (Session session = HibernateUtils.getSessionFactory().openSession()) {
             transaction = session.getTransaction();
             transaction.begin();
 
             session.createQuery("DELETE FROM album WHERE album_id = "+ albumID);
-            session.save();
 
             transaction.commit();
 
@@ -86,7 +80,7 @@ public class AlbumUtils {
             }
             OK = false;
         }
-
+        return OK;
     }
 
 }
