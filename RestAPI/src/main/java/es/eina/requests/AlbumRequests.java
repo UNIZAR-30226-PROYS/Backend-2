@@ -9,10 +9,8 @@ import es.eina.utils.StringUtils;
 
 import org.json.JSONObject;
 
-import javax.ws.rs.GET;
+import javax.ws.rs.*;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 @Path("/albums/")
@@ -88,7 +86,7 @@ public class AlbumRequests {
 	 *
      * @return The result of this request.
      */
-    @PATH("/{albumID}")
+    @Path("/{albumID}")
     @DELETE
     public String deleteAlbum(@PathParam("albumID") long albumID){
     	JSONObject obj = new JSONObject();
