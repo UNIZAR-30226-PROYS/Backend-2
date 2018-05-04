@@ -3,6 +3,7 @@ package es.eina;
 
 import es.eina.search.Index;
 import es.eina.search.IndexProduct;
+import es.eina.search.IndexSongs;
 import es.eina.sql.MySQLConnection;
 
 import java.util.logging.Logger;
@@ -14,6 +15,7 @@ public class RestApp {
     private static MySQLConnection sql = new MySQLConnection("dev.langelp.net", "postgres", "Admin123", "postgres");
 	private final Logger logger = Logger.getLogger("webLogger");
 	private static final Index index = new IndexProduct();
+	private static final IndexSongs songsIndex = new IndexSongs();
 
 	public RestApp() {
 		instance = this;
@@ -35,5 +37,9 @@ public class RestApp {
 
 	public static Index getIndex() {
 		return index;
+	}
+
+	public static IndexSongs getSongsIndex() {
+		return songsIndex;
 	}
 }

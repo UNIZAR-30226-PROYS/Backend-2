@@ -1,19 +1,27 @@
 package es.eina.requests;
 
+import es.eina.RestApp;
 import es.eina.cache.SongCache;
 import es.eina.geolocalization.Geolocalizer;
+import es.eina.search.IndexProduct;
+import es.eina.search.IndexSongs;
 import es.eina.sql.entities.EntitySong;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.search.ScoreDoc;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 @Path("/songs/")
 @Produces(MediaType.APPLICATION_JSON)
 public class SongRequests {
+
+    private static final int SONG_SEARCH_NUMBER = 10;
+    private static final long SONG_SEARCH_MIN_TIME = 0;
+    private static final long SONG_SEARCH_MAX_TIME = Long.MAX_VALUE;
 
     private static final JSONObject defaultSongJSON;
 
@@ -41,6 +49,64 @@ public class SongRequests {
 
         obj.put("song", songJSON);
 
+        return obj.toString();
+    }
+
+    /**
+     * Perform a search of products in the database.<br>
+     *     <p>
+     *         URI: /products/search/?keywords=[&n={number}][&category={category}][&min_price={min_price}][&max_price={max_price}]
+     *     </p>
+     * @param number : Number of results to return
+     * @param keywords : Keywords to search
+     * @return The result of this search as specified in API.
+     */
+    @Path("/search")
+    @GET
+    public String searchProducts(
+            @DefaultValue("" + SONG_SEARCH_NUMBER) @QueryParam("n") int number,
+            @DefaultValue("") @QueryParam("query") String keywords,
+            @DefaultValue("") @QueryParam("country") String country,
+            @DefaultValue("") @QueryParam("genre") String genre,
+            @DefaultValue("" + SONG_SEARCH_MIN_TIME) @QueryParam("min_time") long minTime,
+            @DefaultValue("" + SONG_SEARCH_MAX_TIME) @QueryParam("max_time") long maxTime
+    ){
+        minTime = Math.max(SONG_SEARCH_MIN_TIME, minTime);
+
+        JSONObject obj = new JSONObject();
+        JSONObject searchParams = new JSONObject();
+        JSONArray songs = new JSONArray();
+
+        searchParams.put("keywords", keywords);
+        searchParams.put("min_price", minTime);
+        searchParams.put("max_price", maxTime);
+
+        IndexSongs index = RestApp.getSongsIndex();
+        index.setSearchParams(genre, country, minTime, maxTime);
+        List<ScoreDoc> result = index.search(keywords, number);
+
+        if(result != null) {
+            for (ScoreDoc score : result) {
+                Document doc = index.getDocument(score.doc);
+                float luceneScore = score.score;
+
+                JSONObject product = new JSONObject(defaultSongJSON, JSONObject.getNames(defaultSongJSON));
+                product.put("id", doc.get(IndexSongs.ID_INDEX_COLUMN));
+                product.put("title", doc.get(IndexSongs.TITLE_INDEX_COLUMN));
+                product.put("user_id", doc.get(IndexSongs.AUTHOR_ID_INDEX_COLUMN));
+                product.put("country", doc.get(IndexSongs.COUNTRY_INDEX_COLUMN));
+                product.put("upload_time", doc.get(IndexSongs.UPLOAD_TIME_INDEX_COLUMN));
+                product.put("score", luceneScore);
+
+                songs.put(product);
+            }
+            obj.put("number", result.size());
+        }else{
+            obj.put("number", 0);
+        }
+
+        obj.put("params", searchParams);
+        obj.put("songs", songs);
         return obj.toString();
     }
 

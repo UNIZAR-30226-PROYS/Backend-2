@@ -14,11 +14,11 @@ import java.util.List;
 
 public class IndexSongs extends Index {
 
-    private static final String ID_INDEX_COLUMN = "id";
-    private static final String AUTHOR_ID_INDEX_COLUMN = "author_id";
-    private static final String TITLE_INDEX_COLUMN = "title";
-    private static final String COUNTRY_INDEX_COLUMN = "country";
-    private static final String UPLOAD_TIME_INDEX_COLUMN = "upload_time";
+    public static final String ID_INDEX_COLUMN = "id";
+    public static final String AUTHOR_ID_INDEX_COLUMN = "author_id";
+    public static final String TITLE_INDEX_COLUMN = "title";
+    public static final String COUNTRY_INDEX_COLUMN = "country";
+    public static final String UPLOAD_TIME_INDEX_COLUMN = "upload_time";
 
     private static final QueryParser queryParserTitle = new QueryParser(Version.LUCENE_40, TITLE_INDEX_COLUMN, indexAnalyzer);
     //private static final QueryParser queryParserGenre = new QueryParser(Version.LUCENE_40, , indexAnalyzer);
@@ -71,12 +71,15 @@ public class IndexSongs extends Index {
 
             NumericRangeQuery uploadTimeQuery = NumericRangeQuery.newLongRange(UPLOAD_TIME_INDEX_COLUMN, minTime, maxTime, true, true);
             Query queryParsedTitle = queryParserTitle.parse(query);
-            Query queryParsedCountry = queryParserCountry.parse(country);
 
             BooleanQuery finalQuery = new BooleanQuery();
             finalQuery.add(queryParsedTitle, BooleanClause.Occur.MUST);
-            finalQuery.add(queryParsedCountry, BooleanClause.Occur.MUST);
             finalQuery.add(uploadTimeQuery, BooleanClause.Occur.MUST);
+
+            if(country != null && !country.isEmpty()){
+                Query queryParsedCountry = queryParserCountry.parse(country);
+                finalQuery.add(queryParsedCountry, BooleanClause.Occur.MUST);
+            }
 
             TopDocs result = searcher.search(finalQuery, searchAmount);
             return Arrays.asList(result.scoreDocs);
