@@ -68,7 +68,7 @@ public class IndexProduct extends Index {
         commitDataToIndex();
     }
 
-    public List<ScoreDoc> search(String query, float minPrice, float maxPrice, int searchAmount, Object extraData) {
+    public List<ScoreDoc> search(String query, int searchAmount) {
         try {
             IndexSearcher searcher = new IndexSearcher(getReader());
             Query queryName = queryParserName.parse(query);

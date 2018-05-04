@@ -2,11 +2,9 @@ package es.eina;
 
 
 import es.eina.search.Index;
-import es.eina.search.IndexPriceAndProduct;
 import es.eina.search.IndexProduct;
 import es.eina.sql.MySQLConnection;
 
-import java.io.File;
 import java.util.logging.Logger;
 
 public class RestApp {

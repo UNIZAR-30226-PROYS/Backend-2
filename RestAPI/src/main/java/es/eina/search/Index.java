@@ -177,13 +177,10 @@ public abstract class Index {
     /**
      * Perform a search
      * @param query : Query keywords
-     * @param minPrice : Minimum price
-     * @param maxPrice : Maximum price
      * @param searchAmount : Maximum amount of results
-     * @param extraData : Extra object containing data or null.
      * @return A list of all results queried matching the parameters.
      */
-    public abstract List<ScoreDoc> search(String query, float minPrice, float maxPrice, int searchAmount, Object extraData);
+    public abstract List<ScoreDoc> search(String query, int searchAmount);
 
 
     /**
