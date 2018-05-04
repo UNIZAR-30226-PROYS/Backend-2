@@ -72,7 +72,7 @@ public class ProductRequests {
         searchParams.put("min_price", minPrice);
         searchParams.put("max_price", maxPrice);
 
-		List<ScoreDoc> result = RestApp.getIndex().search(keywords, minPrice, maxPrice, number, null);
+		List<ScoreDoc> result = RestApp.getIndex().search(keywords, number);
 		Index index = RestApp.getIndex();
 
 		if(result != null) {
