@@ -39,7 +39,7 @@ public class EntitySongList extends EntityBase{
         update();
     }
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
