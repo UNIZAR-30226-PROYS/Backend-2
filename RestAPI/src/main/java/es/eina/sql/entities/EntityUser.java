@@ -1,11 +1,8 @@
 package es.eina.sql.entities;
 
 import es.eina.crypt.Crypter;
-import es.eina.sql.utils.HibernateUtils;
 import es.eina.utils.StringUtils;
 import es.eina.utils.UserUtils;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
 import org.hibernate.annotations.NaturalId;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -166,7 +163,7 @@ public class EntityUser extends EntityBase {
         return -2;
     }
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
