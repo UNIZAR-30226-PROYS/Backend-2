@@ -1,6 +1,8 @@
 package es.eina.sql.entities;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity(name="song")
 @Table(name="songs")
@@ -25,6 +27,9 @@ public class EntitySong extends EntityBase {
     @ManyToOne
     @JoinColumn(name = "user_id", insertable=false, updatable=false)
     private EntityUser user;
+
+    @ManyToMany (mappedBy = "song_list")
+    private Set<EntitySongList> lists = new HashSet<>();
 
 
     /**

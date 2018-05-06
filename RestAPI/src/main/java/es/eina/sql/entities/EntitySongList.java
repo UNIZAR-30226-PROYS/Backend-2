@@ -1,6 +1,9 @@
 package es.eina.sql.entities;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity(name="song_list")
 @Table(name="user_song_lists")
@@ -24,6 +27,14 @@ public class EntitySongList extends EntityBase{
     @ManyToOne
     @JoinColumn(name = "author_id", insertable=false, updatable=false)
     private EntityUser author;
+
+    @ManyToMany
+    @JoinTable(
+            name = "song_list_songs",
+            joinColumns = { @JoinColumn(name = "list_id")},
+            inverseJoinColumns = {@JoinColumn(name = "song_id")}
+    )
+    Set<EntitySong> songs = new HashSet<>();
 
     /**
      * DO NOT use this method as it can only be used by Hibernate
@@ -53,5 +64,12 @@ public class EntitySongList extends EntityBase{
 
     public Long getCreationTime() {
         return creationTime;
+    }
+
+    public void addSong(EntitySong song){
+        this.songs.add(song);
+    }
+    public void removeSong(EntitySong song){
+        this.songs.remove(song);
     }
 }
