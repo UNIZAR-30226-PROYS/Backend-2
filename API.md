@@ -11,6 +11,8 @@
  - [POST /users/{nick}/verify](#post-usersnickverify)
 
  - [GET /songs/{id}](#get-songsid)
+ - [GET /songs/popular/?n={amount}](#get-songspopularnamount)
+ - [GET /songs/popular/{country}?n={amount}](#get-songspopularcountrynamount)
 
 ## Requests
 
@@ -348,3 +350,98 @@ Types:
 | *"country"* | String |
 | *"upload_time"* | Long |
 | *"error"* | String |
+
+#### GET /songs/popular?n={amount}
+
+This requests gets the data of a all popular songs. A popular song is the song with more likes and, if two songs have the same amount of likes, the one with more reproductions.
+
+Accepts the following parameters in an HTTP GET request:
+  - n => Max amount of results to retrieve. Parameter n must be inside [0, 50] bounds.
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "songs" : [
+      "{SongItem}"
+    ],
+    "results" : "{RESULT_AMOUNT}"
+  }
+```
+where SongItem is
+```json
+  {
+    "id" : "{ID}",
+    "user_id" : "{AUTHOR}",
+    "title" : "{TITLE}",
+    "country" : "{COUNTRY}",
+    "upload_time" : "{TIME}",
+    "likes" : "{LIKES}",
+    "reproductions" : "{REPRODUCTIONS}"
+  }
+```
+
+*"country"* contains the 2 character ISO Code specified in ISO_3166-1
+
+*"results"* contain the actual number of songs retrieved from DataBase. It's lower or equal than *"n"*.
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"songs"* | SongItem |
+| *"results"* | Integer |
+| *"id"* | Long |
+| *"user_id"* | Long |
+| *"title"* | String |
+| *"country"* | String |
+| *"upload_time"* | Long |
+| *"likes"* | Integer |
+| *"reproductions"* | Integer |
+
+#### GET /songs/popular/{country}?n={amount}
+
+This requests gets the data of a all popular songs. A popular song is the song with more likes and, if two songs have the same amount of likes, the one with more reproductions.
+
+Accepts the following parameters in an HTTP GET request:
+  - n => Max amount of results to retrieve. Parameter n must be inside [0, 50] bounds.
+  - country => The only country to retrieve songs from.
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "songs" : [
+      "{SongItem}"
+    ],
+    "results" : "{RESULT_AMOUNT}"
+  }
+```
+where SongItem is
+```json
+  {
+    "id" : "{ID}",
+    "user_id" : "{AUTHOR}",
+    "title" : "{TITLE}",
+    "country" : "{COUNTRY}",
+    "upload_time" : "{TIME}",
+    "likes" : "{LIKES}",
+    "reproductions" : "{REPRODUCTIONS}"
+  }
+```
+
+*"country"* contains the 2 character ISO Code specified in ISO_3166-1
+
+*"results"* contain the actual number of songs retrieved from DataBase. It's lower or equal than *"n"*.
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"songs"* | SongItem |
+| *"results"* | Integer |
+| *"id"* | Long |
+| *"user_id"* | Long |
+| *"title"* | String |
+| *"country"* | String |
+| *"upload_time"* | Long |
+| *"likes"* | Integer |
+| *"reproductions"* | Integer |
