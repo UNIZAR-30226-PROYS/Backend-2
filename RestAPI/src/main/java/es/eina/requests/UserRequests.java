@@ -42,7 +42,6 @@ public class UserRequests {
     private static final JSONObject defaultCommentJSON;
 
     private static final EmailValidator mailValidator = EmailValidator.getInstance();
-
     /**
      * Try login a user in the system.
      * <p>
