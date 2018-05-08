@@ -6,15 +6,14 @@ import es.eina.geolocalization.Geolocalizer;
 import es.eina.sql.entities.EntitySong;
 import org.json.JSONObject;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 @Path("/songs/")
 @Produces(MediaType.APPLICATION_JSON)
 public class SongRequests {
+
+    private static final int MAX_POPULAR_SONGS = 50;
 
     private static final JSONObject defaultSongJSON;
 
@@ -47,14 +46,16 @@ public class SongRequests {
 
     @Path("/popular/")
     @GET
-    public String getPopularSongs(){
-        return PopularSongCache.getPopularSongs().toString();
+    public String getPopularSongs(@QueryParam("n") @DefaultValue("" + MAX_POPULAR_SONGS) int amount){
+        amount = Math.max(0, Math.min(MAX_POPULAR_SONGS, amount));
+        return PopularSongCache.getPopularSongs(amount).toString();
     }
 
     @Path("/popular/{country}/")
     @GET
-    public String getPopularSongs(@PathParam("country") String country){
-        return PopularSongCache.getPopularSongs(country).toString();
+    public String getPopularSongs(@PathParam("country") String country, @QueryParam("n") @DefaultValue("" + MAX_POPULAR_SONGS) int amount){
+        amount = Math.max(0, Math.min(MAX_POPULAR_SONGS, amount));
+        return PopularSongCache.getPopularSongs(amount, country).toString();
     }
 
     static {

@@ -24,7 +24,7 @@ public class PopularSongCache {
             "     song_id AS repr_sid FROM song_reproductions GROUP BY song_id) r\n" +
             "    ON r.repr_sid = s.id\n";
     private static final String SQL_QUERY_AFTER = "  ORDER BY likes DESC, reprs DESC\n" +
-            "  LIMIT 50;";
+            "  LIMIT ";
     private static final String FULL_QUERY = SQL_QUERY_BEFORE + SQL_QUERY_AFTER;
 
     private static JSONObject parseResult(Query q){
@@ -45,19 +45,19 @@ public class PopularSongCache {
         return obj;
     }
 
-    public static JSONObject getPopularSongs(){
+    public static JSONObject getPopularSongs(int amount){
         try(Session s = HibernateUtils.getSessionFactory().openSession()){
-            Query q = s.createSQLQuery(FULL_QUERY);
+            Query q = s.createSQLQuery(FULL_QUERY + amount + ";");
             //query.setResultTransformer(Transformers.aliasToBean(LogEntry.class))
             return parseResult(q);
         }
     }
 
-    public static JSONObject getPopularSongs(String country){
+    public static JSONObject getPopularSongs(int amount, String country){
         if(country == null || country.length() != 2) country = Geolocalizer.DEFAULT_COUNTRY;
 
         try(Session s = HibernateUtils.getSessionFactory().openSession()){
-            Query q = s.createSQLQuery(SQL_QUERY_BEFORE + " WHERE s.country = '"+country+"' " + SQL_QUERY_AFTER);
+            Query q = s.createSQLQuery(SQL_QUERY_BEFORE + " WHERE s.country = '"+country+"' " + SQL_QUERY_AFTER + amount + ";");
             //query.setResultTransformer(Transformers.aliasToBean(LogEntry.class))
             return parseResult(q);
         }
