@@ -1,6 +1,7 @@
 package es.eina.requests;
 
 import es.eina.RestApp;
+import es.eina.cache.PopularSongCache;
 import es.eina.cache.UserCache;
 import es.eina.geolocalization.Geolocalizer;
 import es.eina.sql.MySQLConnection;
@@ -253,6 +254,39 @@ public class UserRequests {
                         }else{
                             obj.put("error", "noPermission");
                         }
+                    }else{
+                        obj.put("error", "invalidToken");
+                    }
+                }else{
+                    obj.put("error", "closedSession");
+                }
+            }else{
+                obj.put("error", "unknownUser");
+            }
+        }else{
+            obj.put("error", "invalidArgs");
+        }
+
+        return obj.toString();
+    }
+
+    @Path("/{nick}/popular_songs")
+    @POST
+    public String verifyAccount(@PathParam("nick") String nick,
+                                @DefaultValue("") @FormParam("token") String token,
+                                @DefaultValue("" + SongRequests.MAX_POPULAR_SONGS) @QueryParam("n") int amount){
+        JSONObject obj = new JSONObject();
+
+        if(StringUtils.isValid(nick) && StringUtils.isValid(token)){
+            EntityUser user = UserCache.getUser(nick);
+            if(user != null){
+                EntityToken userToken = user.getToken();
+                if(userToken != null){
+                    if(userToken.isValid(token)){
+                        amount = Math.max(0, Math.min(SongRequests.MAX_POPULAR_SONGS, amount));
+                        obj = PopularSongCache.getPopularSongs(amount, user.getCountry());
+                        obj.put("error", "ok");
+                        return obj.toString();
                     }else{
                         obj.put("error", "invalidToken");
                     }

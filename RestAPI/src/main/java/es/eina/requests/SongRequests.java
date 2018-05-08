@@ -13,7 +13,7 @@ import javax.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 public class SongRequests {
 
-    private static final int MAX_POPULAR_SONGS = 50;
+    public static final int MAX_POPULAR_SONGS = 50;
 
     private static final JSONObject defaultSongJSON;
 
