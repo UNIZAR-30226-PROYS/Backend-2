@@ -1,9 +1,11 @@
 package es.eina.cache;
 
-import es.eina.sql.entities.EntitySong;
+import es.eina.geolocalization.Geolocalizer;
 import es.eina.sql.utils.HibernateUtils;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.List;
 
@@ -25,10 +27,65 @@ public class PopularSongCache {
             "  LIMIT 50;";
     private static final String FULL_QUERY = SQL_QUERY_BEFORE + SQL_QUERY_AFTER;
 
-    public static void getPopularSongs(){
+    private static JSONObject parseResult(Query q){
+        JSONObject obj = new JSONObject();
+        List data = q.getResultList();
+        JSONArray array = new JSONArray();
+        for (Object rawCols: data) {
+            Object[] cols = (Object[]) rawCols;
+            JSONObject song = new JSONObject();
+            for (EnumPopularSongValues key: EnumPopularSongValues.values()) {
+                song.put(key.getColumn(), cols[key.getId()]);
+            }
+            array.put(song);
+        }
+
+        obj.put("songs", array);
+        obj.put("results", data.size());
+        return obj;
+    }
+
+    public static JSONObject getPopularSongs(){
         try(Session s = HibernateUtils.getSessionFactory().openSession()){
             Query q = s.createSQLQuery(FULL_QUERY);
-            System.out.println(q.list().getClass());
+            //query.setResultTransformer(Transformers.aliasToBean(LogEntry.class))
+            return parseResult(q);
+        }
+    }
+
+    public static JSONObject getPopularSongs(String country){
+        if(country == null || country.length() != 2) country = Geolocalizer.DEFAULT_COUNTRY;
+
+        try(Session s = HibernateUtils.getSessionFactory().openSession()){
+            Query q = s.createSQLQuery(SQL_QUERY_BEFORE + " WHERE s.country = '"+country+"' " + SQL_QUERY_AFTER);
+            //query.setResultTransformer(Transformers.aliasToBean(LogEntry.class))
+            return parseResult(q);
+        }
+    }
+
+    private enum EnumPopularSongValues {
+        ID(0, "id"),
+        USER_ID(1, "user_id"),
+        TITLE(2, "title"),
+        COUNTRY(3, "country"),
+        UPLOAD_TIME(4, "upload_time"),
+        LIKES(5, "likes"),
+        REPR(6, "reproductions");
+
+        private int id;
+        private String column;
+
+        EnumPopularSongValues(int id, String column){
+            this.id = id;
+            this.column = column;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public String getColumn() {
+            return column;
         }
     }
 }
