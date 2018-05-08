@@ -1,5 +1,6 @@
 package es.eina.requests;
 
+import es.eina.cache.PopularSongCache;
 import es.eina.cache.SongCache;
 import es.eina.geolocalization.Geolocalizer;
 import es.eina.sql.entities.EntitySong;
@@ -42,6 +43,18 @@ public class SongRequests {
         obj.put("song", songJSON);
 
         return obj.toString();
+    }
+
+    @Path("/popular/")
+    @GET
+    public String getPopularSongs(){
+        return PopularSongCache.getPopularSongs().toString();
+    }
+
+    @Path("/popular/{country}/")
+    @GET
+    public String getPopularSongs(@PathParam("country") String country){
+        return PopularSongCache.getPopularSongs(country).toString();
     }
 
     static {
