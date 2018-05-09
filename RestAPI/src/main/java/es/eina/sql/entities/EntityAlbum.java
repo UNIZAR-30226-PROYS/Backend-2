@@ -8,8 +8,8 @@ import java.util.*;
 public class EntityAlbum extends EntityBase {
 
     @Id
-    @Column(name = "album_id",nullable = false)
-    private long AlbumId;
+    @Column(name = "id",nullable = false)
+    private long id;
 
     @Column(name = "user_id",nullable = false)
     private long userId;
@@ -28,7 +28,7 @@ public class EntityAlbum extends EntityBase {
 
     @OneToMany(mappedBy = "album")
     @JoinColumn(name = "id", insertable=false, updatable=false)
-    private LinkedList<EntitySong> songs;
+    Set<EntitySong> songs = new HashSet<>();
 
 
     /**
@@ -36,14 +36,12 @@ public class EntityAlbum extends EntityBase {
      */
     public EntityAlbum(){update();}
 
-    public EntityAlbum(long AlbumId, long userId, String title, int year, String image, EntitySong song) {
-    	
-        this.AlbumId = AlbumId;
-        this.userId = userId;
+    public EntityAlbum(EntityUser user, String title, int year, String image) {
+
+        this.userId = user.getId();
         this.title = title;
         this.publishYear = year;
         this.image = image;
-        this.songs.add(song);
         this.uploadTime = System.currentTimeMillis();
 
         update();
@@ -88,7 +86,7 @@ public class EntityAlbum extends EntityBase {
     }
     
     public long getAlbumId() {
-        return AlbumId;
+        return id;
     }
 
     public long getUserId() {
@@ -111,15 +109,13 @@ public class EntityAlbum extends EntityBase {
         return image;
     }
     
-    public LinkedList<EntitySong> getSongs() {
+    public Set<EntitySong> getSongs() {
     	return songs;
     }
     
     public String getSongStrings() {
-    	int limit = songs.size(); 
     	String s = "";
-    	for (int i = 0; i < limit; i++) {
-    		EntitySong song = songs.get(i);
+    	for (EntitySong song: songs) {
     		s = s + Long.toString(song.getId()) + " , ";
     	}
     	return s;

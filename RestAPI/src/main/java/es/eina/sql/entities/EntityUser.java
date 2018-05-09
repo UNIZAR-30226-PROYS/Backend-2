@@ -13,6 +13,7 @@ import org.json.JSONObject;
 import javax.persistence.*;
 import javax.persistence.Entity;
 import java.sql.Date;
+import java.util.*;
 
 @Entity(name="user")
 @Table(name="users")
@@ -54,6 +55,34 @@ public class EntityUser extends EntityBase {
     @OneToOne(mappedBy = "user")
     private EntityUserValues userValues;
 
+    @OneToMany(mappedBy = "user")
+    @JoinColumn(name = "id", insertable=false, updatable=false)
+    Set<EntitySong> songs = new HashSet<>();
+
+    @ManyToMany(mappedBy = "user")
+    @JoinTable(
+        name = "user_liked_songs",
+        joinColumns = { @JoinColumn(name = "user_id")},
+        inverseJoinColumns = {@JoinColumn(name = "song_id")}
+    )
+    Set<EntitySong> songsLiked = new HashSet<>();
+
+    @ManyToMany(mappedBy = "user")
+    @JoinTable(
+            name = "user_faved_songs",
+            joinColumns = { @JoinColumn(name = "user_id")},
+            inverseJoinColumns = {@JoinColumn(name = "song_id")}
+    )
+    Set<EntitySong> songsFaved = new HashSet<>();
+/*
+    @ManyToMany(mappedBy = "user")
+    @JoinTable(
+            name = "user_listened_songs",
+            joinColumns = { @JoinColumn(name = "user_id")},
+            inverseJoinColumns = {@JoinColumn(name = "song_id")}
+    )
+    Stack<EntitySong> songsListened = new Stack<>();
+*/
     /**
      * DO NOT use this method as it can only be used by Hibernate
      */
@@ -217,4 +246,32 @@ public class EntityUser extends EntityBase {
     public boolean isVerified() {
         return userValues != null && userValues.isVerified();
     }
+
+    public Set<EntitySong> getSongs() {
+        return songs;
+    }
+
+    public String getSongStrings() {
+        String s = "";
+        for (EntitySong song: songs) {
+            s = s + Long.toString(song.getId()) + " , ";
+        }
+        return s;
+    }
+
+    public long getSongCounter(){ return this.songs.size();}
+
+    public boolean isSongLiked(EntitySong song){ return this.songsLiked.contains(song); }
+
+    public boolean likeSong(EntitySong song){ return this.songsLiked.add(song); }
+
+    public boolean unlikeSong(EntitySong song){ return this.songsLiked.remove(song); }
+
+    public boolean isSongFaved(EntitySong song){ return this.songsFaved.contains(song); }
+
+    public boolean favSong(EntitySong song){ return this.songsFaved.add(song); }
+
+    public boolean unfavSong(EntitySong song){ return this.songsFaved.remove(song); }
+
+
 }
