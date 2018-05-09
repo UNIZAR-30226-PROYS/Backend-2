@@ -1,9 +1,12 @@
 package es.eina.requests;
 
+import es.eina.cache.AlbumCache;
 import es.eina.cache.SongCache;
+import es.eina.cache.UserCache;
 import es.eina.geolocalization.Geolocalizer;
 import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntityAlbum;
+import es.eina.sql.entities.EntityUser;
 import es.eina.utils.AlbumUtils;
 import es.eina.utils.StringUtils;
 
@@ -19,57 +22,62 @@ public class AlbumRequests {
 
     private static final JSONObject defaultAlbumJSON;
 
-    
+
     /**
      * Create a new album.
      *
-     * @param userID : ID from user author of album.
+     * @param nick : ID from user author of album.
+	 * @param userToken : User's token.
      * @param title : Given name for the new album.
      * @param image : path to the image resource used as album cover.
      * @param year : year of the original album release.
-     * @param songID : id of the first song of the album.
-     * 
+     *
      * @return The result of this request.
      */
+    @Path("{nick}/create")
     @POST
-    public String createAlbum(@FormParam("userID") long userID, @FormParam("title") String title,
-    		@FormParam("image") String image, @FormParam("year") int year, 
-    		@FormParam("songID") long songID){
-    	
+    public String create(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
+						 @FormParam("title") String title, @FormParam("image") String image,
+						 @FormParam("year") int year){
+
         JSONObject obj = new JSONObject();
         JSONObject albumJSON = new JSONObject(defaultAlbumJSON, JSONObject.getNames(defaultAlbumJSON));
 
-        if(userID > 0){
-        	if(StringUtils.isValid(title,1,255)) {
-        		if(StringUtils.isValid(image)) {
-        			if(year > 1900) {
-			            EntitySong song = SongCache.getSong(songID);
-			            if (song != null) {
-			            	EntityAlbum album = AlbumUtils.createAlbum(userID, title,  year, image, song);
-				            if(album != null){
-				            	albumJSON.put("id", album.getAlbumId());
-				            	albumJSON.put("user_id", album.getUserId());
-				            	albumJSON.put("title", album.getTitle());
-				            	albumJSON.put("publishYear", album.getPublishYear());
-				            	albumJSON.put("upload_time", album.getUploadTime());
-				            	albumJSON.put("image", album.getImage());
-				            	albumJSON.put("songs", album.getSongStrings());
-				                obj.put("error", "ok");
-				            }else {
-				            	obj.put("error", "AlbumCouldntBeCreated");
-				            }
-			            }else{
-			                obj.put("error", "unknownSong");
-			            }
-        			}else {
-        				obj.put("error", "invalidYear");
-        			}
-        		}else {
-        			obj.put("error", "invalidImage");
-        		}
-        	}else {
-        		obj.put("error", "invalidTitle");
-        	}
+		if(StringUtils.isValid(nick) && StringUtils.isValid(userToken) && StringUtils.isValid(title)){
+			EntityUser user = UserCache.getUser(nick);
+			if(user != null){
+				if (user.getToken() != null && user.getToken().isValid(userToken)) {
+					if(StringUtils.isValid(title,1,255)) {
+						if(StringUtils.isValid(image)) {
+							if(year > 1900) {
+								EntityAlbum album = AlbumUtils.createAlbum(user, title, year, image);
+								if(album != null && AlbumCache.saveEntity(album)){
+									albumJSON.put("id", album.getAlbumId());
+									albumJSON.put("user_id", album.getUserId());
+									albumJSON.put("title", album.getTitle());
+									albumJSON.put("publishYear", album.getPublishYear());
+									albumJSON.put("upload_time", album.getUploadTime());
+									albumJSON.put("image", album.getImage());
+									albumJSON.put("songs", album.getSongStrings());
+									obj.put("error", "ok");
+								}else {
+									obj.put("error", "unknownError");
+								}
+							}else {
+								obj.put("error", "invalidYear");
+							}
+						}else {
+							obj.put("error", "invalidImage");
+						}
+					}else {
+						obj.put("error", "invalidTitle");
+					}
+				} else {
+					obj.put("error", "invalidToken");
+				}
+			}else{
+				obj.put("error", "unknownUser");
+			}
         }else{
             obj.put("error", "invalidArgs");
         }
@@ -81,29 +89,44 @@ public class AlbumRequests {
 
     /**
      * Delete an album.
-     *
-     * @param albumID : ID from album to delete.
 	 *
-     * @return The result of this request.
+	 * @param nick : ID from user author of album.
+	 * @param userToken : User's token.
+	 * @param albumId : ID from the album.
+	 *
+	 * @return The result of this request.
      */
-    @Path("/{albumID}")
+    @Path("/{nick}/{albumID}/delete")
     @DELETE
-    public String deleteAlbum(@PathParam("albumID") long albumID){
+    public String delete(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
+						 @PathParam("albumID") long albumId){
     	JSONObject obj = new JSONObject();
-    	boolean OK;
-	    if(albumID > 0) {
-	    	OK = AlbumUtils.deleteAlbum(albumID);
-	    	if (OK) {
-	    		obj.put("error", "ok");
-	    	}else {
-	    		obj.put("error", "AlbumCouldntBeDeleted");
-	    	}
-    	}else{
-	        obj.put("error", "invalidAlbumID");
-    	}
-    	return obj.toString();
+
+		if(StringUtils.isValid(nick) && StringUtils.isValid(userToken)){
+			EntityUser user = UserCache.getUser(nick);
+			if(user != null){
+				if (user.getToken() != null && user.getToken().isValid(userToken)) {
+					EntityAlbum album = AlbumCache.getAlbum(albumId);
+					if (album != null) {
+						AlbumCache.deleteAlbum(album);
+						obj.put("error", "ok");
+					}else{
+						obj.put("error", "unknownAlbum");
+					}
+				} else {
+					obj.put("error", "invalidToken");
+				}
+			}else{
+				obj.put("error", "unknownUser");
+			}
+		}else{
+			obj.put("error", "invalidArgs");
+		}
+
+		return obj.toString();
+
     }
-    
+
     static {
     	defaultAlbumJSON = new JSONObject();
     	defaultAlbumJSON.put("id", -1L);

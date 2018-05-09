@@ -3,12 +3,10 @@ package es.eina.requests;
 import es.eina.cache.SongCache;
 import es.eina.geolocalization.Geolocalizer;
 import es.eina.sql.entities.EntitySong;
+import es.eina.sql.entities.EntityUser;
 import org.json.JSONObject;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 @Path("/songs/")
@@ -31,6 +29,31 @@ public class SongRequests {
                 songJSON.put("title", song.getTitle());
                 songJSON.put("country", song.getCountry());
                 songJSON.put("upload_time", song.getUploadTime());
+                obj.put("error", "ok");
+            }else{
+                obj.put("error", "unknownSong");
+            }
+        }else{
+            obj.put("error", "invalidArgs");
+        }
+
+        obj.put("song", songJSON);
+
+        return obj.toString();
+    }
+
+    @Path("/{id}/lyrics")
+    @GET
+    public String getSongLyrics(@PathParam("id") long id){
+        JSONObject obj = new JSONObject();
+        JSONObject songJSON = new JSONObject(defaultSongJSON, JSONObject.getNames(defaultSongJSON));
+
+        if(id > 0){
+            EntitySong song = SongCache.getSong(id);
+            if(song != null){
+                songJSON.put("id", song.getId());
+                songJSON.put("lyrics", song.getLyrics());
+
                 obj.put("error", "ok");
             }else{
                 obj.put("error", "unknownSong");

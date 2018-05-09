@@ -1,10 +1,14 @@
 package es.eina.requests;
 
 import es.eina.RestApp;
+import es.eina.cache.AlbumCache;
+import es.eina.cache.SongCache;
 import es.eina.cache.UserCache;
 import es.eina.geolocalization.Geolocalizer;
 import es.eina.sql.MySQLConnection;
 import es.eina.sql.MySQLQueries;
+import es.eina.sql.entities.EntityAlbum;
+import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntityToken;
 import es.eina.sql.entities.EntityUser;
 import es.eina.sql.parameters.SQLParameterInteger;
@@ -440,6 +444,65 @@ public class UserRequests {
 
         return object.toString();
     }
+
+    @Path("/{user}/songs")
+    @GET
+    public String getUserSongs(@PathParam("user") String user){
+        JSONObject obj = new JSONObject();
+        if(StringUtils.isValid(user)) {
+            EntityUser myuser = UserCache.getUser(user);
+            if (myuser != null) {
+                obj.put("id", myuser.getSongStrings());
+                obj.put("size", myuser.getSongCounter());
+                obj.put("error", "ok");
+            }else{
+                obj.put("error", "unknownUser");
+            }
+        }else {
+            obj.put("error", "invalidArgs");
+        }
+        return obj.toString();
+    }
+
+    /**
+     * Add a new song to user's list of listened songs
+     *
+     * @param nick  : Nickname of a user to create the list
+     * @param userToken : User private token.
+     * @param songId: Song's ID
+     *
+     * @return The result of this query as specified in API.
+     */
+    @Path("{nick}/listened-songs/add")
+    @POST
+    public String addListenedSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
+                      @FormParam("songId") long songId) {
+        JSONObject result = new JSONObject();
+        if(StringUtils.isValid(nick) && StringUtils.isValid(userToken)){
+            EntityUser user = UserCache.getUser(nick);
+            if(user != null){
+                if (user.getToken() != null && user.getToken().isValid(userToken)) {
+                    EntitySong song = SongCache.getSong(songId);
+                    if(song != null){
+//añadir cancion a algun sitio e incrementar escucha
+                    }else{
+                        result.put("error", "unknownSong");
+                    }
+                } else {
+                    result.put("error", "invalidToken");
+                }
+            }else{
+                result.put("error", "unknownUser");
+            }
+        }else{
+            result.put("error", "invalidArgs");
+        }
+
+        return result.toString();
+
+    }
+
+
 
     static {
         defaultUserJSON = new JSONObject();
