@@ -28,19 +28,23 @@ public class UserSongListRequests {
     /**
      * Create a new list
      * <p>
-     * URI: /user-lists/{nick}/create
+     * URI: /user-lists/{nick}/create/{title}
+     * {token:"token"}
      * </p>
      *
      * @param nick  : Nickname of a user to create the list
-     * @param userToken : User private token.
+     * @param Token : User private token.
      * @param title : List title
      * @return The result of this query as specified in API.
      */
-    @Path("{nick}/create")
+    @Path("{nick}/create/{title}")
+    @Consumes(MediaType.APPLICATION_JSON)
     @POST
-    public String create(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
-                         @FormParam("title") String title) {
+    public String create(@PathParam("nick") String nick, @DefaultValue("") String Token,
+                         @PathParam("title") String title) {
+        String userToken = (String) new JSONObject(Token).get("token");
         JSONObject result = new JSONObject();
+
         if(StringUtils.isValid(nick) && StringUtils.isValid(userToken) && StringUtils.isValid(title)){
             EntityUser user = UserCache.getUser(nick);
             if(user != null){
@@ -68,6 +72,7 @@ public class UserSongListRequests {
      * Get all list from a user
      * <p>
      * URI: /user-lists/{nick}/lists
+     * {token:"token"}
      * </p>
      *
      * @param nick  : Nickname of a user to create the list
@@ -102,18 +107,21 @@ public class UserSongListRequests {
      * Delete a list
      * <p>
      * URI: /user-lists/{nick}/{list}/delete
+     * {token:"token"}
      * </p>
      *
      *
      * @param nick  : Nickname of a user to create the list
-     * @param userToken : User private token.
+     * @param Token : User private token.
      * @param  listId: List ID
      * @return The result of this query as specified in API.
      */
     @Path("{nick}/{listId}/delete")
+    @Consumes(MediaType.APPLICATION_JSON)
     @POST
-    public String delete(@FormParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
+    public String delete(@PathParam("nick") String nick, @DefaultValue("") String Token,
                          @PathParam("listId") long listId) {
+        String userToken = (String) new JSONObject(Token).get("token");
         JSONObject result = new JSONObject();
         if(StringUtils.isValid(nick) && StringUtils.isValid(userToken)){
             EntityUser user = UserCache.getUser(nick);
@@ -137,20 +145,23 @@ public class UserSongListRequests {
     /**
      * Delete a list
      * <p>
-     * URI: /user-lists/{nick}/{list}/add
+     * URI: /user-lists/{nick}/{list}/add/{songID}
+     * {token:"token"}
      * </p>
      *
      *
      * @param nick  : Nickname of a user to create the list
-     * @param userToken : User private token.
+     * @param Token : User private token.
      * @param listId: Id de la lista
      * @param songsId: Lista de ids de las canciones a añadir
      * @return The result of this query as specified in API.
      */
-    @Path("{nick}/{listId}/add")
+    @Path("{nick}/{listId}/add/{songID}")
+    @Consumes(MediaType.APPLICATION_JSON)
     @POST
-    public String add(@FormParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
+    public String add(@PathParam("nick") String nick, @DefaultValue("") String Token,
                          @PathParam("listId") long listId, @FormParam("songId") List<Long> songsId) {
+        String userToken = (String) new JSONObject(Token).get("token");
         JSONObject result = new JSONObject();
         if(StringUtils.isValid(nick) && StringUtils.isValid(userToken)){
             EntityUser user = UserCache.getUser(nick);
@@ -184,20 +195,23 @@ public class UserSongListRequests {
     /**
      * Delete a list
      * <p>
-     * URI: /user-lists/{nick}/{list}/add
+     * URI: /user-lists/{nick}/{listId}/remove/{songId}
+     * {token:"token"}
      * </p>
      *
      *
      * @param nick  : Nickname of a user to create the list
-     * @param userToken : User private token.
+     * @param Token : User private token.
      * @param listId: Id de la lista
      * @param songsId: Lista de ids de las canciones a añadir
      * @return The result of this query as specified in API.
      */
-    @Path("{nick}/{listId}/remove")
+    @Path("{nick}/{listId}/remove/{songId}")
+    @Consumes(MediaType.APPLICATION_JSON)
     @POST
-    public String remove(@FormParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
-                      @PathParam("listId") long listId, @FormParam("songId") List<Long> songsId) {
+    public String remove(@PathParam("nick") String nick, @DefaultValue("") String Token,
+                      @PathParam("listId") long listId, @PathParam("songId") List<Long> songsId) {
+        String userToken = (String) new JSONObject(Token).get("token");
         JSONObject result = new JSONObject();
         if(StringUtils.isValid(nick) && StringUtils.isValid(userToken)){
             EntityUser user = UserCache.getUser(nick);
@@ -228,7 +242,5 @@ public class UserSongListRequests {
         return result.toString();
 
     }
-
-
 
 }
