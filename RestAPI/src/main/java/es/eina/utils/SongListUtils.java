@@ -1,5 +1,6 @@
 package es.eina.utils;
 
+import es.eina.cache.SongListCache;
 import es.eina.cache.UserCache;
 import es.eina.crypt.Crypter;
 import es.eina.sql.entities.EntitySongList;
@@ -30,8 +31,6 @@ public class SongListUtils {
             session.save(entitySongList);
 
             transaction.commit();
-
-            UserCache.addUser(entitySongList);
         } catch (Exception e) {
             if (transaction != null) {
                 transaction.rollback();

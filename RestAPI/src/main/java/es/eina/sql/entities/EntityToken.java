@@ -60,4 +60,9 @@ public class EntityToken extends EntityBase{
     public boolean isValid(String token) {
         return time >= System.currentTimeMillis() && this.token.equals(token);
     }
+
+    @Override
+    public long getId() {
+        return user_id;
+    }
 }

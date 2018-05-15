@@ -61,4 +61,9 @@ public class EntityUserValues extends EntityBase{
     public boolean cleanUp() {
         return verified || admin;
     }
+
+    @Override
+    public long getId() {
+        return userId;
+    }
 }
