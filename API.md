@@ -11,6 +11,7 @@
  - [POST /users/{nick}/verify](#post-usersnickverify)
 
  - [GET /songs/{id}](#get-songsid)
+ - [POST /user-lists/{nick}/create](#post-user-listsnickcreate)
 
 ## Requests
 
@@ -348,3 +349,65 @@ Types:
 | *"country"* | String |
 | *"upload_time"* | Long |
 | *"error"* | String |
+
+### **/user-lists/**
+
+#### POST /user-lists/{nick}/create
+
+This requests creates a new song list whose author is {nick}.
+
+Accepts the following parameters in an HTTP POST request:
+  - nick => User nick.
+  - token => User token
+  - title => Song list title
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "error" : "{ERROR_CODE}"
+  }
+```
+
+Other {ERROR_CODE}s are:
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| invalidArgs | *token* or *title* is null or empty. |
+| unknownUser | No user is registered with that nick. |
+| invalidToken | Cannot authenticate this user. |
+| unexpectedError | An unknown error happened. |
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"error"* | String |
+
+#### GET /user-lists/{nick}/lists
+
+This request returns all the song lists whose author is {nick}.
+
+Accepts the following parameters in an HTTP POST request:
+  - nick => User nick.
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "size" : "{SONG_LIST_LENGTH}",
+    "error" : "{ERROR_CODE}"
+  }
+```
+
+Other {ERROR_CODE}s are:
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| invalidArgs | *token* or *title* is null or empty. |
+| unknownUser | No user is registered with that nick. |
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"error"* | String |
+| *"size"* | Long |

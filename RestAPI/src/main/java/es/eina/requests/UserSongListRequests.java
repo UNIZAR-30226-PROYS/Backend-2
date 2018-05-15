@@ -2,7 +2,6 @@ package es.eina.requests;
 
 import es.eina.cache.SongListCache;
 import es.eina.cache.UserCache;
-import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntitySongList;
 import es.eina.sql.entities.EntityUser;
 import es.eina.utils.StringUtils;
@@ -15,7 +14,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 @Path("/user-lists/")
 @Produces(MediaType.APPLICATION_JSON)

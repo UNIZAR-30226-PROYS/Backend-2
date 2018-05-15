@@ -63,6 +63,6 @@ public class EntityToken extends EntityBase{
 
     @Override
     public long getId() {
-        return 0;
+        return user_id;
     }
 }

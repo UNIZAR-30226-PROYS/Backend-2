@@ -64,6 +64,6 @@ public class EntityUserValues extends EntityBase{
 
     @Override
     public long getId() {
-        return 0;
+        return userId;
     }
 }
