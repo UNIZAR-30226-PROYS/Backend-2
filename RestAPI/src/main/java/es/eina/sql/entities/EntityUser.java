@@ -73,15 +73,15 @@ public class EntityUser extends EntityBase {
             inverseJoinColumns = {@JoinColumn(name = "song_id")}
     )
     Set<EntitySong> songsFaved = new HashSet<>();
-/*
-    @ManyToMany(mappedBy = "user")
+
+    @ManyToMany()
     @JoinTable(
             name = "user_listened_songs",
             joinColumns = { @JoinColumn(name = "user_id")},
             inverseJoinColumns = {@JoinColumn(name = "song_id")}
     )
-    Stack<EntitySong> songsListened = new Stack<>();
-*/
+    LinkedList<EntitySong> songsListened = new LinkedList<>();
+
     /**
      * DO NOT use this method as it can only be used by Hibernate
      */
@@ -270,7 +270,9 @@ public class EntityUser extends EntityBase {
 
     public boolean favSong(EntitySong song){ return this.songsFaved.add(song); }
 
-    public boolean unfavSong(EntitySong song){ return this.songsFaved.remove(song); }
+    public boolean unfavSong(EntitySong song){ return this.songsFaved.remove(song);}
 
+    public boolean listenSong(EntitySong song){ return this.songsListened.offerFirst(song);}
 
+    public EntitySong getLastSong(){ return this.songsListened.getFirst();}
 }
