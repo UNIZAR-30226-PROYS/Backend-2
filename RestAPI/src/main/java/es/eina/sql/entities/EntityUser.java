@@ -56,10 +56,9 @@ public class EntityUser extends EntityBase {
     private EntityUserValues userValues;
 
     @OneToMany(mappedBy = "user")
-    @JoinColumn(name = "id", insertable=false, updatable=false)
     Set<EntitySong> songs = new HashSet<>();
 
-    @ManyToMany(mappedBy = "user")
+    @ManyToMany()
     @JoinTable(
         name = "user_liked_songs",
         joinColumns = { @JoinColumn(name = "user_id")},
@@ -67,7 +66,7 @@ public class EntityUser extends EntityBase {
     )
     Set<EntitySong> songsLiked = new HashSet<>();
 
-    @ManyToMany(mappedBy = "user")
+    @ManyToMany()
     @JoinTable(
             name = "user_faved_songs",
             joinColumns = { @JoinColumn(name = "user_id")},

@@ -34,13 +34,13 @@ public class EntitySong extends EntityBase {
     private EntityUser user;
 
     @ManyToOne
-    @JoinColumn(name = "album_id", insertable=false, updatable=false)
+    @JoinColumn(name = "songs", insertable=false, updatable=false)
     private EntityAlbum album;
 
-    @ManyToMany(mappedBy = "user")
+    @ManyToMany(mappedBy = "songsLiked")
     Set<EntityUser> usersLikers = new HashSet<>();
 
-    @ManyToMany(mappedBy = "user")
+    @ManyToMany(mappedBy = "songsFaved")
     Set<EntityUser> usersFavers = new HashSet<>();
 
 //    @ManyToMany(mappedBy = "user")

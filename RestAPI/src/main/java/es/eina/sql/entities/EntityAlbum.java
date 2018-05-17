@@ -26,7 +26,7 @@ public class EntityAlbum extends EntityBase {
     @Column(name = "image",nullable = false)
     private String image;	//es un URI de una imagen
 
-    @OneToMany(mappedBy = "album")
+    @OneToMany
     @JoinColumn(name = "id", insertable=false, updatable=false)
     Set<EntitySong> songs = new HashSet<>();
 
