@@ -1,22 +1,14 @@
 package es.eina.requests;
 
-import es.eina.RestApp;
-import es.eina.cache.AlbumCache;
 import es.eina.cache.SongCache;
 import es.eina.cache.UserCache;
 import es.eina.geolocalization.Geolocalizer;
-import es.eina.sql.MySQLConnection;
-import es.eina.sql.MySQLQueries;
-import es.eina.sql.entities.EntityAlbum;
 import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntityToken;
 import es.eina.sql.entities.EntityUser;
-import es.eina.sql.parameters.SQLParameterInteger;
-import es.eina.sql.parameters.SQLParameterString;
 import es.eina.utils.StringUtils;
 import es.eina.utils.UserUtils;
 import org.apache.commons.validator.routines.EmailValidator;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -26,8 +18,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.sql.Date;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 @Path("/users/")
 @Produces(MediaType.APPLICATION_JSON)
@@ -360,89 +350,6 @@ public class UserRequests {
         }
 
         return obj.toString();
-    }
-
-    /**
-     * Perform a search of the user comments.
-     * <p>
-     * URI: /users/{user}/comments[?n={amount}]
-     * </p>
-     *
-     * @param user   : Username of a user to search
-     * @param number : Maximum amount of comments to return.
-     * @return The result of this search as specified in API.
-     */
-    @Path("/{user}/comments")
-    @GET
-    public String getUserComments(
-            @PathParam("user") String user,
-            @DefaultValue("" + DEFAULT_COMMENT_NUMBER) @QueryParam("n") int number
-    ) {
-        JSONObject obj = new JSONObject();
-        JSONArray array = new JSONArray();
-        ResultSet set = RestApp.getSql().runAsyncQuery(MySQLQueries.GET_USER_COMMENTS, new SQLParameterString(user), new SQLParameterInteger(number));
-
-        try {
-            while (set.next()) {
-                JSONObject object = new JSONObject(defaultCommentJSON, JSONObject.getNames(defaultCommentJSON));
-                object.put("id", set.getString("opinion_id"));
-                object.put("product", set.getString("user_id"));
-                object.put("user", user);
-                object.put("title", set.getString("title"));
-                object.put("rate", set.getString("product_mark"));
-                object.put("text", set.getString("opinion_text"));
-
-                array.put(object);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            MySQLConnection.closeStatement(set);
-        }
-
-        obj.put("user", user);
-        obj.put("number", array.length());
-        obj.put("comments", array);
-
-        return obj.toString();
-    }
-
-    /**
-     * Search for a specific comment of a user.
-     * <p>
-     * URI: /users/{user}/comments/{comment_id}
-     * </p>
-     *
-     * @param user       : Username of a user to search
-     * @param comment_id : Id of a comment.
-     * @return The result of this search as specified in API.
-     */
-    @Path("/{user}/comments/{comment_id}")
-    @GET
-    public String getUserComment(
-            @PathParam("user") String user,
-            @PathParam("comment_id") int comment_id
-    ) {
-
-        JSONObject object = new JSONObject(defaultCommentJSON, JSONObject.getNames(defaultCommentJSON));
-        ResultSet set = RestApp.getSql().runAsyncQuery(MySQLQueries.GET_USER_COMMENT, new SQLParameterString(user), new SQLParameterInteger(comment_id));
-
-        try {
-            if (set.next()) {
-                object.put("id", set.getString("opinion_id"));
-                object.put("product", set.getString("user_id"));
-                object.put("user", user);
-                object.put("title", set.getString("title"));
-                object.put("rate", set.getString("product_mark"));
-                object.put("text", set.getString("opinion_text"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            MySQLConnection.closeStatement(set);
-        }
-
-        return object.toString();
     }
 
     @Path("/{user}/songs")
