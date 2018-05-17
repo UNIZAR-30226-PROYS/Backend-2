@@ -13,6 +13,7 @@ import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Environment;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.HashMap;
@@ -29,12 +30,34 @@ public class HibernateUtils {
             try {
                 ClassLoader loader = RestApp.class.getClassLoader();
                 Properties login = new Properties();
-                try (FileReader in = new FileReader(new File(loader.getResource(f).toURI()))) {
-                    login.load(in);
+                File f2 = new File(loader.getResource(f).toURI());
+                if(!f2.exists()){
+                    System.out.println("Cannot load " + f2.getAbsolutePath() + " config file...");
+                }
+                System.out.println("Path: " + f2.getAbsolutePath());
+                String line;
+                try (FileReader in = new FileReader(f2)) {
+                    BufferedReader reader = new BufferedReader(in);
+                    while((line = reader.readLine()) != null){
+                        String[] lines = line.substring(1).split("=");
+                        if(lines.length == 2) {
+                            System.out.printf("Loaded key/value: %s, %s.\n", lines[0], lines[1]);
+                            login.put(lines[0], lines[1]);
+                        }else if(lines.length == 1){
+                            System.out.printf("Invalid key/value, only key provided (=): %s.\n", lines[0]);
+                        }
+                    }
+                }catch(Exception e){
+                    System.out.println("Cannot load properties file: " + e.getMessage());
+                    e.printStackTrace();
                 }
 
                 StandardServiceRegistryBuilder registryBuilder =
                         new StandardServiceRegistryBuilder();
+
+                System.out.println("jdbc:postgresql://" + login.getProperty("host") + "/" + login.getProperty("db"));
+                System.out.println(login.getProperty("user"));
+                System.out.println(login.getProperty("pass"));
 
                 Map<String, Object> settings = new HashMap<>();
                 //settings.put(Environment.DRIVER, "org.postgresql.ds.PGSimpleDataSource");
