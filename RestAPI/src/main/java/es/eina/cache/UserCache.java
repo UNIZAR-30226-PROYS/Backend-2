@@ -138,6 +138,15 @@ public class UserCache {
         return user;
     }
 
+    public static boolean updateUser(EntityUser user){
+        getUser(user.getId());
+        if (users.containsKey(user.getId())){
+            users.replace(user.getId(),user);
+            return true;
+        }
+        return false;
+    }
+
     public static boolean deleteUser(EntityUser user){
         Transaction tr = null;
         try (Session session = HibernateUtils.getSessionFactory().openSession()) {
