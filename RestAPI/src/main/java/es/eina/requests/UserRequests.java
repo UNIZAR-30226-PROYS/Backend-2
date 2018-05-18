@@ -485,6 +485,8 @@ public class UserRequests {
                     EntitySong song = SongCache.getSong(songId);
                     if(song != null){
                         if (song.addListener(user) && user.listenSong(song)) {
+                            SongCache.updateSong(song);
+                            UserCache.updateUser(user);
                             result.put("error", "ok");
                         } else {
                             result.put("error", "unknownError");
@@ -504,6 +506,188 @@ public class UserRequests {
 
         return result.toString();
 
+    }
+
+
+    /**
+     * Add a new like in the database.
+     * @param nick : User's nick.
+     * @param token : User's token.
+     * @param songID : Song's ID.
+     * @return A JSON with response.
+     */
+    @Path("{nick}/liked-songs/add")
+    @POST
+    public static String likeSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String token,
+                                  @FormParam("songId") Long songID){
+        JSONObject result = new JSONObject();
+        if(StringUtils.isValid(nick) && StringUtils.isValid(token)){
+            EntityUser user = UserCache.getUser(nick);
+            if(user != null){
+                if (user.getToken() != null && user.getToken().isValid(token)) {
+                    EntitySong song = SongCache.getSong(songID);
+                    if(song != null) {
+                        if(!song.isSongLiked(user) && !user.isSongLiked(song)) {
+                            if (song.likeSong(user) && user.likeSong(song)) {
+                                SongCache.updateSong(song);
+                                UserCache.updateUser(user);
+                                result.put("error", "ok");
+                            } else {
+                                result.put("error", "unknownError");
+                            }
+                        }else{
+                            result.put("error", "alreadyLike");
+                        }
+                    }else{
+                        result.put("error", "unknownSong");
+                    }
+                } else {
+                    result.put("error", "invalidToken");
+                }
+            }else{
+                result.put("error", "unknownUser");
+            }
+        }else{
+            result.put("error", "invalidArgs");
+        }
+
+        return result.toString();
+    }
+
+    /**
+     * Remove a  like in the database.
+     * @param nick : User's nick.
+     * @param token : User's token.
+     * @param songID : Song's ID.
+     * @return A JSON with response.
+     */
+    @Path("{nick}/liked-songs/delete")
+    @DELETE
+    public static String unlikeSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String token,
+                                    @FormParam("songId") Long songID){
+        JSONObject result = new JSONObject();
+        if(StringUtils.isValid(nick) && StringUtils.isValid(token)){
+            EntityUser user = UserCache.getUser(nick);
+            if(user != null){
+                if (user.getToken() != null && user.getToken().isValid(token)) {
+                    EntitySong song = SongCache.getSong(songID);
+                    if(song != null) {
+                        if(song.isSongLiked(user) && user.isSongLiked(song)) {
+                            if (song.unlikeSong(user) && user.unlikeSong(song)) {
+                                SongCache.updateSong(song);
+                                UserCache.updateUser(user);
+                                result.put("error", "ok");
+                            } else {
+                                result.put("error", "unknownError");
+                            }
+                        }else{
+                            result.put("error", "noLike");
+                        }
+                    }else{
+                        result.put("error", "unknownSong");
+                    }
+                } else {
+                    result.put("error", "invalidToken");
+                }
+            }else{
+                result.put("error", "unknownUser");
+            }
+        }else{
+            result.put("error", "invalidArgs");
+        }
+
+        return result.toString();
+    }
+
+
+    /**
+     * Add a song to user's fav list.
+     * @param nick : User's nick.
+     * @param token : User's token.
+     * @param songID : Song's ID.
+     * @return A JSON with response.
+     */
+    @Path("{nick}/faved-songs/delete")
+    @DELETE
+    public static String favSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String token,
+                                 @FormParam("songId") Long songID){
+        JSONObject result = new JSONObject();
+        if(StringUtils.isValid(nick) && StringUtils.isValid(token)){
+            EntityUser user = UserCache.getUser(nick);
+            if(user != null){
+                if (user.getToken() != null && user.getToken().isValid(token)) {
+                    EntitySong song = SongCache.getSong(songID);
+                    if(song != null) {
+                        if(!song.isSongFaved(user) && !user.isSongFaved(song)) {
+                            if (song.favSong(user) && user.favSong(song)) {
+                                SongCache.updateSong(song);
+                                UserCache.updateUser(user);
+                                result.put("error", "ok");
+                            } else {
+                                result.put("error", "unknownError");
+                            }
+                        }else{
+                            result.put("error", "alreadyFav");
+                        }
+                    }else{
+                        result.put("error", "unknownSong");
+                    }
+                } else {
+                    result.put("error", "invalidToken");
+                }
+            }else{
+                result.put("error", "unknownUser");
+            }
+        }else{
+            result.put("error", "invalidArgs");
+        }
+
+        return result.toString();
+    }
+
+    /**
+     * Remove a song from user's fav list.
+     * @param nick : User's nick.
+     * @param token : User's token.
+     * @param songID : Song's ID.
+     * @return A JSON with response.
+     */
+    @Path("{nick}/faved-songs/delete")
+    @DELETE
+    public static String unfavSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String token,
+                                   @FormParam("songId") Long songID){
+        JSONObject result = new JSONObject();
+        if(StringUtils.isValid(nick) && StringUtils.isValid(token)){
+            EntityUser user = UserCache.getUser(nick);
+            if(user != null){
+                if (user.getToken() != null && user.getToken().isValid(token)) {
+                    EntitySong song = SongCache.getSong(songID);
+                    if(song != null) {
+                        if(song.isSongFaved(user) && user.isSongFaved(song)) {
+                            if (song.unfavSong(user) && user.unfavSong(song)) {
+                                SongCache.updateSong(song);
+                                UserCache.updateUser(user);
+                                result.put("error", "ok");
+                            } else {
+                                result.put("error", "unknownError");
+                            }
+                        }else{
+                            result.put("error", "noFav");
+                        }
+                    }else{
+                        result.put("error", "unknownSong");
+                    }
+                } else {
+                    result.put("error", "invalidToken");
+                }
+            }else{
+                result.put("error", "unknownUser");
+            }
+        }else{
+            result.put("error", "invalidArgs");
+        }
+
+        return result.toString();
     }
 
 
