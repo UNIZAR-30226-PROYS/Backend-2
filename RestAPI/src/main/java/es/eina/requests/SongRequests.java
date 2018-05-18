@@ -48,7 +48,7 @@ public class SongRequests {
      * @param id : Song's ID.
      * @return A JSON with response.
      */
-    @Path("/{id}/")
+    @Path("/{id}/likes")
     @GET
     public static String getLikes(@PathParam("id") long id){
         JSONObject result = new JSONObject();

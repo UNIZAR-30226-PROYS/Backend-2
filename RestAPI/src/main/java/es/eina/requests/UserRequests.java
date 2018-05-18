@@ -561,10 +561,10 @@ public class UserRequests {
      * @param songID : Song's ID.
      * @return A JSON with response.
      */
-    @Path("{nick}/liked-songs/delete")
+    @Path("{nick}/liked-songs/{songId}/delete")
     @DELETE
     public static String unlikeSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String token,
-                                    @FormParam("songId") Long songID){
+                                    @PathParam("songId") Long songID){
         JSONObject result = new JSONObject();
         if(StringUtils.isValid(nick) && StringUtils.isValid(token)){
             EntityUser user = UserCache.getUser(nick);
@@ -607,8 +607,8 @@ public class UserRequests {
      * @param songID : Song's ID.
      * @return A JSON with response.
      */
-    @Path("{nick}/faved-songs/delete")
-    @DELETE
+    @Path("{nick}/faved-songs/add")
+    @POST
     public static String favSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String token,
                                  @FormParam("songId") Long songID){
         JSONObject result = new JSONObject();
@@ -652,10 +652,10 @@ public class UserRequests {
      * @param songID : Song's ID.
      * @return A JSON with response.
      */
-    @Path("{nick}/faved-songs/delete")
+    @Path("{nick}/faved-songs/{songId}/delete")
     @DELETE
     public static String unfavSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String token,
-                                   @FormParam("songId") Long songID){
+                                   @PathParam("songId") Long songID){
         JSONObject result = new JSONObject();
         if(StringUtils.isValid(nick) && StringUtils.isValid(token)){
             EntityUser user = UserCache.getUser(nick);
