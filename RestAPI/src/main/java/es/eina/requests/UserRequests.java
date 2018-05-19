@@ -1,6 +1,7 @@
 package es.eina.requests;
 
 import es.eina.RestApp;
+import es.eina.cache.FeedCache;
 import es.eina.cache.UserCache;
 import es.eina.geolocalization.Geolocalizer;
 import es.eina.sql.MySQLConnection;
@@ -29,6 +30,10 @@ import java.sql.SQLException;
 @Produces(MediaType.APPLICATION_JSON)
 public class UserRequests {
 
+    private static final int DEFAULT_FEED_FOLLOW_NUMBER = 15;
+    private static final int DEFAULT_FEED_REPRODUCTION_NUMBER = 15;
+    private static final int DEFAULT_FEED_SONGS_NUMBER= 15;
+
     @Context
     private HttpServletResponse response;
 
@@ -36,7 +41,6 @@ public class UserRequests {
     private HttpServletRequest request;
 
     private static final int DEFAULT_COMMENT_NUMBER = 10;
-    private static final int DEFAULT_COMMENT_LIKES_NUMBER = 10;
 
     private static final JSONObject defaultUserJSON;
     private static final JSONObject defaultCommentJSON;
@@ -348,6 +352,43 @@ public class UserRequests {
                 } else {
                     obj.put("error", "invalidToken");
                 }
+            } else {
+                obj.put("error", "unknownUser");
+            }
+        } else {
+            obj.put("error", "invalidArgs");
+        }
+
+        return obj.toString();
+    }
+
+    /**
+     * Perform a search of the user comments.
+     * <p>
+     * URI: /users/{user}/comments[?n={amount}]
+     * </p>
+     *
+     * @param nick   : Username of a user to search
+     * @param nFollow : Maximum amount of user follows to return.
+     * @param nRepr : Maximum amount of user reproductions to return.
+     * @param nSongs : Maximum amount of user songs to return.
+     * @return The result of this search as specified in API.
+     */
+    @Path("/{nick}/feed")
+    @GET
+    public String getUserComments(
+            @PathParam("nick") String nick,
+            @DefaultValue("" + DEFAULT_FEED_FOLLOW_NUMBER) @QueryParam("nFollow") int nFollow,
+            @DefaultValue("" + DEFAULT_FEED_REPRODUCTION_NUMBER) @QueryParam("nRepr") int nRepr,
+            @DefaultValue("" + DEFAULT_FEED_SONGS_NUMBER) @QueryParam("nSongs") int nSongs
+    ) {
+        JSONObject obj = new JSONObject();
+
+        if (nFollow > 0 && nRepr > 0 && nSongs > 0) {
+            EntityUser user = UserCache.getUser(nick);
+            if (user != null) {
+                obj = FeedCache.getFeed(user, nFollow, nRepr, nSongs);
+                obj.put("error", "ok");
             } else {
                 obj.put("error", "unknownUser");
             }
