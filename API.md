@@ -307,6 +307,54 @@ Types:
 | :---: |:---|
 | *"error"* | String |
 
+#### GET /users/{nick}/feed?nFollow={amount}&nSongs={amount}&nRepr={amount}
+
+This requests returns the feed of user with the nick {nick}. The feed will contain the last users {nick} followed, the last songs {nick} reproduced and the last songs {nick} uploaded.
+
+Accepts the following parameters in an HTTP GET encoded request (application/x-www-form-urlencoded):
+  - nick => User to retrieve feed data.
+  - nFollow => Max amount of user follows to retrieve (defaults to 15). 
+  - nSongs => Max amount of user songs uploads to retrieve (defaults to 15).
+  - nRepr => Max amount of user songs reproductions to retrieve (defaults to 15).
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "follow" : "{ARRAY_OF_DATA}",
+    "songs" : "{ARRAY_OF_DATA}",
+    "repr" : "{ARRAY_OF_DATA}",
+    "error" : "{ERROR_CODE}"
+  }
+```
+where *{ARRAY_OF_DATA}* is
+```json
+  [
+    {
+      "id" : "{USER_OR_SONG_ID}",
+      "time" : "{EPOCH_TIME}"
+    }
+  ]
+```
+
+Error codes are specified as follows:
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| ok | Feed is OK and has been retrieved successfully |
+| invalidArgs | *nFollow*, *nSongs* or *nRepr* is lower or equal to zero. |
+| unknownUser | No user with that nick exists in the Database. |
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"error"* | String |
+| *"time"* | Long |
+| *"id"* | Long |
+| *"follow"* | JSONArray |
+| *"songs"* | JSONArray |
+| *"repr"* | JSONArray |
+
 ### **/songs**
 
 #### GET /songs/{id}
