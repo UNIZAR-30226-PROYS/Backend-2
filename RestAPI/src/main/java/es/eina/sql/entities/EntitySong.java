@@ -9,7 +9,7 @@ public class EntitySong extends EntityBase {
 
     @Id
     @Column(name = "id",nullable = false)
-    private long id;
+    private Long id;
 
     @Column(name = "user_id",nullable = false)
     private long userId;
@@ -30,17 +30,17 @@ public class EntitySong extends EntityBase {
     private String lyrics;  //ruta a la letra de cancion
 
     @ManyToOne
-    @JoinColumn(name = "user_id", insertable=false, updatable=false)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private EntityUser user;
 
     @ManyToOne
-    @JoinColumn(name = "songs", insertable=false, updatable=false)
+    @JoinColumn(name = "songs")
     private EntityAlbum album;
 
     @ManyToMany(mappedBy = "songsLiked")
     Set<EntityUser> usersLikers = new HashSet<>();
 
-    @Column
+    @Column(name = "likes", insertable=false, updatable=false)
     private long likes;
 
     @ManyToMany(mappedBy = "songsFaved")
@@ -56,7 +56,7 @@ public class EntitySong extends EntityBase {
     public EntitySong(){update();}
 
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
@@ -74,10 +74,6 @@ public class EntitySong extends EntityBase {
 
     public long getUploadTime() {
         return uploadTime;
-    }
-
-    public long getListened() {
-        return listened;
     }
 
     public String getLyrics() {
@@ -107,5 +103,28 @@ public class EntitySong extends EntityBase {
             return false;
         }
     }
+
+    public boolean setAlbum(EntityAlbum album){
+        if(this.album == null) {
+            this.album = album;
+            update();
+            album.updateAlbum();
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean removeFromAlbum(){
+        if(this.album != null) {
+            this.album = null;
+            update();
+            album.updateAlbum();
+            return true;
+        }
+
+        return false;
+    }
+
 
 }
