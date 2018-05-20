@@ -1,5 +1,6 @@
 package es.eina.requests;
 
+
 import es.eina.cache.AlbumCache;
 import es.eina.cache.SongCache;
 import es.eina.cache.UserCache;
@@ -54,7 +55,7 @@ public class AlbumRequests {
 									albumJSON.put("user_id", album.getUserId());
 									albumJSON.put("title", album.getTitle());
 									albumJSON.put("publish_year", album.getPublishYear());
-									albumJSON.put("creation_time", album.getCreationTime());
+									albumJSON.put("update_time", album.getUpdateTime());
 									albumJSON.put("image", album.getImage());
 									albumJSON.put("songs", album.getSongsAsArray());
 									obj.put("error", "ok");
@@ -145,22 +146,30 @@ public class AlbumRequests {
 			EntityUser user = UserCache.getUser(nick);
 			if(user != null){
 				if (user.getToken() != null && user.getToken().isValid(userToken)) {
-					EntityAlbum album = AlbumCache.getAlbum(albumId);
-					if (album != null) {
-						EntitySong song = SongCache.getSong(songId);
-						if(song != null){
-							if(album.addSong(song)) {
-								AlbumCache.updateAlbum(album);
-								obj.put("error", "ok");
-							}else{
-								obj.put("error", "alreadyAdded");
-							}
-						}else {
-							obj.put("error", "unknownSong");
-						}
-					}else{
-						obj.put("error", "unknownAlbum");
-					}
+				    if(albumId > 0) {
+                        EntityAlbum album = AlbumCache.getAlbum(albumId);
+                        if (album != null) {
+                            if(songId > 0) {
+                                EntitySong song = SongCache.getSong(songId);
+                                if (song != null) {
+                                    if(song.setAlbum(album)){
+                                        AlbumCache.updateAlbum(album);
+                                        obj.put("error", "ok");
+                                    } else {
+                                        obj.put("error", "alreadyAdded");
+                                    }
+                                } else {
+                                    obj.put("error", "unknownSong");
+                                }
+                            }else{
+                                obj.put("error", "invalidSong");
+                            }
+                        } else {
+                            obj.put("error", "unknownAlbum");
+                        }
+                    }else{
+				        obj.put("error", "invalidAlbum");
+                    }
 				} else {
 					obj.put("error", "invalidToken");
 				}
@@ -199,8 +208,8 @@ public class AlbumRequests {
 					if (album != null) {
 						EntitySong song = SongCache.getSong(songId);
 						if(song != null){
-							if(album.removeSong(song)) {
-								AlbumCache.updateAlbum(album);
+							if( song.removeFromAlbum()) {
+                                AlbumCache.updateAlbum(album);
 								obj.put("error", "ok");
 							}else{
 								obj.put("error", "alreadyRemoved");
@@ -231,7 +240,7 @@ public class AlbumRequests {
     	defaultAlbumJSON.put("user_id", -1L);
     	defaultAlbumJSON.put("title", "");
     	defaultAlbumJSON.put("publish_year", -1);
-    	defaultAlbumJSON.put("creation_time", -1L);
+    	defaultAlbumJSON.put("update_time", -1L);
     	defaultAlbumJSON.put("image", "");
     }
 
