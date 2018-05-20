@@ -349,6 +349,34 @@ Types:
 | *"upload_time"* | Long |
 | *"error"* | String |
 
+#### GET /songs/{id}/likes
+This requests gets the amount of likes a song has.
+
+Accepts the following parameters in an HTTP GET request:
+  - id => Song id.
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "likes" : "{LIKES}",
+    "error" : "{ERROR_CODE}"
+  }
+```
+
+If *"error"* is not "ok", no likes field will be added to the response.
+
+Other {ERROR_CODE}s are:
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| unknownSong | No song is registered with that id |
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"error"* | String |
+
 ### **/albums**
 
 #### POST /albums/{nick}/create
