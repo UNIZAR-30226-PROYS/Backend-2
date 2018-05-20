@@ -2,6 +2,7 @@ package es.eina.requests;
 
 import es.eina.cache.SongCache;
 import es.eina.geolocalization.Geolocalizer;
+import es.eina.sql.SQLUtils;
 import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntityUser;
 import org.json.JSONObject;
@@ -54,8 +55,7 @@ public class SongRequests {
         JSONObject result = new JSONObject();
         EntitySong song = SongCache.getSong(id);
         if(song != null) {
-            long likes = song.getLikes();
-            result.put("likes", String.valueOf(likes));
+            result.put("likes", SQLUtils.getRowCountSQL("song_likes", "song_id = " + id));
             result.put("error", "ok");
         }else{
             result.put("error", "unknownSong");
