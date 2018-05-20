@@ -1,0 +1,86 @@
+# For a quick start check out our HTTP Requests collection (Tools|HTTP Client|Open HTTP Requests Collection).
+#
+# Following HTTP Request Live Templates are available:
+# * 'gtrp' and 'gtr' create a GET request with or without query parameters;
+# * 'ptr' and 'ptrp' create a POST request with a simple or parameter-like body;
+# * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
+
+POST http://localhost:8080/albums/test-user/create
+Content-Type: application/x-www-form-urlencoded
+
+token=g2xoxjg2kbu2sdwa&title=NewAlbum&image=random.png&year=1950
+
+###
+
+# invalidArgs
+POST http://localhost:8080/albums/test-user/17/add
+Content-Type: application/x-www-form-urlencoded
+
+songId=2
+
+###
+
+# unknownUser
+POST http://localhost:8080/albums/invalid-user/17/add
+Content-Type: application/x-www-form-urlencoded
+
+token=g2xoxjg2kbu2sdwa&songId=2
+
+###
+
+# invalidToken
+POST http://localhost:8080/albums/test-user/17/add
+Content-Type: application/x-www-form-urlencoded
+
+token=invalid-g2xoxjg2kbu2sdwa&songId=2
+
+###ç
+
+# unknownAlbum
+POST http://localhost:8080/albums/test-user/1000000/add
+Content-Type: application/x-www-form-urlencoded
+
+token=g2xoxjg2kbu2sdwa&songId=2
+
+###
+
+# invalidAlbum
+POST http://localhost:8080/albums/test-user/-1/add
+Content-Type: application/x-www-form-urlencoded
+
+token=g2xoxjg2kbu2sdwa&songId=2
+
+###
+
+# invalidSong
+POST http://localhost:8080/albums/test-user/17/add
+Content-Type: application/x-www-form-urlencoded
+
+token=g2xoxjg2kbu2sdwa&songId=-1
+
+###
+
+# unknownSong
+POST http://localhost:8080/albums/test-user/17/add
+Content-Type: application/x-www-form-urlencoded
+
+token=g2xoxjg2kbu2sdwa&songId=100000
+
+###
+
+
+# ok
+POST http://localhost:8080/albums/test-user/17/add
+Content-Type: application/x-www-form-urlencoded
+
+token=g2xoxjg2kbu2sdwa&songId=2
+
+###
+
+# alreadyAdded
+POST http://localhost:8080/albums/test-user/17/add
+Content-Type: application/x-www-form-urlencoded
+
+token=g2xoxjg2kbu2sdwa&songId=2
+
+###
