@@ -16,4 +16,16 @@ public class SQLUtils {
 
         return rowCount;
     }
+
+    public static long getRowCountSQL(String table, String where){
+        long rowCount;
+        try (Session session = HibernateUtils.getSessionFactory().openSession()) {
+            rowCount = session.createSQLQuery("SELECT COUNT(e) as c FROM " + table + " e WHERE " + where).list().size();
+        } catch (Exception e) {
+            e.printStackTrace();
+            rowCount = -1;
+        }
+
+        return rowCount;
+    }
 }
