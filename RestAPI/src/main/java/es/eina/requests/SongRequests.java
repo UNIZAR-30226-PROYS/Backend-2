@@ -1,12 +1,15 @@
 package es.eina.requests;
 
 import es.eina.cache.SongCache;
+import es.eina.cache.UserCache;
 import es.eina.geolocalization.Geolocalizer;
 import es.eina.sql.SQLUtils;
 import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntityUser;
+import es.eina.utils.StringUtils;
 import org.json.JSONObject;
 
+import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
@@ -88,6 +91,50 @@ public class SongRequests {
         obj.put("song", songJSON);
 
         return obj.toString();
+    }
+
+    /**
+     * Add a new song to user's list of listened songs
+     *
+     * @param nick      : Nickname of a user to create the list
+     * @param userToken : User private token.
+     * @param songId:   Song's ID
+     * @return The result of this query as specified in API.
+     */
+    @Path("{songId}/listen")
+    @Transactional
+    @POST
+    public String addListenedSong(@FormParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
+                                  @PathParam("songId") long songId) {
+        JSONObject result = new JSONObject();
+        if (StringUtils.isValid(nick) && StringUtils.isValid(userToken)) {
+            EntityUser user = UserCache.getUser(nick);
+            if (user != null) {
+                if (user.getToken() != null && user.getToken().isValid(userToken)) {
+                    EntitySong song = SongCache.getSong(songId);
+                    if (song != null) {
+                        if (song.addListener(user) && user.listenSong(song)) {
+                            SongCache.updateSong(song);
+                            UserCache.updateUser(user);
+                            result.put("error", "ok");
+                        } else {
+                            result.put("error", "unknownError");
+                        }
+                    } else {
+                        result.put("error", "unknownSong");
+                    }
+                } else {
+                    result.put("error", "invalidToken");
+                }
+            } else {
+                result.put("error", "unknownUser");
+            }
+        } else {
+            result.put("error", "invalidArgs");
+        }
+
+        return result.toString();
+
     }
 
     static {

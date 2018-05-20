@@ -9,6 +9,7 @@ import es.eina.sql.entities.EntityUser;
 import es.eina.utils.StringUtils;
 import es.eina.utils.UserUtils;
 import org.apache.commons.validator.routines.EmailValidator;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -359,8 +360,9 @@ public class UserRequests {
         if (StringUtils.isValid(user)) {
             EntityUser myuser = UserCache.getUser(user);
             if (myuser != null) {
-                obj.put("id", myuser.getSongStrings());
-                obj.put("size", myuser.getSongCounter());
+                JSONArray userSongs = myuser.getUserSongs();
+                obj.put("songs", userSongs);
+                obj.put("size", userSongs.length());
                 obj.put("error", "ok");
             } else {
                 obj.put("error", "unknownUser");
@@ -371,48 +373,7 @@ public class UserRequests {
         return obj.toString();
     }
 
-    /**
-     * Add a new song to user's list of listened songs
-     *
-     * @param nick      : Nickname of a user to create the list
-     * @param userToken : User private token.
-     * @param songId:   Song's ID
-     * @return The result of this query as specified in API.
-     */
-    @Path("{nick}/listened-songs/add")
-    @POST
-    public String addListenedSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
-                                  @FormParam("songId") long songId) {
-        JSONObject result = new JSONObject();
-        if (StringUtils.isValid(nick) && StringUtils.isValid(userToken)) {
-            EntityUser user = UserCache.getUser(nick);
-            if (user != null) {
-                if (user.getToken() != null && user.getToken().isValid(userToken)) {
-                    EntitySong song = SongCache.getSong(songId);
-                    if (song != null) {
-                        if (song.addListener(user) && user.listenSong(song)) {
-                            SongCache.updateSong(song);
-                            UserCache.updateUser(user);
-                            result.put("error", "ok");
-                        } else {
-                            result.put("error", "unknownError");
-                        }
-                    } else {
-                        result.put("error", "unknownSong");
-                    }
-                } else {
-                    result.put("error", "invalidToken");
-                }
-            } else {
-                result.put("error", "unknownUser");
-            }
-        } else {
-            result.put("error", "invalidArgs");
-        }
 
-        return result.toString();
-
-    }
 
 
     /**
