@@ -1,6 +1,7 @@
 package es.eina;
 
 
+import es.eina.recommender.Recommender;
 import es.eina.search.Index;
 import es.eina.search.IndexPriceAndProduct;
 import es.eina.search.IndexProduct;
@@ -17,8 +18,11 @@ public class RestApp {
 	private final Logger logger = Logger.getLogger("webLogger");
 	private static final Index index = new IndexProduct();
 
+	private final Recommender recommender;
+
 	public RestApp() {
 		instance = this;
+		recommender = new Recommender();
 		//index.openIndex("index/");
 
 	}
@@ -35,7 +39,11 @@ public class RestApp {
 		return logger;
 	}
 
-	public static Index getIndex() {
+    public Recommender getRecommender() {
+        return recommender;
+    }
+
+    public static Index getIndex() {
 		return index;
 	}
 }
