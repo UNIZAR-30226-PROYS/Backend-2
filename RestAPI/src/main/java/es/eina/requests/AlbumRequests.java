@@ -92,7 +92,7 @@ public class AlbumRequests {
 	 * @return The result of this request.
      */
     @Path("/{albumID}/delete")
-    @DELETE
+    @POST
     public String delete(@FormParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
 						 @PathParam("albumID") long albumId){
     	JSONObject obj = new JSONObject();
@@ -101,12 +101,15 @@ public class AlbumRequests {
 			EntityUser user = UserCache.getUser(nick);
 			if(user != null){
 				if (user.getToken() != null && user.getToken().isValid(userToken)) {
-					EntityAlbum album = AlbumCache.getAlbum(albumId);
-					if (album != null) {
-						AlbumCache.deleteAlbum(album);
-						obj.put("error", "ok");
-					}else{
-						obj.put("error", "unknownAlbum");
+					if(albumId > 0) {
+						EntityAlbum album = AlbumCache.getAlbum(albumId);
+						if (album != null) {
+							obj.put("error", AlbumCache.deleteAlbum(album) ? "ok" : "unknownAlbum");
+						} else {
+							obj.put("error", "unknownAlbum");
+						}
+					} else {
+						obj.put("error", "invalidAlbum");
 					}
 				} else {
 					obj.put("error", "invalidToken");
