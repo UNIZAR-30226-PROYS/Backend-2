@@ -1,22 +1,14 @@
 package es.eina.requests;
 
-import es.eina.RestApp;
-import es.eina.cache.AlbumCache;
 import es.eina.cache.SongCache;
 import es.eina.cache.UserCache;
 import es.eina.geolocalization.Geolocalizer;
-import es.eina.sql.MySQLConnection;
-import es.eina.sql.MySQLQueries;
-import es.eina.sql.entities.EntityAlbum;
 import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntityToken;
 import es.eina.sql.entities.EntityUser;
-import es.eina.sql.parameters.SQLParameterInteger;
-import es.eina.sql.parameters.SQLParameterString;
 import es.eina.utils.StringUtils;
 import es.eina.utils.UserUtils;
 import org.apache.commons.validator.routines.EmailValidator;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -26,8 +18,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.sql.Date;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 @Path("/users/")
 @Produces(MediaType.APPLICATION_JSON)
@@ -231,43 +221,43 @@ public class UserRequests {
     public String verifyAccount(@PathParam("nick") String nick,
                                 @FormParam("self") String adminUser,
                                 @DefaultValue("") @FormParam("token") String token,
-                                @FormParam("verify") boolean verify){
+                                @FormParam("verify") boolean verify) {
         JSONObject obj = new JSONObject();
 
-        if(StringUtils.isValid(nick) && StringUtils.isValid(adminUser) && StringUtils.isValid(token)){
+        if (StringUtils.isValid(nick) && StringUtils.isValid(adminUser) && StringUtils.isValid(token)) {
             EntityUser user = UserCache.getUser(nick);
             EntityUser admin = UserCache.getUser(adminUser);
-            if(user != null && admin != null){
+            if (user != null && admin != null) {
                 EntityToken adminToken = admin.getToken();
-                if(adminToken != null){
-                    if(adminToken.isValid(token)){
-                        if(admin.isAdmin()){
-                            if(verify){
+                if (adminToken != null) {
+                    if (adminToken.isValid(token)) {
+                        if (admin.isAdmin()) {
+                            if (verify) {
                                 user.verifyAccount();
                                 obj.put("error", "ok");
-                            }else{
+                            } else {
                                 int code = user.unverifyAccount();
-                                if(code == 0){
+                                if (code == 0) {
                                     obj.put("error", "ok");
-                                }else if(code == -1){
+                                } else if (code == -1) {
                                     obj.put("error", "unknownError");
-                                }else if(code == -2){
+                                } else if (code == -2) {
                                     obj.put("error", "cannotUnverify");
                                 }
                             }
-                        }else{
+                        } else {
                             obj.put("error", "noPermission");
                         }
-                    }else{
+                    } else {
                         obj.put("error", "invalidToken");
                     }
-                }else{
+                } else {
                     obj.put("error", "closedSession");
                 }
-            }else{
+            } else {
                 obj.put("error", "unknownUser");
             }
-        }else{
+        } else {
             obj.put("error", "invalidArgs");
         }
 
@@ -284,7 +274,7 @@ public class UserRequests {
     ) {
         JSONObject result = new JSONObject();
 
-        if(StringUtils.isValid(c) && StringUtils.isValid(token)) {
+        if (StringUtils.isValid(c) && StringUtils.isValid(token)) {
             JSONObject obj = new JSONObject(c);
             if (obj.has("updates")) {
                 JSONObject updateObject = null;
@@ -297,7 +287,7 @@ public class UserRequests {
                 if (updateObject != null) {
                     EntityUser user = UserCache.getUser(nick);
                     if (user != null) {
-                        if(user.getToken() != null) {
+                        if (user.getToken() != null) {
                             if (user.getToken().isValid(token)) {
                                 JSONObject updateResult = new JSONObject();
                                 for (String key : updateObject.keySet()) {
@@ -315,7 +305,7 @@ public class UserRequests {
                             } else {
                                 result.put("error", "invalidToken");
                             }
-                        }else{
+                        } else {
                             result.put("error", "closedSession");
                         }
                     } else {
@@ -325,7 +315,7 @@ public class UserRequests {
             } else {
                 result.put("error", "noUpdate");
             }
-        }else{
+        } else {
             result.put("error", "invalidArgs");
         }
 
@@ -362,103 +352,20 @@ public class UserRequests {
         return obj.toString();
     }
 
-    /**
-     * Perform a search of the user comments.
-     * <p>
-     * URI: /users/{user}/comments[?n={amount}]
-     * </p>
-     *
-     * @param user   : Username of a user to search
-     * @param number : Maximum amount of comments to return.
-     * @return The result of this search as specified in API.
-     */
-    @Path("/{user}/comments")
-    @GET
-    public String getUserComments(
-            @PathParam("user") String user,
-            @DefaultValue("" + DEFAULT_COMMENT_NUMBER) @QueryParam("n") int number
-    ) {
-        JSONObject obj = new JSONObject();
-        JSONArray array = new JSONArray();
-        ResultSet set = RestApp.getSql().runAsyncQuery(MySQLQueries.GET_USER_COMMENTS, new SQLParameterString(user), new SQLParameterInteger(number));
-
-        try {
-            while (set.next()) {
-                JSONObject object = new JSONObject(defaultCommentJSON, JSONObject.getNames(defaultCommentJSON));
-                object.put("id", set.getString("opinion_id"));
-                object.put("product", set.getString("user_id"));
-                object.put("user", user);
-                object.put("title", set.getString("title"));
-                object.put("rate", set.getString("product_mark"));
-                object.put("text", set.getString("opinion_text"));
-
-                array.put(object);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            MySQLConnection.closeStatement(set);
-        }
-
-        obj.put("user", user);
-        obj.put("number", array.length());
-        obj.put("comments", array);
-
-        return obj.toString();
-    }
-
-    /**
-     * Search for a specific comment of a user.
-     * <p>
-     * URI: /users/{user}/comments/{comment_id}
-     * </p>
-     *
-     * @param user       : Username of a user to search
-     * @param comment_id : Id of a comment.
-     * @return The result of this search as specified in API.
-     */
-    @Path("/{user}/comments/{comment_id}")
-    @GET
-    public String getUserComment(
-            @PathParam("user") String user,
-            @PathParam("comment_id") int comment_id
-    ) {
-
-        JSONObject object = new JSONObject(defaultCommentJSON, JSONObject.getNames(defaultCommentJSON));
-        ResultSet set = RestApp.getSql().runAsyncQuery(MySQLQueries.GET_USER_COMMENT, new SQLParameterString(user), new SQLParameterInteger(comment_id));
-
-        try {
-            if (set.next()) {
-                object.put("id", set.getString("opinion_id"));
-                object.put("product", set.getString("user_id"));
-                object.put("user", user);
-                object.put("title", set.getString("title"));
-                object.put("rate", set.getString("product_mark"));
-                object.put("text", set.getString("opinion_text"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            MySQLConnection.closeStatement(set);
-        }
-
-        return object.toString();
-    }
-
     @Path("/{user}/songs")
     @GET
-    public String getUserSongs(@PathParam("user") String user){
+    public String getUserSongs(@PathParam("user") String user) {
         JSONObject obj = new JSONObject();
-        if(StringUtils.isValid(user)) {
+        if (StringUtils.isValid(user)) {
             EntityUser myuser = UserCache.getUser(user);
             if (myuser != null) {
                 obj.put("id", myuser.getSongStrings());
                 obj.put("size", myuser.getSongCounter());
                 obj.put("error", "ok");
-            }else{
+            } else {
                 obj.put("error", "unknownUser");
             }
-        }else {
+        } else {
             obj.put("error", "invalidArgs");
         }
         return obj.toString();
@@ -467,23 +374,22 @@ public class UserRequests {
     /**
      * Add a new song to user's list of listened songs
      *
-     * @param nick  : Nickname of a user to create the list
+     * @param nick      : Nickname of a user to create the list
      * @param userToken : User private token.
-     * @param songId: Song's ID
-     *
+     * @param songId:   Song's ID
      * @return The result of this query as specified in API.
      */
     @Path("{nick}/listened-songs/add")
     @POST
     public String addListenedSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
-                      @FormParam("songId") long songId) {
+                                  @FormParam("songId") long songId) {
         JSONObject result = new JSONObject();
-        if(StringUtils.isValid(nick) && StringUtils.isValid(userToken)){
+        if (StringUtils.isValid(nick) && StringUtils.isValid(userToken)) {
             EntityUser user = UserCache.getUser(nick);
-            if(user != null){
+            if (user != null) {
                 if (user.getToken() != null && user.getToken().isValid(userToken)) {
                     EntitySong song = SongCache.getSong(songId);
-                    if(song != null){
+                    if (song != null) {
                         if (song.addListener(user) && user.listenSong(song)) {
                             SongCache.updateSong(song);
                             UserCache.updateUser(user);
@@ -491,16 +397,16 @@ public class UserRequests {
                         } else {
                             result.put("error", "unknownError");
                         }
-                    }else{
+                    } else {
                         result.put("error", "unknownSong");
                     }
                 } else {
                     result.put("error", "invalidToken");
                 }
-            }else{
+            } else {
                 result.put("error", "unknownUser");
             }
-        }else{
+        } else {
             result.put("error", "invalidArgs");
         }
 
@@ -511,23 +417,24 @@ public class UserRequests {
 
     /**
      * Add a new like in the database.
-     * @param nick : User's nick.
-     * @param token : User's token.
+     *
+     * @param nick   : User's nick.
+     * @param token  : User's token.
      * @param songID : Song's ID.
      * @return A JSON with response.
      */
     @Path("{nick}/liked-songs/add")
     @POST
     public static String likeSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String token,
-                                  @FormParam("songId") Long songID){
+                                  @FormParam("songId") Long songID) {
         JSONObject result = new JSONObject();
-        if(StringUtils.isValid(nick) && StringUtils.isValid(token)){
+        if (StringUtils.isValid(nick) && StringUtils.isValid(token)) {
             EntityUser user = UserCache.getUser(nick);
-            if(user != null){
+            if (user != null) {
                 if (user.getToken() != null && user.getToken().isValid(token)) {
                     EntitySong song = SongCache.getSong(songID);
-                    if(song != null) {
-                        if(!song.isSongLiked(user) && !user.isSongLiked(song)) {
+                    if (song != null) {
+                        if (!song.isSongLiked(user) && !user.isSongLiked(song)) {
                             if (song.likeSong(user) && user.likeSong(song)) {
                                 SongCache.updateSong(song);
                                 UserCache.updateUser(user);
@@ -535,19 +442,19 @@ public class UserRequests {
                             } else {
                                 result.put("error", "unknownError");
                             }
-                        }else{
+                        } else {
                             result.put("error", "alreadyLike");
                         }
-                    }else{
+                    } else {
                         result.put("error", "unknownSong");
                     }
                 } else {
                     result.put("error", "invalidToken");
                 }
-            }else{
+            } else {
                 result.put("error", "unknownUser");
             }
-        }else{
+        } else {
             result.put("error", "invalidArgs");
         }
 
@@ -556,23 +463,24 @@ public class UserRequests {
 
     /**
      * Remove a  like in the database.
-     * @param nick : User's nick.
-     * @param token : User's token.
+     *
+     * @param nick   : User's nick.
+     * @param token  : User's token.
      * @param songID : Song's ID.
      * @return A JSON with response.
      */
     @Path("{nick}/liked-songs/{songId}/delete")
     @DELETE
     public static String unlikeSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String token,
-                                    @PathParam("songId") Long songID){
+                                    @PathParam("songId") Long songID) {
         JSONObject result = new JSONObject();
-        if(StringUtils.isValid(nick) && StringUtils.isValid(token)){
+        if (StringUtils.isValid(nick) && StringUtils.isValid(token)) {
             EntityUser user = UserCache.getUser(nick);
-            if(user != null){
+            if (user != null) {
                 if (user.getToken() != null && user.getToken().isValid(token)) {
                     EntitySong song = SongCache.getSong(songID);
-                    if(song != null) {
-                        if(song.isSongLiked(user) && user.isSongLiked(song)) {
+                    if (song != null) {
+                        if (song.isSongLiked(user) && user.isSongLiked(song)) {
                             if (song.unlikeSong(user) && user.unlikeSong(song)) {
                                 SongCache.updateSong(song);
                                 UserCache.updateUser(user);
@@ -580,19 +488,19 @@ public class UserRequests {
                             } else {
                                 result.put("error", "unknownError");
                             }
-                        }else{
+                        } else {
                             result.put("error", "noLike");
                         }
-                    }else{
+                    } else {
                         result.put("error", "unknownSong");
                     }
                 } else {
                     result.put("error", "invalidToken");
                 }
-            }else{
+            } else {
                 result.put("error", "unknownUser");
             }
-        }else{
+        } else {
             result.put("error", "invalidArgs");
         }
 
@@ -602,23 +510,24 @@ public class UserRequests {
 
     /**
      * Add a song to user's fav list.
-     * @param nick : User's nick.
-     * @param token : User's token.
+     *
+     * @param nick   : User's nick.
+     * @param token  : User's token.
      * @param songID : Song's ID.
      * @return A JSON with response.
      */
     @Path("{nick}/faved-songs/add")
     @POST
     public static String favSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String token,
-                                 @FormParam("songId") Long songID){
+                                 @FormParam("songId") Long songID) {
         JSONObject result = new JSONObject();
-        if(StringUtils.isValid(nick) && StringUtils.isValid(token)){
+        if (StringUtils.isValid(nick) && StringUtils.isValid(token)) {
             EntityUser user = UserCache.getUser(nick);
-            if(user != null){
+            if (user != null) {
                 if (user.getToken() != null && user.getToken().isValid(token)) {
                     EntitySong song = SongCache.getSong(songID);
-                    if(song != null) {
-                        if(!song.isSongFaved(user) && !user.isSongFaved(song)) {
+                    if (song != null) {
+                        if (!song.isSongFaved(user) && !user.isSongFaved(song)) {
                             if (song.favSong(user) && user.favSong(song)) {
                                 SongCache.updateSong(song);
                                 UserCache.updateUser(user);
@@ -626,19 +535,19 @@ public class UserRequests {
                             } else {
                                 result.put("error", "unknownError");
                             }
-                        }else{
+                        } else {
                             result.put("error", "alreadyFav");
                         }
-                    }else{
+                    } else {
                         result.put("error", "unknownSong");
                     }
                 } else {
                     result.put("error", "invalidToken");
                 }
-            }else{
+            } else {
                 result.put("error", "unknownUser");
             }
-        }else{
+        } else {
             result.put("error", "invalidArgs");
         }
 
@@ -647,23 +556,24 @@ public class UserRequests {
 
     /**
      * Remove a song from user's fav list.
-     * @param nick : User's nick.
-     * @param token : User's token.
+     *
+     * @param nick   : User's nick.
+     * @param token  : User's token.
      * @param songID : Song's ID.
      * @return A JSON with response.
      */
     @Path("{nick}/faved-songs/{songId}/delete")
     @DELETE
     public static String unfavSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String token,
-                                   @PathParam("songId") Long songID){
+                                   @PathParam("songId") Long songID) {
         JSONObject result = new JSONObject();
-        if(StringUtils.isValid(nick) && StringUtils.isValid(token)){
+        if (StringUtils.isValid(nick) && StringUtils.isValid(token)) {
             EntityUser user = UserCache.getUser(nick);
-            if(user != null){
+            if (user != null) {
                 if (user.getToken() != null && user.getToken().isValid(token)) {
                     EntitySong song = SongCache.getSong(songID);
-                    if(song != null) {
-                        if(song.isSongFaved(user) && user.isSongFaved(song)) {
+                    if (song != null) {
+                        if (song.isSongFaved(user) && user.isSongFaved(song)) {
                             if (song.unfavSong(user) && user.unfavSong(song)) {
                                 SongCache.updateSong(song);
                                 UserCache.updateUser(user);
@@ -671,25 +581,24 @@ public class UserRequests {
                             } else {
                                 result.put("error", "unknownError");
                             }
-                        }else{
+                        } else {
                             result.put("error", "noFav");
                         }
-                    }else{
+                    } else {
                         result.put("error", "unknownSong");
                     }
                 } else {
                     result.put("error", "invalidToken");
                 }
-            }else{
+            } else {
                 result.put("error", "unknownUser");
             }
-        }else{
+        } else {
             result.put("error", "invalidArgs");
         }
 
         return result.toString();
     }
-
 
 
     static {

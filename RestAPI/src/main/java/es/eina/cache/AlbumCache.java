@@ -47,7 +47,7 @@ public class AlbumCache {
                         tr = session.beginTransaction();
                         session.saveOrUpdate(data);
                         tr.commit();
-                        albums.remove(data.getId());
+                        albums.remove(data.getAlbumId());
                     } catch (Exception e) {
                         if (tr != null) {
                             tr.rollback();
@@ -78,7 +78,7 @@ public class AlbumCache {
     }
 
     public static void addAlbum(EntityAlbum album) {
-        long id = album.getId();
+        long id = album.getAlbumId();
         if (!albums.containsKey(id)) {
             albums.put(id, album);
         }
@@ -110,9 +110,9 @@ public class AlbumCache {
     }
 
     public static boolean updateAlbum(EntityAlbum album){
-        getAlbum(album.getId());
-        if (albums.containsKey(album.getId())){
-            albums.replace(album.getId(),album);
+        getAlbum(album.getAlbumId());
+        if (albums.containsKey(album.getAlbumId())){
+            albums.replace(album.getAlbumId(),album);
             return true;
         }
         return false;
@@ -121,7 +121,7 @@ public class AlbumCache {
     public static boolean deleteAlbum(EntityAlbum album) {
         Transaction tr = null;
         try (Session session = HibernateUtils.getSessionFactory().openSession()) {
-            long id = album.getId();
+            long id = album.getAlbumId();
             tr = session.beginTransaction();
             session.delete(album);
             tr.commit();

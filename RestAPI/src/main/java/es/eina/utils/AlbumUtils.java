@@ -1,37 +1,27 @@
 package es.eina.utils;
 
-import es.eina.RestApp;
-import es.eina.cache.TokenManager;
-import es.eina.cache.UserCache;
-import es.eina.crypt.Crypter;
-import es.eina.sql.MySQLConnection;
-import es.eina.sql.MySQLQueries;
-import es.eina.sql.SQLUtils;
-import es.eina.sql.entities.EntityToken;
-import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntityAlbum;
 import es.eina.sql.entities.EntityUser;
-import es.eina.sql.parameters.SQLParameterString;
 import es.eina.sql.utils.HibernateUtils;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
 import javax.annotation.Nullable;
-import java.sql.SQLException;
 
 public class AlbumUtils {
 
 
-
     /**
      * Add a new album in the database.
-     * @param user : Album creator.
+     *
+     * @param user  : Album creator.
      * @param title : Title given to the album.
-     * @param year : Publish year of the album.
+     * @param year  : Publish year of the album.
      * @param image : Path to the album cover image.
      * @return Null if the album couldn't be created, the actual album if it could be created.
      */
-    public static @Nullable EntityAlbum createAlbum(EntityUser user, String title, int year, String image) {
+    public static @Nullable
+    EntityAlbum createAlbum(EntityUser user, String title, int year, String image) {
 
         Transaction transaction = null;
         EntityAlbum entityAlbum;
@@ -53,21 +43,22 @@ public class AlbumUtils {
         return entityAlbum;
 
     }
-    
+
     /**
      * Deletes an album from the database.
+     *
      * @param album : Album to delete.
-
      * @return True if delete was correct, False otherwise.
      */
     public static boolean deleteAlbum(EntityAlbum album) {
-    	boolean OK = true;
+        boolean OK = true;
         Transaction transaction = null;
         try (Session session = HibernateUtils.getSessionFactory().openSession()) {
             transaction = session.getTransaction();
             transaction.begin();
-            long albumID = album.getId();
-            session.createQuery("DELETE FROM album WHERE id = "+ albumID);
+            long albumID = album.getAlbumId();
+            session.delete(album);
+            //session.createQuery("DELETE FROM album WHERE id = "+ albumID);
 
             transaction.commit();
 

@@ -1,8 +1,10 @@
 package es.eina.requests;
 
 import es.eina.cache.AlbumCache;
+import es.eina.cache.SongCache;
 import es.eina.cache.UserCache;
 import es.eina.sql.entities.EntityAlbum;
+import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntityUser;
 import es.eina.utils.AlbumUtils;
 import es.eina.utils.StringUtils;
@@ -48,7 +50,7 @@ public class AlbumRequests {
 							if(year > 1900) {
 								EntityAlbum album = AlbumUtils.createAlbum(user, title, year, image);
 								if(album != null && AlbumCache.saveEntity(album)){
-									albumJSON.put("id", album.getId());
+									albumJSON.put("id", album.getAlbumId());
 									albumJSON.put("user_id", album.getUserId());
 									albumJSON.put("title", album.getTitle());
 									albumJSON.put("publish_year", album.getPublishYear());
