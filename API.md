@@ -396,3 +396,34 @@ Types:
 | *"country"* | String |
 | *"upload_time"* | Long |
 | *"error"* | String |
+
+#### GET /songs/{id}/recommend?n={amount}
+This requests returns a list of a maximum of n songs recommended due to its similarity with {id}.
+
+Accepts the following parameters in an HTTP GET request:
+  - id => Song id.
+  - n => Number of songs to retrieve
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "amount":"{AMOUNT}",
+    "songs": "{ARRAY_OF_SONG_IDS}",
+    "error" : "{ERROR_CODE}"
+  }
+```
+
+Other {ERROR_CODE}s are:
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| invalidArgs | *id* is lower or equal to zero. |
+| unknownSong | No song is registered with that id |
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"songs"* | JSONArray of Integer |
+| *"amount"* | Integer |
+| *"error"* | String |
