@@ -1,5 +1,7 @@
 package es.eina.sql.entities;
 
+import org.json.JSONArray;
+
 import javax.persistence.*;
 import java.util.*;
 
@@ -21,7 +23,7 @@ public class EntityAlbum extends EntityBase {
     private int publishYear;
 
     @Column(name = "upload_time",nullable = false)
-    private long uploadTime;
+    private long creationTime;
     
     @Column(name = "image",nullable = false)
     private String image;	//es un URI de una imagen
@@ -42,7 +44,7 @@ public class EntityAlbum extends EntityBase {
         this.title = title;
         this.publishYear = year;
         this.image = image;
-        this.uploadTime = System.currentTimeMillis();
+        this.creationTime = System.currentTimeMillis();
 
         update();
     }
@@ -58,7 +60,7 @@ public class EntityAlbum extends EntityBase {
     	boolean OK;
     	OK = this.songs.add(song);
     	if(OK) {
-    		this.uploadTime = System.currentTimeMillis();
+    		this.creationTime = System.currentTimeMillis();
 
         	update();
     	}
@@ -77,7 +79,7 @@ public class EntityAlbum extends EntityBase {
     	boolean OK;
     	OK = this.songs.remove(song);
     	if(OK) {
-    		this.uploadTime = System.currentTimeMillis();
+    		this.creationTime = System.currentTimeMillis();
 
         	update();
     	}
@@ -101,8 +103,8 @@ public class EntityAlbum extends EntityBase {
         return publishYear;
     }
 
-    public long getUploadTime() {
-        return uploadTime;
+    public long getCreationTime() {
+        return creationTime;
     }
     
     public String getImage() {
@@ -113,12 +115,12 @@ public class EntityAlbum extends EntityBase {
     	return songs;
     }
     
-    public String getSongStrings() {
-    	String s = "";
+    public JSONArray getSongsAsArray() {
+    	JSONArray arr = new JSONArray();
     	for (EntitySong song: songs) {
-    		s = s + Long.toString(song.getId()) + " , ";
+    	    arr.put(song.getId());
     	}
-    	return s;
+    	return arr;
     }
 
 }

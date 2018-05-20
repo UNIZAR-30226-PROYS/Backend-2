@@ -1,10 +1,7 @@
 package es.eina.requests;
 
 import es.eina.cache.AlbumCache;
-import es.eina.cache.SongCache;
 import es.eina.cache.UserCache;
-import es.eina.geolocalization.Geolocalizer;
-import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntityAlbum;
 import es.eina.sql.entities.EntityUser;
 import es.eina.utils.AlbumUtils;
@@ -54,10 +51,10 @@ public class AlbumRequests {
 									albumJSON.put("id", album.getAlbumId());
 									albumJSON.put("user_id", album.getUserId());
 									albumJSON.put("title", album.getTitle());
-									albumJSON.put("publishYear", album.getPublishYear());
-									albumJSON.put("upload_time", album.getUploadTime());
+									albumJSON.put("publish_year", album.getPublishYear());
+									albumJSON.put("creation_time", album.getCreationTime());
 									albumJSON.put("image", album.getImage());
-									albumJSON.put("songs", album.getSongStrings());
+									albumJSON.put("songs", album.getSongsAsArray());
 									obj.put("error", "ok");
 								}else {
 									obj.put("error", "unknownError");
@@ -129,7 +126,7 @@ public class AlbumRequests {
     	defaultAlbumJSON.put("user_id", -1L);
     	defaultAlbumJSON.put("title", "");
     	defaultAlbumJSON.put("publish_year", -1);
-    	defaultAlbumJSON.put("upload_time", -1L);
+    	defaultAlbumJSON.put("creation_time", -1L);
     	defaultAlbumJSON.put("image", "");
     }
 
