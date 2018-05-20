@@ -351,7 +351,7 @@ Types:
 
 ### **/albums**
 
-#### POST /{nick}/create
+#### POST /albums/{nick}/create
 This requests creates a new album whose author is {nick}.
 
 Accepts the following parameters in an HTTP POST request:
@@ -403,7 +403,7 @@ Types:
 | *"songs"* | SongIdArray |
 | *"error"* | String |
 
-#### POST /{albumID}/delete
+#### POST /albums/{albumID}/delete
 This requests deletes an existing album whose id is {albumID}.
 
 Accepts the following parameters in an HTTP POST request:
@@ -434,7 +434,7 @@ Types:
 | :---: |:---|
 | *"error"* | String |
 
-#### POST /{nick}/{albumID}/add
+#### POST /albums/{nick}/{albumID}/add
 This requests adds an existing song to an existing album whose id is {albumID}.
 
 Accepts the following parameters in an HTTP POST request:
@@ -471,7 +471,7 @@ Types:
 | :---: |:---|
 | *"error"* | String |
 
-#### POST /{nick}/{albumID}/delete
+#### POST /albums/{nick}/{albumID}/delete
 This requests deletes an existing song from an existing album whose id is {albumID}.
 
 Accepts the following parameters in an HTTP POST request:
