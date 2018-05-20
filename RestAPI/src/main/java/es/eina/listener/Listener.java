@@ -56,7 +56,6 @@ public class Listener implements ServletContextListener,
 		System.out.println("Close MySQL");
 		cache.cancel();
 		TaskBase.cleanUp();
-		UserCache.forceSave();
 		HibernateUtils.shutdown();
 	}
 

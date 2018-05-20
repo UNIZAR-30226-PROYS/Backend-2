@@ -24,4 +24,12 @@ public class CleanUpCache extends TaskBase {
 
         //RestApp.getSql().runAsyncUpdate(MySQLQueries.DELETE_EXPIRED_TOKENS, new SQLParameterLong(time));
     }
+
+    @Override
+    public boolean cancel() {
+        UserCache.forceSave();
+        SongCache.forceSave();
+        AlbumCache.forceSave();
+        return super.cancel();
+    }
 }
