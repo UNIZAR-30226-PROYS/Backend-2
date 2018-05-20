@@ -348,3 +348,57 @@ Types:
 | *"country"* | String |
 | *"upload_time"* | Long |
 | *"error"* | String |
+
+### **/albums**
+
+#### POST /{nick}/create
+This requests creates a new album whose author is {nick}.
+
+Accepts the following parameters in an HTTP POST request:
+  - nick => Author of the album.
+  - token => Login token of the author
+  - title => Album title
+  - image => Album cover
+  - year => Album creation year
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "album": {
+      "creation_time": "{CREATION_TIME}",
+      "image": "{IMAGE}",
+      "publish_year": "{YEAR}",
+      "user_id": "{AUTHOR}",
+      "songs": ["{SONG_ID}"],
+      "id": "{ID}",
+      "title": "{TITLE}"
+    },
+    "error" : "{ERROR_CODE}"
+  }
+```
+
+If *"error"* is not "ok", the album will be empty, this means, all fields will be defined **but** its value is unspecified.
+
+Other {ERROR_CODE}s are:
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| invalidArgs | *nick*, *token* or *title* is empty or null. |
+| unknownError | An unknown error happened |
+| invalidYear | *Year* field is lower than 1900 |
+| invalidImage | *Image* field is empty |
+| invalidToken | Cannot authenticate *nick* with this *token* |
+| unknownUser | No user is registered in DB with name *nick* |
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"id"* | Long |
+| *"user_id"* | Long |
+| *"title"* | String |
+| *"image"* | String |
+| *"creation_time"* | Long |
+| *"publish_year"* | Integer |
+| *"songs"* | SongIdArray |
+| *"error"* | String |
