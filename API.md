@@ -402,3 +402,34 @@ Types:
 | *"publish_year"* | Integer |
 | *"songs"* | SongIdArray |
 | *"error"* | String |
+
+#### POST /{albumID}/delete
+This requests deletes an existing album whose id is {albumID}.
+
+Accepts the following parameters in an HTTP POST request:
+  - albumID => Album unique id
+  - nick => Author of the album.
+  - token => Login token of the author
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "error" : "{ERROR_CODE}"
+  }
+```
+
+Other {ERROR_CODE}s are:
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| invalidArgs | *nick* or *token* is empty or null. |
+| invalidAlbum | *albumID* is lower or equal to zero. |
+| invalidToken | Cannot authenticate *nick* with this *token*. |
+| unknownUser | No user is registered in DB with name *nick*. |
+| unknownAlbum | No album is registered in DB with id *albumID*. |
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"error"* | String |
