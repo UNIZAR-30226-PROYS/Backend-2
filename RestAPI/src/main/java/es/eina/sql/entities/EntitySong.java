@@ -117,9 +117,9 @@ public class EntitySong extends EntityBase {
 
     public boolean removeFromAlbum(){
         if(this.album != null) {
+            album.updateAlbum();
             this.album = null;
             update();
-            album.updateAlbum();
             return true;
         }
 

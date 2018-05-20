@@ -149,21 +149,27 @@ public class AlbumRequests {
 				    if(albumId > 0) {
                         EntityAlbum album = AlbumCache.getAlbum(albumId);
                         if (album != null) {
-                            if(songId > 0) {
-                                EntitySong song = SongCache.getSong(songId);
-                                if (song != null) {
-                                    if(song.setAlbum(album)){
-                                        AlbumCache.updateAlbum(album);
-                                        obj.put("error", "ok");
+                                if (songId > 0) {
+                                    EntitySong song = SongCache.getSong(songId);
+                                    if (song != null) {
+                                        if(album.getUserId() == user.getId() && album.getUserId() == song.getUserId()) {
+                                            if (song.setAlbum(album)) {
+                                                AlbumCache.updateAlbum(album);
+                                                obj.put("error", "ok");
+                                            } else {
+                                                obj.put("error", "alreadyAdded");
+                                            }
+                                        }else{
+                                            obj.put("error", "notAuthor");
+                                        }
                                     } else {
-                                        obj.put("error", "alreadyAdded");
+                                        obj.put("error", "unknownSong");
                                     }
+
                                 } else {
-                                    obj.put("error", "unknownSong");
+                                    obj.put("error", "invalidSong");
                                 }
-                            }else{
-                                obj.put("error", "invalidSong");
-                            }
+
                         } else {
                             obj.put("error", "unknownAlbum");
                         }
@@ -194,32 +200,44 @@ public class AlbumRequests {
 	 *
 	 * @return The result of this request.
 	 */
-	@Path("/{nick}/{albumID}/{songId}/delete")
-	@DELETE
+	@Path("/{nick}/{albumID}/delete")
+	@POST
 	public String removeSongFromAlbum(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
-						 @PathParam("albumID") long albumId, @PathParam("songId") long songId){
+						 @PathParam("albumID") long albumId, @FormParam("songId") long songId){
 		JSONObject obj = new JSONObject();
 
 		if(StringUtils.isValid(nick) && StringUtils.isValid(userToken)){
 			EntityUser user = UserCache.getUser(nick);
 			if(user != null){
 				if (user.getToken() != null && user.getToken().isValid(userToken)) {
-					EntityAlbum album = AlbumCache.getAlbum(albumId);
-					if (album != null) {
-						EntitySong song = SongCache.getSong(songId);
-						if(song != null){
-							if( song.removeFromAlbum()) {
-                                AlbumCache.updateAlbum(album);
-								obj.put("error", "ok");
-							}else{
-								obj.put("error", "alreadyRemoved");
-							}
-						}else {
-							obj.put("error", "unknownSong");
-						}
-					}else{
-						obj.put("error", "unknownAlbum");
-					}
+				    if(albumId > 0) {
+                        EntityAlbum album = AlbumCache.getAlbum(albumId);
+                        if (album != null) {
+                            if(album.getUserId() == user.getId()) {
+                                if (songId > 0) {
+                                    EntitySong song = SongCache.getSong(songId);
+                                    if (song != null) {
+                                        if (song.removeFromAlbum()) {
+                                            AlbumCache.updateAlbum(album);
+                                            obj.put("error", "ok");
+                                        } else {
+                                            obj.put("error", "alreadyRemoved");
+                                        }
+                                    } else {
+                                        obj.put("error", "unknownSong");
+                                    }
+                                } else {
+                                    obj.put("error", "invalidSong");
+                                }
+                            }else{
+                                obj.put("error", "notAuthor");
+                            }
+                        } else {
+                            obj.put("error", "unknownAlbum");
+                        }
+                    } else {
+                        obj.put("error", "invalidAlbum");
+                    }
 				} else {
 					obj.put("error", "invalidToken");
 				}
