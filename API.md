@@ -433,3 +433,77 @@ Types:
 | Parameter | Type |
 | :---: |:---|
 | *"error"* | String |
+
+#### POST /{nick}/{albumID}/add
+This requests adds an existing song to an existing album whose id is {albumID}.
+
+Accepts the following parameters in an HTTP POST request:
+  - albumID => Album unique id
+  - nick => Author of the album.
+  - token => Login token of the author
+  - songId => Song id ({nick} must also be the author of this song)
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "error" : "{ERROR_CODE}"
+  }
+```
+
+Other {ERROR_CODE}s are:
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| alreadyAdded | This song has already been added to an album |
+| notAuthor | This user is not the author of the album/song |
+| invalidSong | *songId* is lower or equal than zero. |
+| unknownSong | *songId* does not represent any song in the DB. |
+| invalidAlbum | *albumID* is lower or equal than zero. |
+| unknownAlbum | *albumID* does not represent any song in the DB. |
+| invalidToken | Cannot authenticate *nick* with this *token*. |
+| unknownUser | No user is registered in DB with name *nick*. |
+| invalidArgs | *nick* or *token* is empty or null. |
+
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"error"* | String |
+
+#### POST /{nick}/{albumID}/delete
+This requests deletes an existing song from an existing album whose id is {albumID}.
+
+Accepts the following parameters in an HTTP POST request:
+  - albumID => Album unique id
+  - nick => Author of the album.
+  - token => Login token of the author
+  - songId => Song id ({nick} must also be the author of this song)
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "error" : "{ERROR_CODE}"
+  }
+```
+
+Other {ERROR_CODE}s are:
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| alreadyDeleted | This song has no album assigned |
+| notAuthor | This user is not the author of the album/song |
+| invalidSong | *songId* is lower or equal than zero. |
+| unknownSong | *songId* does not represent any song in the DB. |
+| invalidAlbum | *albumID* is lower or equal than zero. |
+| unknownAlbum | *albumID* does not represent any song in the DB. |
+| invalidToken | Cannot authenticate *nick* with this *token*. |
+| unknownUser | No user is registered in DB with name *nick*. |
+| invalidArgs | *nick* or *token* is empty or null. |
+
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"error"* | String |
