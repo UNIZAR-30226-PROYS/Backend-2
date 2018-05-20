@@ -43,11 +43,10 @@ public class AlbumRequests {
         JSONObject obj = new JSONObject();
         JSONObject albumJSON = new JSONObject(defaultAlbumJSON, JSONObject.getNames(defaultAlbumJSON));
 
-		if(StringUtils.isValid(nick) && StringUtils.isValid(userToken) && StringUtils.isValid(title)){
+		if(StringUtils.isValid(nick) && StringUtils.isValid(userToken) && StringUtils.isValid(title, 1, 255)){
 			EntityUser user = UserCache.getUser(nick);
 			if(user != null){
 				if (user.getToken() != null && user.getToken().isValid(userToken)) {
-					if(StringUtils.isValid(title,1,255)) {
 						if(StringUtils.isValid(image)) {
 							if(year > 1900) {
 								EntityAlbum album = AlbumUtils.createAlbum(user, title, year, image);
@@ -69,9 +68,6 @@ public class AlbumRequests {
 						}else {
 							obj.put("error", "invalidImage");
 						}
-					}else {
-						obj.put("error", "invalidTitle");
-					}
 				} else {
 					obj.put("error", "invalidToken");
 				}
@@ -96,9 +92,9 @@ public class AlbumRequests {
 	 *
 	 * @return The result of this request.
      */
-    @Path("/{nick}/{albumID}/delete")
+    @Path("/{albumID}/delete")
     @DELETE
-    public String delete(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
+    public String delete(@FormParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
 						 @PathParam("albumID") long albumId){
     	JSONObject obj = new JSONObject();
 
