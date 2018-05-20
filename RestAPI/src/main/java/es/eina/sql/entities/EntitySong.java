@@ -28,8 +28,8 @@ public class EntitySong extends EntityBase {
     @JoinColumn(name = "user_id", insertable=false, updatable=false)
     private EntityUser user;
 
-    @ManyToMany (mappedBy = "song_list")
-    private Set<EntitySongList> lists = new HashSet<>();
+
+
 
 
     /**
@@ -57,4 +57,5 @@ public class EntitySong extends EntityBase {
     public long getUploadTime() {
         return uploadTime;
     }
+
 }

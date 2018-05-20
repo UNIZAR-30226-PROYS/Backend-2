@@ -34,8 +34,10 @@ public class EntitySongList extends EntityBase{
             joinColumns = { @JoinColumn(name = "list_id")},
             inverseJoinColumns = {@JoinColumn(name = "song_id")}
     )
-    Set<EntitySong> songs = new HashSet<>();
+    private Set<EntitySong> songs = new HashSet<>();
 
+    @ManyToMany (mappedBy = "following")
+    private Set<EntityUser> followers = new HashSet<>();
     /**
      * DO NOT use this method as it can only be used by Hibernate
      */
@@ -71,5 +73,19 @@ public class EntitySongList extends EntityBase{
     }
     public void removeSong(EntitySong song){
         this.songs.remove(song);
+    }
+
+    public Set<EntityUser> getFollowed() {
+        return followers;
+    }
+
+    public void setFollowed(Set<EntityUser> followedby) {
+        this.followers = followedby;
+    }
+    public void addfollower(EntityUser user){
+        this.followers.add(user);
+    }
+    public void removefollower(EntityUser user){
+        this.followers.remove(user);
     }
 }

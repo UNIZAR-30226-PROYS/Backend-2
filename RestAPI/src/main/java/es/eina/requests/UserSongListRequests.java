@@ -87,10 +87,12 @@ public class UserSongListRequests {
             if(user != null){
                 List<EntitySongList> songlists = SongListCache.getSongLists(nick);
                 result.put("size", songlists.size());
+                JSONArray jsonarray = new JSONArray();
                 for (EntitySongList song: songlists
                      ) {
-                    result.put(Objects.toString(song.getId()),song);
+                    jsonarray.put(song.getId());
                 }
+                result.put("id", jsonarray);
                 result.put("error", "ok");
             }else{
                 result.put("error", "unknownUser");
