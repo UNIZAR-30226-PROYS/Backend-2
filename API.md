@@ -365,7 +365,7 @@ RestAPI will answer with this JSON response:
 ```json
   {
     "album": {
-      "creation_time": "{CREATION_TIME}",
+      "update_time": "{UPDATE_TIME}",
       "image": "{IMAGE}",
       "publish_year": "{YEAR}",
       "user_id": "{AUTHOR}",
@@ -398,7 +398,7 @@ Types:
 | *"user_id"* | Long |
 | *"title"* | String |
 | *"image"* | String |
-| *"creation_time"* | Long |
+| *"update_time"* | Long |
 | *"publish_year"* | Integer |
 | *"songs"* | SongIdArray |
 | *"error"* | String |
