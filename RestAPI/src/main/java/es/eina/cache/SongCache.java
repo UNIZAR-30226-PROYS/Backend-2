@@ -90,6 +90,15 @@ public class SongCache {
         return song;
     }
 
+    public static boolean updateSong(EntitySong song){
+        getSong(song.getId());
+        if (songs.containsKey(song.getId())){
+            songs.replace(song.getId(),song);
+            return true;
+        }
+        return false;
+    }
+
     public static boolean deleteSong(EntitySong song) {
         Transaction tr = null;
         try (Session session = HibernateUtils.getSessionFactory().openSession()) {

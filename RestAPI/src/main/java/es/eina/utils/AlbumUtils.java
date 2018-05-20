@@ -1,12 +1,23 @@
 package es.eina.utils;
 
+import es.eina.RestApp;
+import es.eina.cache.TokenManager;
+import es.eina.cache.UserCache;
+import es.eina.crypt.Crypter;
+import es.eina.sql.MySQLConnection;
+import es.eina.sql.MySQLQueries;
+import es.eina.sql.SQLUtils;
+import es.eina.sql.entities.EntityToken;
+import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntityAlbum;
 import es.eina.sql.entities.EntityUser;
+import es.eina.sql.parameters.SQLParameterString;
 import es.eina.sql.utils.HibernateUtils;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
 import javax.annotation.Nullable;
+import java.sql.SQLException;
 
 public class AlbumUtils {
 
@@ -55,7 +66,7 @@ public class AlbumUtils {
         try (Session session = HibernateUtils.getSessionFactory().openSession()) {
             transaction = session.getTransaction();
             transaction.begin();
-            long albumID = album.getAlbumId();
+            long albumID = album.getId();
             session.createQuery("DELETE FROM album WHERE id = "+ albumID);
 
             transaction.commit();

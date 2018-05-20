@@ -40,11 +40,15 @@ public class EntitySong extends EntityBase {
     @ManyToMany(mappedBy = "songsLiked")
     Set<EntityUser> usersLikers = new HashSet<>();
 
+    @Column
+    private long likes;
+
     @ManyToMany(mappedBy = "songsFaved")
     Set<EntityUser> usersFavers = new HashSet<>();
 
-//    @ManyToMany(mappedBy = "user")
-//    Set<EntityUser> usersListeners = new HashSet<>();
+    @ManyToMany(mappedBy = "songsListened")
+    LinkedList<EntityUser> usersListeners = new LinkedList<>();
+
 
     /**
      * DO NOT use this method as it can only be used by Hibernate
@@ -83,11 +87,11 @@ public class EntitySong extends EntityBase {
 
     public boolean isSongLiked(EntityUser user){ return this.usersLikers.contains(user); }
 
-    public boolean likeSong(EntityUser user){ return this.usersLikers.add(user); }
+    public boolean likeSong(EntityUser user){ if (this.usersLikers.add(user)){ this.likes++; return true;}else{ return false; }}
 
-    public boolean unlikeSong(EntityUser user){ return this.usersLikers.remove(user); }
+    public boolean unlikeSong(EntityUser user){ if (this.usersLikers.remove(user)){ this.likes--; return true;}else{ return false; }}
 
-    public long getLikes(){ return this.usersLikers.size();}
+    public long getLikes(){ return this.likes;}
 
     public boolean isSongFaved(EntityUser user){ return this.usersFavers.contains(user); }
 
@@ -95,5 +99,6 @@ public class EntitySong extends EntityBase {
 
     public boolean unfavSong(EntityUser user){ return this.usersFavers.remove(user); }
 
+    public boolean addListener(EntityUser user){ if (this.usersListeners.offerFirst(user)){ this.listened++; return true;}else{ return false; }}
 
 }

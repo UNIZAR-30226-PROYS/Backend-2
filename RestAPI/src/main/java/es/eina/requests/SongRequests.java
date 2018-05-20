@@ -42,6 +42,29 @@ public class SongRequests {
         return obj.toString();
     }
 
+
+    /**
+     * Obtains song's likes in the database.
+     * @param id : Song's ID.
+     * @return A JSON with response.
+     */
+    @Path("/{id}/likes")
+    @GET
+    public static String getLikes(@PathParam("id") long id){
+        JSONObject result = new JSONObject();
+        EntitySong song = SongCache.getSong(id);
+        if(song != null) {
+            long likes = song.getLikes();
+            result.put("likes", String.valueOf(likes));
+            result.put("error", "ok");
+        }else{
+            result.put("error", "unknownSong");
+        }
+
+        return result.toString();
+    }
+
+
     @Path("/{id}/lyrics")
     @GET
     public String getSongLyrics(@PathParam("id") long id){

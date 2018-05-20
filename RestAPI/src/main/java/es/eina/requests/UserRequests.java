@@ -1,14 +1,22 @@
 package es.eina.requests;
 
+import es.eina.RestApp;
+import es.eina.cache.AlbumCache;
 import es.eina.cache.SongCache;
 import es.eina.cache.UserCache;
 import es.eina.geolocalization.Geolocalizer;
+import es.eina.sql.MySQLConnection;
+import es.eina.sql.MySQLQueries;
+import es.eina.sql.entities.EntityAlbum;
 import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntityToken;
 import es.eina.sql.entities.EntityUser;
+import es.eina.sql.parameters.SQLParameterInteger;
+import es.eina.sql.parameters.SQLParameterString;
 import es.eina.utils.StringUtils;
 import es.eina.utils.UserUtils;
 import org.apache.commons.validator.routines.EmailValidator;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -18,6 +26,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 @Path("/users/")
 @Produces(MediaType.APPLICATION_JSON)
@@ -352,6 +362,89 @@ public class UserRequests {
         return obj.toString();
     }
 
+    /**
+     * Perform a search of the user comments.
+     * <p>
+     * URI: /users/{user}/comments[?n={amount}]
+     * </p>
+     *
+     * @param user   : Username of a user to search
+     * @param number : Maximum amount of comments to return.
+     * @return The result of this search as specified in API.
+     */
+    @Path("/{user}/comments")
+    @GET
+    public String getUserComments(
+            @PathParam("user") String user,
+            @DefaultValue("" + DEFAULT_COMMENT_NUMBER) @QueryParam("n") int number
+    ) {
+        JSONObject obj = new JSONObject();
+        JSONArray array = new JSONArray();
+        ResultSet set = RestApp.getSql().runAsyncQuery(MySQLQueries.GET_USER_COMMENTS, new SQLParameterString(user), new SQLParameterInteger(number));
+
+        try {
+            while (set.next()) {
+                JSONObject object = new JSONObject(defaultCommentJSON, JSONObject.getNames(defaultCommentJSON));
+                object.put("id", set.getString("opinion_id"));
+                object.put("product", set.getString("user_id"));
+                object.put("user", user);
+                object.put("title", set.getString("title"));
+                object.put("rate", set.getString("product_mark"));
+                object.put("text", set.getString("opinion_text"));
+
+                array.put(object);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            MySQLConnection.closeStatement(set);
+        }
+
+        obj.put("user", user);
+        obj.put("number", array.length());
+        obj.put("comments", array);
+
+        return obj.toString();
+    }
+
+    /**
+     * Search for a specific comment of a user.
+     * <p>
+     * URI: /users/{user}/comments/{comment_id}
+     * </p>
+     *
+     * @param user       : Username of a user to search
+     * @param comment_id : Id of a comment.
+     * @return The result of this search as specified in API.
+     */
+    @Path("/{user}/comments/{comment_id}")
+    @GET
+    public String getUserComment(
+            @PathParam("user") String user,
+            @PathParam("comment_id") int comment_id
+    ) {
+
+        JSONObject object = new JSONObject(defaultCommentJSON, JSONObject.getNames(defaultCommentJSON));
+        ResultSet set = RestApp.getSql().runAsyncQuery(MySQLQueries.GET_USER_COMMENT, new SQLParameterString(user), new SQLParameterInteger(comment_id));
+
+        try {
+            if (set.next()) {
+                object.put("id", set.getString("opinion_id"));
+                object.put("product", set.getString("user_id"));
+                object.put("user", user);
+                object.put("title", set.getString("title"));
+                object.put("rate", set.getString("product_mark"));
+                object.put("text", set.getString("opinion_text"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            MySQLConnection.closeStatement(set);
+        }
+
+        return object.toString();
+    }
+
     @Path("/{user}/songs")
     @GET
     public String getUserSongs(@PathParam("user") String user){
@@ -391,7 +484,13 @@ public class UserRequests {
                 if (user.getToken() != null && user.getToken().isValid(userToken)) {
                     EntitySong song = SongCache.getSong(songId);
                     if(song != null){
-//añadir cancion a algun sitio e incrementar escucha
+                        if (song.addListener(user) && user.listenSong(song)) {
+                            SongCache.updateSong(song);
+                            UserCache.updateUser(user);
+                            result.put("error", "ok");
+                        } else {
+                            result.put("error", "unknownError");
+                        }
                     }else{
                         result.put("error", "unknownSong");
                     }
@@ -407,6 +506,188 @@ public class UserRequests {
 
         return result.toString();
 
+    }
+
+
+    /**
+     * Add a new like in the database.
+     * @param nick : User's nick.
+     * @param token : User's token.
+     * @param songID : Song's ID.
+     * @return A JSON with response.
+     */
+    @Path("{nick}/liked-songs/add")
+    @POST
+    public static String likeSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String token,
+                                  @FormParam("songId") Long songID){
+        JSONObject result = new JSONObject();
+        if(StringUtils.isValid(nick) && StringUtils.isValid(token)){
+            EntityUser user = UserCache.getUser(nick);
+            if(user != null){
+                if (user.getToken() != null && user.getToken().isValid(token)) {
+                    EntitySong song = SongCache.getSong(songID);
+                    if(song != null) {
+                        if(!song.isSongLiked(user) && !user.isSongLiked(song)) {
+                            if (song.likeSong(user) && user.likeSong(song)) {
+                                SongCache.updateSong(song);
+                                UserCache.updateUser(user);
+                                result.put("error", "ok");
+                            } else {
+                                result.put("error", "unknownError");
+                            }
+                        }else{
+                            result.put("error", "alreadyLike");
+                        }
+                    }else{
+                        result.put("error", "unknownSong");
+                    }
+                } else {
+                    result.put("error", "invalidToken");
+                }
+            }else{
+                result.put("error", "unknownUser");
+            }
+        }else{
+            result.put("error", "invalidArgs");
+        }
+
+        return result.toString();
+    }
+
+    /**
+     * Remove a  like in the database.
+     * @param nick : User's nick.
+     * @param token : User's token.
+     * @param songID : Song's ID.
+     * @return A JSON with response.
+     */
+    @Path("{nick}/liked-songs/{songId}/delete")
+    @DELETE
+    public static String unlikeSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String token,
+                                    @PathParam("songId") Long songID){
+        JSONObject result = new JSONObject();
+        if(StringUtils.isValid(nick) && StringUtils.isValid(token)){
+            EntityUser user = UserCache.getUser(nick);
+            if(user != null){
+                if (user.getToken() != null && user.getToken().isValid(token)) {
+                    EntitySong song = SongCache.getSong(songID);
+                    if(song != null) {
+                        if(song.isSongLiked(user) && user.isSongLiked(song)) {
+                            if (song.unlikeSong(user) && user.unlikeSong(song)) {
+                                SongCache.updateSong(song);
+                                UserCache.updateUser(user);
+                                result.put("error", "ok");
+                            } else {
+                                result.put("error", "unknownError");
+                            }
+                        }else{
+                            result.put("error", "noLike");
+                        }
+                    }else{
+                        result.put("error", "unknownSong");
+                    }
+                } else {
+                    result.put("error", "invalidToken");
+                }
+            }else{
+                result.put("error", "unknownUser");
+            }
+        }else{
+            result.put("error", "invalidArgs");
+        }
+
+        return result.toString();
+    }
+
+
+    /**
+     * Add a song to user's fav list.
+     * @param nick : User's nick.
+     * @param token : User's token.
+     * @param songID : Song's ID.
+     * @return A JSON with response.
+     */
+    @Path("{nick}/faved-songs/add")
+    @POST
+    public static String favSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String token,
+                                 @FormParam("songId") Long songID){
+        JSONObject result = new JSONObject();
+        if(StringUtils.isValid(nick) && StringUtils.isValid(token)){
+            EntityUser user = UserCache.getUser(nick);
+            if(user != null){
+                if (user.getToken() != null && user.getToken().isValid(token)) {
+                    EntitySong song = SongCache.getSong(songID);
+                    if(song != null) {
+                        if(!song.isSongFaved(user) && !user.isSongFaved(song)) {
+                            if (song.favSong(user) && user.favSong(song)) {
+                                SongCache.updateSong(song);
+                                UserCache.updateUser(user);
+                                result.put("error", "ok");
+                            } else {
+                                result.put("error", "unknownError");
+                            }
+                        }else{
+                            result.put("error", "alreadyFav");
+                        }
+                    }else{
+                        result.put("error", "unknownSong");
+                    }
+                } else {
+                    result.put("error", "invalidToken");
+                }
+            }else{
+                result.put("error", "unknownUser");
+            }
+        }else{
+            result.put("error", "invalidArgs");
+        }
+
+        return result.toString();
+    }
+
+    /**
+     * Remove a song from user's fav list.
+     * @param nick : User's nick.
+     * @param token : User's token.
+     * @param songID : Song's ID.
+     * @return A JSON with response.
+     */
+    @Path("{nick}/faved-songs/{songId}/delete")
+    @DELETE
+    public static String unfavSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String token,
+                                   @PathParam("songId") Long songID){
+        JSONObject result = new JSONObject();
+        if(StringUtils.isValid(nick) && StringUtils.isValid(token)){
+            EntityUser user = UserCache.getUser(nick);
+            if(user != null){
+                if (user.getToken() != null && user.getToken().isValid(token)) {
+                    EntitySong song = SongCache.getSong(songID);
+                    if(song != null) {
+                        if(song.isSongFaved(user) && user.isSongFaved(song)) {
+                            if (song.unfavSong(user) && user.unfavSong(song)) {
+                                SongCache.updateSong(song);
+                                UserCache.updateUser(user);
+                                result.put("error", "ok");
+                            } else {
+                                result.put("error", "unknownError");
+                            }
+                        }else{
+                            result.put("error", "noFav");
+                        }
+                    }else{
+                        result.put("error", "unknownSong");
+                    }
+                } else {
+                    result.put("error", "invalidToken");
+                }
+            }else{
+                result.put("error", "unknownUser");
+            }
+        }else{
+            result.put("error", "invalidArgs");
+        }
+
+        return result.toString();
     }
 
 
