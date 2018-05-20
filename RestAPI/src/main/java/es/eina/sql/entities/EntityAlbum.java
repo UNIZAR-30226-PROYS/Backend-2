@@ -10,6 +10,7 @@ import java.util.*;
 public class EntityAlbum extends EntityBase {
 
     @Id
+    @GeneratedValue
     @Column(name = "id",nullable = false)
     private long id;
 

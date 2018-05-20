@@ -80,7 +80,7 @@ public class EntityUser extends EntityBase {
             joinColumns = { @JoinColumn(name = "user_id")},
             inverseJoinColumns = {@JoinColumn(name = "song_id")}
     )
-    LinkedList<EntitySong> songsListened = new LinkedList<>();
+    Set<EntitySong> songsListened = new HashSet<>();
 
     /**
      * DO NOT use this method as it can only be used by Hibernate
@@ -272,7 +272,6 @@ public class EntityUser extends EntityBase {
 
     public boolean unfavSong(EntitySong song){ return this.songsFaved.remove(song);}
 
-    public boolean listenSong(EntitySong song){ return this.songsListened.offerFirst(song);}
+    public boolean listenSong(EntitySong song){ return this.songsListened.add(song);}
 
-    public EntitySong getLastSong(){ return this.songsListened.getFirst();}
 }

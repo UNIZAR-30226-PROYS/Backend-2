@@ -47,7 +47,7 @@ public class EntitySong extends EntityBase {
     Set<EntityUser> usersFavers = new HashSet<>();
 
     @ManyToMany(mappedBy = "songsListened")
-    LinkedList<EntityUser> usersListeners = new LinkedList<>();
+    Set<EntityUser> usersListeners = new HashSet<>();
 
 
     /**
@@ -99,6 +99,13 @@ public class EntitySong extends EntityBase {
 
     public boolean unfavSong(EntityUser user){ return this.usersFavers.remove(user); }
 
-    public boolean addListener(EntityUser user){ if (this.usersListeners.offerFirst(user)){ this.listened++; return true;}else{ return false; }}
+    public boolean addListener(EntityUser user){
+        if (this.usersListeners.add(user)){
+            this.listened++;
+            return true;
+        }else{
+            return false;
+        }
+    }
 
 }
