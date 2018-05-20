@@ -1,6 +1,8 @@
 package es.eina.task;
 
 import es.eina.RestApp;
+import es.eina.cache.AlbumCache;
+import es.eina.cache.SongCache;
 import es.eina.cache.UserCache;
 
 public class CleanUpCache extends TaskBase {
@@ -17,6 +19,8 @@ public class CleanUpCache extends TaskBase {
         RestApp.getInstance().getLogger().info("Performing cache clean up.");
         long time = System.currentTimeMillis();
         UserCache.cleanUp(time);
+        AlbumCache.cleanUp(time);
+        SongCache.cleanUp(time);
 
         //RestApp.getSql().runAsyncUpdate(MySQLQueries.DELETE_EXPIRED_TOKENS, new SQLParameterLong(time));
     }
