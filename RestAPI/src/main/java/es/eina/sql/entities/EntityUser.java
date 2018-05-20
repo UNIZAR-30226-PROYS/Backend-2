@@ -11,6 +11,7 @@ import javax.persistence.*;
 import javax.persistence.Entity;
 import java.sql.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity(name="user")
@@ -53,13 +54,13 @@ public class EntityUser extends EntityBase {
     @OneToOne(mappedBy = "user")
     private EntityUserValues userValues;
 
-    @ManyToMany
+    @ManyToMany ()
     @JoinTable(
             name = "song_list_user_follows",
-            joinColumns = { @JoinColumn(name = "user_id")},
-            inverseJoinColumns = {@JoinColumn(name = "song_list_id")}
+            joinColumns = { @JoinColumn(name = "user_id", nullable = true, referencedColumnName = "id")},
+            inverseJoinColumns = {@JoinColumn(name = "song_list_id", nullable = true, referencedColumnName = "id")}
     )
-    private Set<EntitySongList> following = new HashSet<>();
+    private Set<EntitySongList> following;
 
     /**
      * DO NOT use this method as it can only be used by Hibernate
@@ -225,6 +226,8 @@ public class EntityUser extends EntityBase {
         return userValues != null && userValues.isVerified();
     }
 
+
+
     public Set<EntitySongList> getFollowing() {
         return following;
     }
@@ -239,4 +242,5 @@ public class EntityUser extends EntityBase {
     public void removefollowimg(EntitySongList songlist){
         this.following.remove(songlist);
     }
+
 }

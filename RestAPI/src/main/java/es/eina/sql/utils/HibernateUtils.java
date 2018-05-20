@@ -92,6 +92,7 @@ public class HibernateUtils {
                     StandardServiceRegistryBuilder.destroy(registry);
                 }
                 e.printStackTrace();
+                System.exit(1);
             }
         }
         return sessionFactory;

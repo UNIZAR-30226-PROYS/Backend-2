@@ -28,7 +28,8 @@ public class EntitySong extends EntityBase {
     @JoinColumn(name = "user_id", insertable=false, updatable=false)
     private EntityUser user;
 
-
+    @ManyToMany (mappedBy = "songs")
+    private Set<EntitySongList> lists = new HashSet<>();
 
 
 

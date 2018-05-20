@@ -36,8 +36,9 @@ public class EntitySongList extends EntityBase{
     )
     private Set<EntitySong> songs = new HashSet<>();
 
-    @ManyToMany (mappedBy = "following")
-    private Set<EntityUser> followers = new HashSet<>();
+    @ManyToMany(mappedBy = "following")
+    private Set<EntityUser> followers;
+
     /**
      * DO NOT use this method as it can only be used by Hibernate
      */
@@ -75,6 +76,7 @@ public class EntitySongList extends EntityBase{
         this.songs.remove(song);
     }
 
+
     public Set<EntityUser> getFollowed() {
         return followers;
     }
@@ -88,4 +90,5 @@ public class EntitySongList extends EntityBase{
     public void removefollower(EntityUser user){
         this.followers.remove(user);
     }
+
 }
