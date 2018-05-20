@@ -26,14 +26,16 @@ public class Recommender extends TaskBase {
     private final Attribute authorAttr;
     private final Attribute countryAttr;
 
+    private int countryId;
+    private Map<String, Integer> countries;
     private Map<Long, Integer> songIds;
-    private Map<Integer, List<Integer>> assignments;
+    private Map<Integer, List<Long>> assignments;
 
     public Recommender(){
         super(1000,900000);
         songIdAttr = new Attribute(SONG_ID_COLUMN);
         authorAttr = new Attribute(AUTHOR_ID_COLUMN);
-        countryAttr = new Attribute(COUNTRY_COLUMN, true);
+        countryAttr = new Attribute(COUNTRY_COLUMN);
 
         attributeList.add(songIdAttr);
         attributeList.add(authorAttr);
@@ -47,21 +49,32 @@ public class Recommender extends TaskBase {
         songIds = new TreeMap<>();
         Instances instances = new Instances("name", attributeList, 10);
         int amount = 0;
+        List<Long> tempSongIds = new ArrayList<>();
         try(Session s = HibernateUtils.getSessionFactory().openSession()) {
             Query<EntitySong> q = s.createQuery("FROM song", EntitySong.class);
 
             List<EntitySong> list = q.getResultList();
             amount = list.size();
             int i = 0;
+            countryId = 0;
+            countries = new HashMap<>();
             for(EntitySong song : list) {
-                DenseInstance instance = new DenseInstance(10);
+
+                String country = song.getCountry();
+                Integer cId = countries.get(country);
+                if(cId == null || cId < 0){
+                    cId = countryId;
+                    countries.put(country, countryId++);
+                }
+
+                DenseInstance instance = new DenseInstance(3);
                 songIds.put(song.getId(), i++);
+                tempSongIds.add(song.getId());
                 instance.setValue(songIdAttr, song.getId());
-                instance.setValue(countryAttr, song.getCountry());
+                instance.setValue(countryAttr, cId);
                 instance.setValue(authorAttr, song.getUserId());
 
                 instances.add(instance);
-                RestApp.getInstance().getLogger().info("Adding " + song.getId());
             }
         }
 
@@ -74,12 +87,13 @@ public class Recommender extends TaskBase {
             assignments = new HashMap<>();
             int[] temp = kMeans.getAssignments();
             for (int i = 0; i < temp.length; i++){
-                List<Integer> l = assignments.getOrDefault(temp[i], new ArrayList<>());
-                l.add(i);
+                List<Long> l = assignments.computeIfAbsent(temp[i], k -> new ArrayList<>());
+                l.add(tempSongIds.get(i));
             }
         } catch (Exception e) {
             RestApp.getInstance().getLogger().severe("Cannot cluster songs from Database.");
             RestApp.getInstance().getLogger().severe(e.getMessage());
+            e.printStackTrace();
         }
 
         RestApp.getInstance().getLogger().info("Finished building recommender system");
@@ -90,9 +104,13 @@ public class Recommender extends TaskBase {
         JSONArray songs = new JSONArray();
         Integer cluster = songIds.get(base.getId());
 
-        List<Integer> clusterAssignments = assignments.getOrDefault(cluster, new ArrayList<>());
-        for(int i = 0; i < Math.min(clusterAssignments.size(), amount); i++){
-            songs.put(clusterAssignments.get(i));
+        if(cluster != null) {
+            List<Long> clusterAssignments = assignments.getOrDefault(cluster, new ArrayList<>());
+            for (int i = 0; i < Math.min(clusterAssignments.size(), amount); i++) {
+                songs.put(clusterAssignments.get(i));
+            }
+        }else{
+            object.put("error", "unknownSong");
         }
 
         object.put("songs", songs);
