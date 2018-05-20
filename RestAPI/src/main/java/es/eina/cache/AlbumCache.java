@@ -89,7 +89,7 @@ public class AlbumCache {
         Transaction tr = null;
         try (Session session = HibernateUtils.getSessionFactory().openSession()) {
             tr = session.beginTransaction();
-            album = session.load(EntityAlbum.class, albumID);
+            album = session.get(EntityAlbum.class, albumID);
             tr.commit();
             addAlbum(album);
         } catch (Exception e) {

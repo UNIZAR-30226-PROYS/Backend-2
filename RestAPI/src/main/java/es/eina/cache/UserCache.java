@@ -108,7 +108,7 @@ public class UserCache {
         Transaction tr = null;
         try (Session session = HibernateUtils.getSessionFactory().openSession()) {
             tr = session.beginTransaction();
-            user = session.load(EntityUser.class, userId);
+            user = session.get(EntityUser.class, userId);
             tr.commit();
             addUser(user);
         } catch (Exception e) {

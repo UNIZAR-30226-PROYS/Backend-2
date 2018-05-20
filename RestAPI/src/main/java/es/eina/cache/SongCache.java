@@ -66,17 +66,18 @@ public class SongCache {
     }
 
     private static EntitySong loadSong(long songId) {
-        EntitySong song = null;
+        EntitySong song;
         Transaction tr = null;
         try (Session session = HibernateUtils.getSessionFactory().openSession()) {
             tr = session.beginTransaction();
-            song = session.load(EntitySong.class, songId);
+            song = session.get(EntitySong.class, songId);
             tr.commit();
             addSong(song);
         } catch (Exception e) {
             if (tr != null) {
                 tr.rollback();
             }
+            song = null;
         }
         return song;
     }
