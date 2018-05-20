@@ -100,6 +100,7 @@ public class Recommender extends TaskBase {
     }
 
     public JSONObject recommend(EntitySong base, int amount){
+        amount = Math.max(10, amount);
         JSONObject object = new JSONObject();
         JSONArray songs = new JSONArray();
         Integer cluster = songIds.get(base.getId());
@@ -109,6 +110,7 @@ public class Recommender extends TaskBase {
             for (int i = 0; i < Math.min(clusterAssignments.size(), amount); i++) {
                 songs.put(clusterAssignments.get(i));
             }
+            object.put("error", "ok");
         }else{
             object.put("error", "unknownSong");
         }
