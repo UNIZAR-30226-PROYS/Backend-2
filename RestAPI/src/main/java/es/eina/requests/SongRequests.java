@@ -1,5 +1,6 @@
 package es.eina.requests;
 
+import es.eina.RestApp;
 import es.eina.cache.SongCache;
 import es.eina.geolocalization.Geolocalizer;
 import es.eina.sql.entities.EntitySong;
@@ -42,6 +43,12 @@ public class SongRequests {
         obj.put("song", songJSON);
 
         return obj.toString();
+    }
+
+    @Path("/{id}/recommend")
+    @GET
+    public String getSongRecommendation(@PathParam("id") long id){
+        return RestApp.getInstance().getRecommender().recommend(SongCache.getSong(id), 10).toString();
     }
 
     static {
