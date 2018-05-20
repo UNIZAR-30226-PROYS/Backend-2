@@ -1,17 +1,21 @@
 package es.eina.sql.entities;
 
+import es.eina.RestApp;
 import es.eina.crypt.Crypter;
 import es.eina.sql.utils.HibernateUtils;
 import es.eina.utils.StringUtils;
 import es.eina.utils.UserUtils;
+import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.annotations.NaturalId;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.persistence.*;
 import javax.persistence.Entity;
+import javax.transaction.Transactional;
 import java.sql.Date;
 import java.util.*;
 
@@ -250,15 +254,17 @@ public class EntityUser extends EntityBase {
         return songs;
     }
 
-    public String getSongStrings() {
-        String s = "";
-        for (EntitySong song: songs) {
-            s = s + Long.toString(song.getId()) + " , ";
+    @Transactional
+    public JSONArray getUserSongs() {
+        JSONArray songs = new JSONArray();
+        try(Session s = HibernateUtils.getSessionFactory().openSession()) {
+            RestApp.getInstance().getLogger().severe("Length: " + this.songs.size());
+            for (EntitySong song : this.songs) {
+                songs.put(song.getId());
+            }
         }
-        return s;
+        return songs;
     }
-
-    public long getSongCounter(){ return this.songs.size();}
 
     public boolean isSongLiked(EntitySong song){ return this.songsLiked.contains(song); }
 
