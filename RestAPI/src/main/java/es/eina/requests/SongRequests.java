@@ -2,8 +2,10 @@ package es.eina.requests;
 
 import es.eina.cache.PopularSongCache;
 import es.eina.cache.SongCache;
+import es.eina.cache.UserCache;
 import es.eina.geolocalization.Geolocalizer;
 import es.eina.sql.entities.EntitySong;
+import es.eina.sql.entities.EntityUser;
 import org.json.JSONObject;
 
 import javax.ws.rs.*;
@@ -56,6 +58,21 @@ public class SongRequests {
     public String getPopularSongs(@PathParam("country") String country, @QueryParam("n") @DefaultValue("" + MAX_POPULAR_SONGS) int amount){
         amount = Math.max(0, Math.min(MAX_POPULAR_SONGS, amount));
         return PopularSongCache.getPopularSongs(amount, country).toString();
+    }
+
+    @Path("/popular/user/{id}/")
+    @GET
+    public String getPopularSongs(@PathParam("id") int id, @QueryParam("n") @DefaultValue("" + MAX_POPULAR_SONGS) int amount){
+        amount = Math.max(1, Math.min(MAX_POPULAR_SONGS, amount));
+
+        EntityUser user = UserCache.getUser(id);
+        if(user != null) {
+            return PopularSongCache.getPopularSongs(amount, user.getCountry()).toString();
+        }else{
+            JSONObject obj = new JSONObject();
+            obj.put("error", "unknownUser");
+            return obj.toString();
+        }
     }
 
     static {
