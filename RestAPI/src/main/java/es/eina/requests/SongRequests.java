@@ -84,7 +84,7 @@ public class SongRequests {
             @DefaultValue("") @QueryParam("genre") String genre,
             @DefaultValue("" + SONG_SEARCH_MIN_TIME) @QueryParam("min_time") long minTime,
             @DefaultValue("" + SONG_SEARCH_MAX_TIME) @QueryParam("max_time") long maxTime
-    ){
+    ) {
         minTime = Math.max(SONG_SEARCH_MIN_TIME, minTime);
 
         JSONObject obj = new JSONObject();
@@ -99,7 +99,7 @@ public class SongRequests {
         index.setSearchParams(genre, country, minTime, maxTime);
         List<ScoreDoc> result = index.search(keywords, number);
 
-        if(result != null) {
+        if (result != null) {
             for (ScoreDoc score : result) {
                 Document doc = index.getDocument(score.doc);
                 float luceneScore = score.score;
@@ -115,13 +115,14 @@ public class SongRequests {
                 songs.put(product);
             }
             obj.put("number", result.size());
-        }else{
+        } else {
             obj.put("number", 0);
         }
 
         obj.put("params", searchParams);
         obj.put("songs", songs);
         return obj.toString();
+    }
     @Path("/popular/")
     @GET
     public String getPopularSongs(@QueryParam("n") @DefaultValue("" + MAX_POPULAR_SONGS) int amount){
