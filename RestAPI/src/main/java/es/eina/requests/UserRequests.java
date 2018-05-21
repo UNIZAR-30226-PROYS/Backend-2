@@ -217,6 +217,10 @@ public class UserRequests {
             userJSON.put("user", user.getUsername());
             userJSON.put("bio", user.getBio());
             userJSON.put("verified", user.isVerified());
+            userJSON.put("facebook", user.getFacebook());
+            userJSON.put("twitter", user.getTwitter());
+            userJSON.put("instagram", user.getInstagram());
+
             if (user.getToken().isValid(token)) {
                 userJSON.put("mail_visible", true);
                 userJSON.put("mail", user.getMail());
@@ -598,6 +602,9 @@ public class UserRequests {
         defaultUserJSON.put("country", Geolocalizer.DEFAULT_COUNTRY);
         defaultUserJSON.put("birth_date", -1);
         defaultUserJSON.put("register_date", -1);
+        defaultUserJSON.put("facebook", "");
+        defaultUserJSON.put("twitter", "");
+        defaultUserJSON.put("instagram", "");
 
         defaultCommentJSON = new JSONObject();
         defaultCommentJSON.put("id", -1);
