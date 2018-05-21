@@ -13,6 +13,7 @@ import org.apache.lucene.util.Version;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Date;
 import java.util.List;
 
 public abstract class Index {
@@ -171,6 +172,8 @@ public abstract class Index {
             f = new FloatField(key, (Float) value, STORE);
         } else if (value instanceof Double) {
             f = new DoubleField(key, (Double) value, STORE);
+        } else if (value instanceof Date) {
+            f = new LongField(key, ((Date) value).getTime(), STORE);
         } else {
             throw new RuntimeException("Cannot add an unknown type to index (" + value + ").");
         }
