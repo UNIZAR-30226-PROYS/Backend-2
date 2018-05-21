@@ -3,11 +3,13 @@ package es.eina;
 
 import es.eina.recommender.Recommender;
 import es.eina.search.Index;
-import es.eina.search.IndexPriceAndProduct;
 import es.eina.search.IndexProduct;
+import es.eina.search.IndexSongs;
+import es.eina.search.IndexUsers;
 import es.eina.sql.MySQLConnection;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 public class RestApp {
@@ -17,6 +19,8 @@ public class RestApp {
     private static MySQLConnection sql = new MySQLConnection("dev.langelp.net", "postgres", "Admin123", "postgres");
 	private final Logger logger = Logger.getLogger("webLogger");
 	private static final Index index = new IndexProduct();
+	private static final IndexSongs songsIndex = new IndexSongs();
+	private static final IndexUsers usersIndex = new IndexUsers();
 
 	private final Recommender recommender;
 
@@ -24,6 +28,10 @@ public class RestApp {
 		instance = this;
 		recommender = new Recommender();
 		//index.openIndex("index/");
+            new File("indices/songIndex/").mkdirs();
+            new File("indices/userIndex/").mkdirs();
+        songsIndex.openIndex("indices/songIndex/");
+        usersIndex.openIndex("indices/userIndex/");
 
 	}
 
@@ -46,4 +54,12 @@ public class RestApp {
     public static Index getIndex() {
 		return index;
 	}
+
+	public static IndexSongs getSongsIndex() {
+		return songsIndex;
+	}
+
+    public static IndexUsers getUsersIndex() {
+        return usersIndex;
+    }
 }

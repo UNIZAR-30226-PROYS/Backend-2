@@ -326,6 +326,7 @@ RestAPI will answer with this JSON response:
     "error" : "{ERROR_CODE}"
   }
 ```
+
 where *{ARRAY_OF_DATA}* is
 ```json
   [
@@ -344,8 +345,6 @@ Error codes are specified as follows:
 | invalidArgs | *nFollow*, *nSongs* or *nRepr* is lower or equal to zero. |
 | unknownUser | No user with that nick exists in the Database. |
 
-Types:
-
 | Parameter | Type |
 | :---: |:---|
 | *"error"* | String |
@@ -354,6 +353,70 @@ Types:
 | *"follow"* | JSONArray |
 | *"songs"* | JSONArray |
 | *"repr"* | JSONArray |
+
+#### GET /users/search/?query={query}[&n={number}][&country={country}][&genre={genre}][&min_time={min_time}][&max_time={max_time}]
+This requests searches for songs in the database based on parameters.
+
+Accepts the following parameters in an HTTP GET request:
+  - query => Query to perform.
+  - n => Max number of songs to retrieve.
+  - country => Country to search
+  - genre => Genre to search
+  - min_time/max_time => Upload time range
+
+
+```json
+  [
+    {
+    "number": "{AMOUNT}",
+    "users": "{ARRAY_OF_USERS}",
+    "params": {
+      "query": "{QUERY}",
+      "min_birth_time": "{MIN_BIRTH_TIME}",
+      "max_birth_time": "{MAX_BIRTH_TIME}",
+      "min_reg_time": "{MIN_REG_TIME}",
+      "max_reg_time":"{MAX_REG_TIME}"
+    }
+  }
+```
+where *{ARRAY_OF_SONGS}* is
+```json
+  [
+    {
+      "nick":"{NICK}",
+      "mail_visible":false,
+      "country":"{COUNTRY}",
+      "score": "{LUCENE_SCORE}",
+      "mail":"",
+      "birth_date":"{BIRTH_DATE}",
+      "bio":"{BIO}",
+      "register_date":"{REGISTER_DATE}",
+      "id":"{ID}",
+      "user":"{USERNAME}"
+    }
+  ]
+```
+*"users"* is an **ORDERED** array. That means element 2 will have more score than element 3.
+
+*"params"* only contain the query parameters as given to the request.
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"users"* | JSONArray of Songs |
+| *"number"* | Integer |
+| *"id"* | Long |
+| *"nick"* | String |
+| *"user"* | String |
+| *"country"* | String |
+| *"birth_date"* | Long |
+| *"register_date"* | Long |
+| *"bio"* | String |
+| *"mail"* | String |
+| *"mail_visible"* | Boolean |
+| *"score"* | Double |
+
 
 ### **/songs**
 
@@ -397,16 +460,30 @@ Types:
 | *"upload_time"* | Long |
 | *"error"* | String |
 
+<<<<<<< HEAD
 #### GET /songs/{id}/recommend?n={amount}
 This requests returns a list of a maximum of n songs recommended due to its similarity with {id}.
 
 Accepts the following parameters in an HTTP GET request:
   - id => Song id.
   - n => Number of songs to retrieve
+=======
+
+#### GET /songs/search/?query={query}[&n={number}][&country={country}][&genre={genre}][&min_time={min_time}][&max_time={max_time}]
+This requests searches for songs in the database based on parameters.
+
+Accepts the following parameters in an HTTP GET request:
+  - query => Query to perform.
+  - n => Max number of songs to retrieve.
+  - country => Country to search
+  - genre => Genre to search
+  - min_time/max_time => Upload time range
+>>>>>>> feature/find
 
 RestAPI will answer with this JSON response:
 ```json
   {
+<<<<<<< HEAD
     "amount":"{AMOUNT}",
     "songs": "{ARRAY_OF_SONG_IDS}",
     "error" : "{ERROR_CODE}"
@@ -419,11 +496,52 @@ Other {ERROR_CODE}s are:
 | :---: |:---|
 | invalidArgs | *id* is lower or equal to zero. |
 | unknownSong | No song is registered with that id |
+=======
+    "number": "{AMOUNT}",
+    "songs": "{ARRAY_OF_SONGS}",
+    "params":{
+      "max_time": "{MAX_TIME}",
+      "query": "{QUERY}",
+      "min_time": "{MIN_TIME}"
+    }
+  }
+```
+where *{ARRAY_OF_SONGS}* is
+```json
+  [
+    {
+      "country":"{COUNTRY}",
+      "upload_time":"{UPLOAD_TIME}",
+      "score": "{LUCENE_SCORE}",
+      "user_id":"{AUTHOR_ID}",
+      "id":"{SONG_ID}",
+      "title":"{TITLE}"
+    }
+  ]
+```
+
+*"songs"* is an **ORDERED** array. That means element 2 will have more score than element 3.
+
+*"params"* only contain the query parameters as given to the request.
+>>>>>>> feature/find
 
 Types:
 
 | Parameter | Type |
 | :---: |:---|
+<<<<<<< HEAD
 | *"songs"* | JSONArray of Integer |
 | *"amount"* | Integer |
 | *"error"* | String |
+=======
+| *"songs"* | JSONArray of Songs |
+| *"number"* | Integer |
+| *"id"* | Long |
+| *"user_id"* | Long |
+| *"title"* | String |
+| *"country"* | String |
+| *"upload_time"* | Long |
+| *"score"* | Double |
+
+
+>>>>>>> feature/find

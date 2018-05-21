@@ -13,6 +13,7 @@ import org.apache.lucene.util.Version;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Date;
 import java.util.List;
 
 public abstract class Index {
@@ -42,16 +43,21 @@ public abstract class Index {
      */
     public final void openIndex(String path) {
         try {
-            File dir = new File(path, "/product_index/");
+            File dir = new File(path);
             System.out.println("dir: " + dir.getAbsolutePath());
             directory = FSDirectory.open(dir);
-
-            reader = DirectoryReader.open(directory);
         } catch (IOException e) {
             System.out.println("Cannot create product index directory.");
             e.printStackTrace();
         }
         reloadIndex();
+
+        try {
+            reader = DirectoryReader.open(directory);
+        } catch (IOException e) {
+            System.out.println("Cannot create product index directory.");
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -60,6 +66,7 @@ public abstract class Index {
     protected void constructWriter() {
         try {
             writer = new IndexWriter(getDirectory(), config);
+            writer.commit();
         } catch (IOException e) {
             System.out.println("Cannot create IndexWriter");
             e.printStackTrace();
@@ -159,10 +166,14 @@ public abstract class Index {
             f = new TextField(key, (String) value, STORE);
         } else if (value instanceof Integer) {
             f = new IntField(key, (Integer) value, STORE);
+        } else if (value instanceof Long) {
+            f = new LongField(key, (Long) value, STORE);
         } else if (value instanceof Float) {
             f = new FloatField(key, (Float) value, STORE);
         } else if (value instanceof Double) {
             f = new DoubleField(key, (Double) value, STORE);
+        } else if (value instanceof Date) {
+            f = new LongField(key, ((Date) value).getTime(), STORE);
         } else {
             throw new RuntimeException("Cannot add an unknown type to index (" + value + ").");
         }
@@ -177,13 +188,10 @@ public abstract class Index {
     /**
      * Perform a search
      * @param query : Query keywords
-     * @param minPrice : Minimum price
-     * @param maxPrice : Maximum price
      * @param searchAmount : Maximum amount of results
-     * @param extraData : Extra object containing data or null.
      * @return A list of all results queried matching the parameters.
      */
-    public abstract List<ScoreDoc> search(String query, float minPrice, float maxPrice, int searchAmount, Object extraData);
+    public abstract List<ScoreDoc> search(String query, int searchAmount);
 
 
     /**
