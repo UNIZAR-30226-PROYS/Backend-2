@@ -48,6 +48,15 @@ public class EntityUser extends EntityBase {
     @Column(name="register_date", nullable = false)
     private long register_date;
 
+    @Column(name="twitter", nullable = false)
+    private String twitter;
+
+    @Column(name="facebook", nullable = false)
+    private String facebook;
+
+    @Column(name="instagram", nullable = false)
+    private String instagram;
+
     @OneToOne(mappedBy = "user")
     private EntityToken token;
 
@@ -112,6 +121,21 @@ public class EntityUser extends EntityBase {
         if("username".equals(key)){
             if(value instanceof String){
                 username = (String) value;
+                code = 0;
+            }
+        }else if("twitter".equals(key)){
+            if(value instanceof String){
+                twitter = (String) value;
+                code = 0;
+            }
+        }else if("facebook".equals(key)){
+            if(value instanceof String){
+                facebook = (String) value;
+                code = 0;
+            }
+        }else if("instagram".equals(key)){
+            if(value instanceof String){
+                instagram = (String) value;
                 code = 0;
             }
         }else if("mail".equals(key)){
@@ -216,5 +240,17 @@ public class EntityUser extends EntityBase {
 
     public boolean isVerified() {
         return userValues != null && userValues.isVerified();
+    }
+
+    public String getTwitter() {
+        return twitter;
+    }
+
+    public String getFacebook() {
+        return facebook;
+    }
+
+    public String getInstagram() {
+        return instagram;
     }
 }

@@ -223,6 +223,9 @@ public class UserRequests {
                 userJSON.put("country", user.getCountry());
                 userJSON.put("birth_date", user.getBirthDate());
                 userJSON.put("register_date", user.getRegisterDate());
+                userJSON.put("facebook", user.getFacebook());
+                userJSON.put("twitter", user.getTwitter());
+                userJSON.put("instagram", user.getInstagram());
             }
             obj.put("error", false);
         } else {
@@ -598,6 +601,9 @@ public class UserRequests {
         defaultUserJSON.put("country", Geolocalizer.DEFAULT_COUNTRY);
         defaultUserJSON.put("birth_date", -1);
         defaultUserJSON.put("register_date", -1);
+        defaultUserJSON.put("facebook", "");
+        defaultUserJSON.put("twitter", "");
+        defaultUserJSON.put("instagram", "");
 
         defaultCommentJSON = new JSONObject();
         defaultCommentJSON.put("id", -1);
