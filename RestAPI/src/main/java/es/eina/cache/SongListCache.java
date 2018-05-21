@@ -2,6 +2,7 @@ package es.eina.cache;
 
 import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntitySongList;
+import es.eina.sql.entities.EntityUser;
 import es.eina.sql.utils.HibernateUtils;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
@@ -250,4 +251,32 @@ public class SongListCache {
         }
 
     }
+
+    public static int addFollower(long listId, EntityUser user){
+        EntitySongList songList = SongListCache.getSongList(listId);
+        if (songList == null) {
+            //Song List not found
+            return 1;
+        }
+        songList.addfollower(user);
+        if(saveEntity(songList)){
+            return 0;
+        }else{
+            return 3;
+        }
+    }
+    public static int removeFollower(long listId, EntityUser user){
+        EntitySongList songList = SongListCache.getSongList(listId);
+        if (songList == null) {
+            //Song List not found
+            return 1;
+        }
+        songList.removefollower(user);
+        if(saveEntity(songList)){
+            return 0;
+        }else{
+            return 3;
+        }
+    }
+
 }

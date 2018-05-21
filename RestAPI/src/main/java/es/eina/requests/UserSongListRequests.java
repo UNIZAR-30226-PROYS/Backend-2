@@ -260,4 +260,95 @@ public class UserSongListRequests {
 
     }
 
+    /**
+     * Delete a list
+     * <p>
+     * URI: /user-lists/{nick}/{listId}/follow
+     * {token:"token"
+     * songsid:[1,2,3]}
+     * </p>
+     *
+     *
+     * @param nick  : Nickname of a user to create the list
+     * @param listId: Id de la lista
+     * @return The result of this query as specified in API.
+     */
+    @Path("{nick}/{listId}/follow")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @PUT
+    public String addfollower(@PathParam("nick") String nick, @FormParam("token") String userToken,
+                         @PathParam("listId") Long listId) {
+
+        JSONObject result = new JSONObject();
+        if(StringUtils.isValid(nick) && StringUtils.isValid(userToken)){
+            EntityUser user = UserCache.getUser(nick);
+            if(user != null){
+                if (user.getToken() != null && user.getToken().isValid(userToken)) {
+                    int error = SongListCache.addFollower(listId, user);
+                    switch (error) {
+                        case 0 : result.put("error", "ok");
+                            break;
+                        case 1: result.put("error", "invalidSongList");
+                            break;
+                        case 2: result.put("error", "invalidAuthor");
+                            break;
+                        default: result.put("error", "unexpectedError");
+                            break;
+                    }
+                    }
+                } else {
+                    result.put("error", "invalidToken");
+                }
+            }else{
+                result.put("error", "unknownUser");
+            }
+        return result.toString();
+
+    }
+    /**
+     * Delete a list
+     * <p>
+     * URI: /user-lists/{nick}/{listId}/unfollow
+     * token
+     * </p>
+     *
+     *
+     * @param nick  : Nickname of a user to create the list
+     * @param listId: Id de la lista
+     * @return The result of this query as specified in API.
+     */
+    @Path("{nick}/{listId}/unfollow")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @PUT
+    public String removefollower(@PathParam("nick") String nick, @FormParam("token") String userToken,
+                              @PathParam("listId") Long listId) {
+
+
+        JSONObject result = new JSONObject();
+        if(StringUtils.isValid(nick) && StringUtils.isValid(userToken)){
+            EntityUser user = UserCache.getUser(nick);
+            if(user != null){
+                if (user.getToken() != null && user.getToken().isValid(userToken)) {
+                    int error = SongListCache.removeFollower(listId, user);
+                    switch (error) {
+                        case 0 : result.put("error", "ok");
+                            break;
+                        case 1: result.put("error", "invalidSongList");
+                            break;
+                        case 2: result.put("error", "invalidAuthor");
+                            break;
+                        default: result.put("error", "unexpectedError");
+                            break;
+                    }
+                }
+            } else {
+                result.put("error", "invalidToken");
+            }
+        }else{
+            result.put("error", "unknownUser");
+        }
+        return result.toString();
+
+    }
+
 }

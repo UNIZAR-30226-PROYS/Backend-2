@@ -36,7 +36,12 @@ public class EntitySongList extends EntityBase{
     )
     private Set<EntitySong> songs = new HashSet<>();
 
-    @ManyToMany(mappedBy = "following")
+    @ManyToMany (fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "song_list_user_follows",
+            joinColumns = { @JoinColumn(name = "song_list_id", nullable = false, referencedColumnName = "id")},
+            inverseJoinColumns = {@JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")}
+    )
     private Set<EntityUser> followers;
 
     /**

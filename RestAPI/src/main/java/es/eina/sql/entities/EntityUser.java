@@ -54,12 +54,8 @@ public class EntityUser extends EntityBase {
     @OneToOne(mappedBy = "user")
     private EntityUserValues userValues;
 
-    @ManyToMany (fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "song_list_user_follows",
-            joinColumns = { @JoinColumn(name = "user_id", nullable = true, referencedColumnName = "id")},
-            inverseJoinColumns = {@JoinColumn(name = "song_list_id", nullable = true, referencedColumnName = "id")}
-    )
+
+    @ManyToMany(mappedBy = "followers")
     private Set<EntitySongList> following;
 
     /**
