@@ -28,7 +28,7 @@ public class EntitySongList extends EntityBase{
     @JoinColumn(name = "author_id", insertable=false, updatable=false)
     private EntityUser author;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(
             name = "song_list_songs",
             joinColumns = { @JoinColumn(name = "list_id")},
@@ -57,6 +57,14 @@ public class EntitySongList extends EntityBase{
         return id;
     }
 
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
     public String getTitle() {
         return title;
     }
@@ -67,6 +75,14 @@ public class EntitySongList extends EntityBase{
 
     public Long getCreationTime() {
         return creationTime;
+    }
+
+    public Set<EntitySong> getSongs() {
+        return songs;
+    }
+
+    public void setSongs(Set<EntitySong> songs) {
+        this.songs = songs;
     }
 
     public void addSong(EntitySong song){

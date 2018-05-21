@@ -1,5 +1,7 @@
 package es.eina.sql.entities;
 
+import org.hibernate.annotations.Cascade;
+
 import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -28,7 +30,7 @@ public class EntitySong extends EntityBase {
     @JoinColumn(name = "user_id", insertable=false, updatable=false)
     private EntityUser user;
 
-    @ManyToMany (mappedBy = "songs")
+    @ManyToMany (mappedBy = "songs", cascade = CascadeType.ALL)
     private Set<EntitySongList> lists = new HashSet<>();
 
 

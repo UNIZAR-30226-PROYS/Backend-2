@@ -3,6 +3,7 @@ package es.eina.cache;
 import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntitySongList;
 import es.eina.sql.utils.HibernateUtils;
+import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
@@ -114,7 +115,9 @@ public class SongListCache {
             tr = session.beginTransaction();
             song = session.load(EntitySongList.class, listId);
             tr.commit();
-            addSongList(song);
+            if (song != null){
+                addSongList(song);
+            }
         } catch (Exception e) {
             if (tr != null) {
                 tr.rollback();
@@ -129,7 +132,7 @@ public class SongListCache {
         try (Session session = HibernateUtils.getSessionFactory().openSession()) {
             tr = session.beginTransaction();
             long ownerID = UserCache.getId(nick);
-            Query query = session.createQuery("SELECT p FROM EntitySongList WHERE p.author_id = :owner");
+            Query query = session.createQuery("FROM song_list S WHERE S.userId = :owner");
             query.setParameter("owner", ownerID);
             List<EntitySongList> SongList = query.list();
             tr.commit();
@@ -190,7 +193,7 @@ public class SongListCache {
             //Song List not found
             return 1;
         }
-        if (songList.getAuthor().getId() == authorId) {
+        if (songList.getUserId() != authorId) {
             //Author not the same
             return 2;
         }
@@ -206,21 +209,40 @@ public class SongListCache {
         }
     }
 
+    private static boolean removesong(EntitySongList list, List<Long> songsId){
+        Transaction tr = null;
+        try (Session session = HibernateUtils.getSessionFactory().openSession()) {
+            tr = session.beginTransaction();
+            for (Long id: songsId){
+                EntitySong song = SongCache.getSong(id);
+                list.getSongs().remove(song);
+            }
+
+            session.saveOrUpdate(list);
+            session.refresh(list);
+            tr.commit();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (tr != null && tr.isActive()) {
+                tr.rollback();
+            }
+            return false;
+        }
+    }
+
     public static int removeSongs(long listId, List<Long> songsId, long authorId) {
         EntitySongList songList = SongListCache.getSongList(listId);
         if (songList == null) {
             //Song List not found
             return 1;
         }
-        if (songList.getAuthor().getId() == authorId) {
+        if (songList.getUserId() != authorId) {
             //Author not the same
             return 2;
         }
-        for (Long id: songsId
-                ) {
-            EntitySong song = SongCache.getSong(id);
-            songList.removeSong(song);
-        }
+        Transaction transaction = null;
+        removesong(songList, songsId);
         if(saveEntity(songList)){
             return 0;
         }else{

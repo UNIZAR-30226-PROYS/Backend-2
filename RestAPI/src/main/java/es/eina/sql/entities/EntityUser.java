@@ -54,7 +54,7 @@ public class EntityUser extends EntityBase {
     @OneToOne(mappedBy = "user")
     private EntityUserValues userValues;
 
-    @ManyToMany ()
+    @ManyToMany (fetch = FetchType.EAGER)
     @JoinTable(
             name = "song_list_user_follows",
             joinColumns = { @JoinColumn(name = "user_id", nullable = true, referencedColumnName = "id")},
