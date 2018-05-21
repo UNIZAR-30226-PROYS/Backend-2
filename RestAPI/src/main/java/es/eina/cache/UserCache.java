@@ -7,6 +7,7 @@ import es.eina.sql.utils.HibernateUtils;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -83,10 +84,13 @@ public class UserCache {
         }
     }
 
+    @Transactional
     private static EntityUser loadUser(String nick) {
         EntityUser user = null;
         Transaction tr = null;
-        try (Session session = HibernateUtils.getSessionFactory().openSession()) {
+        Session session = null;
+        try{
+            session = HibernateUtils.getSessionFactory().openSession();
             tr = session.beginTransaction();
             user = session.byNaturalId(EntityUser.class)
                     .using("nick", nick)

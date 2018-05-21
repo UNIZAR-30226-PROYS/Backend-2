@@ -257,11 +257,9 @@ public class EntityUser extends EntityBase {
     @Transactional
     public JSONArray getUserSongs() {
         JSONArray songs = new JSONArray();
-        try(Session s = HibernateUtils.getSessionFactory().openSession()) {
-            RestApp.getInstance().getLogger().severe("Length: " + this.songs.size());
-            for (EntitySong song : this.songs) {
-                songs.put(song.getId());
-            }
+        RestApp.getInstance().getLogger().severe("Length: " + this.songs.size());
+        for (EntitySong song : this.songs) {
+            songs.put(song.getId());
         }
         return songs;
     }

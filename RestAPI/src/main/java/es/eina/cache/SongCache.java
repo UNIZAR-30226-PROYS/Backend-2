@@ -68,7 +68,9 @@ public class SongCache {
     private static EntitySong loadSong(long songId) {
         EntitySong song;
         Transaction tr = null;
-        try (Session session = HibernateUtils.getSessionFactory().openSession()) {
+        Session session;
+        try{
+            session = HibernateUtils.getSessionFactory().openSession();
             tr = session.beginTransaction();
             song = session.get(EntitySong.class, songId);
             tr.commit();

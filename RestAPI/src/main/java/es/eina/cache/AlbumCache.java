@@ -40,7 +40,8 @@ public class AlbumCache {
 
     private static void saveEntities(Collection<EntityAlbum> remove) {
         Transaction tr = null;
-        try (Session session = HibernateUtils.getSessionFactory().openSession()) {
+        Session session;
+            session = HibernateUtils.getSessionFactory().openSession();
             for (EntityAlbum data : remove) {
                 if (data.isDirty()) {
                     try {
@@ -55,7 +56,6 @@ public class AlbumCache {
                     }
                 }
             }
-        }
     }
 
     public static boolean saveEntity(EntityAlbum data){
