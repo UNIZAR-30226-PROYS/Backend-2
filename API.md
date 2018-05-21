@@ -307,6 +307,70 @@ Types:
 | :---: |:---|
 | *"error"* | String |
 
+#### GET /users/search/?query={query}[&n={number}][&country={country}][&genre={genre}][&min_time={min_time}][&max_time={max_time}]
+This requests searches for songs in the database based on parameters.
+
+Accepts the following parameters in an HTTP GET request:
+  - query => Query to perform.
+  - n => Max number of songs to retrieve.
+  - country => Country to search
+  - genre => Genre to search
+  - min_time/max_time => Upload time range
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "number": "{AMOUNT}",
+    "users": "{ARRAY_OF_USERS}",
+    "params": {
+      "query": "{QUERY}",
+      "min_birth_time": "{MIN_BIRTH_TIME}",
+      "max_birth_time": "{MAX_BIRTH_TIME}",
+      "min_reg_time": "{MIN_REG_TIME}",
+      "max_reg_time":"{MAX_REG_TIME}"
+    }
+  }
+```
+where *{ARRAY_OF_SONGS}* is
+```json
+  [
+    {
+      "nick":"{NICK}",
+      "mail_visible":false,
+      "country":"{COUNTRY}",
+      "score": "{LUCENE_SCORE}",
+      "mail":"",
+      "birth_date":"{BIRTH_DATE}",
+      "bio":"{BIO}",
+      "register_date":"{REGISTER_DATE}",
+      "id":"{ID}",
+      "user":"{USERNAME}"
+    }
+  ]
+```
+
+*"users"* is an **ORDERED** array. That means element 2 will have more score than element 3.
+
+*"params"* only contain the query parameters as given to the request.
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"users"* | JSONArray of Songs |
+| *"number"* | Integer |
+| *"id"* | Long |
+| *"nick"* | String |
+| *"user"* | String |
+| *"country"* | String |
+| *"birth_date"* | Long |
+| *"register_date"* | Long |
+| *"bio"* | String |
+| *"mail"* | String |
+| *"mail_visible"* | Boolean |
+| *"score"* | Double |
+
+
 ### **/songs**
 
 #### GET /songs/{id}
