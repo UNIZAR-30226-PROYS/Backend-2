@@ -1,7 +1,9 @@
 package es.eina.requests;
 
 import es.eina.RestApp;
+import es.eina.cache.PopularSongCache;
 import es.eina.cache.SongCache;
+import es.eina.cache.UserCache;
 import es.eina.geolocalization.Geolocalizer;
 import es.eina.search.IndexProduct;
 import es.eina.search.IndexSongs;
@@ -9,6 +11,7 @@ import es.eina.sql.entities.EntitySong;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
 import org.json.JSONArray;
+import es.eina.sql.entities.EntityUser;
 import org.json.JSONObject;
 
 import javax.ws.rs.*;
@@ -22,6 +25,7 @@ public class SongRequests {
     private static final int SONG_SEARCH_NUMBER = 10;
     private static final long SONG_SEARCH_MIN_TIME = 0;
     private static final long SONG_SEARCH_MAX_TIME = Long.MAX_VALUE;
+    public static final int MAX_POPULAR_SONGS = 50;
 
     private static final JSONObject defaultSongJSON;
 
@@ -118,6 +122,33 @@ public class SongRequests {
         obj.put("params", searchParams);
         obj.put("songs", songs);
         return obj.toString();
+    @Path("/popular/")
+    @GET
+    public String getPopularSongs(@QueryParam("n") @DefaultValue("" + MAX_POPULAR_SONGS) int amount){
+        amount = Math.max(0, Math.min(MAX_POPULAR_SONGS, amount));
+        return PopularSongCache.getPopularSongs(amount).toString();
+    }
+
+    @Path("/popular/{country}/")
+    @GET
+    public String getPopularSongs(@PathParam("country") String country, @QueryParam("n") @DefaultValue("" + MAX_POPULAR_SONGS) int amount){
+        amount = Math.max(0, Math.min(MAX_POPULAR_SONGS, amount));
+        return PopularSongCache.getPopularSongs(amount, country).toString();
+    }
+
+    @Path("/popular/user/{id}/")
+    @GET
+    public String getPopularSongs(@PathParam("id") int id, @QueryParam("n") @DefaultValue("" + MAX_POPULAR_SONGS) int amount){
+        amount = Math.max(1, Math.min(MAX_POPULAR_SONGS, amount));
+
+        EntityUser user = UserCache.getUser(id);
+        if(user != null) {
+            return PopularSongCache.getPopularSongs(amount, user.getCountry()).toString();
+        }else{
+            JSONObject obj = new JSONObject();
+            obj.put("error", "unknownUser");
+            return obj.toString();
+        }
     }
 
     static {

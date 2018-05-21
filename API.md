@@ -11,6 +11,8 @@
  - [POST /users/{nick}/verify](#post-usersnickverify)
 
  - [GET /songs/{id}](#get-songsid)
+ - [GET /songs/popular/?n={amount}](#get-songspopularnamount)
+ - [GET /songs/popular/{country}?n={amount}](#get-songspopularcountrynamount)
 
 ## Requests
 
@@ -460,30 +462,16 @@ Types:
 | *"upload_time"* | Long |
 | *"error"* | String |
 
-<<<<<<< HEAD
 #### GET /songs/{id}/recommend?n={amount}
 This requests returns a list of a maximum of n songs recommended due to its similarity with {id}.
 
 Accepts the following parameters in an HTTP GET request:
   - id => Song id.
   - n => Number of songs to retrieve
-=======
-
-#### GET /songs/search/?query={query}[&n={number}][&country={country}][&genre={genre}][&min_time={min_time}][&max_time={max_time}]
-This requests searches for songs in the database based on parameters.
-
-Accepts the following parameters in an HTTP GET request:
-  - query => Query to perform.
-  - n => Max number of songs to retrieve.
-  - country => Country to search
-  - genre => Genre to search
-  - min_time/max_time => Upload time range
->>>>>>> feature/find
 
 RestAPI will answer with this JSON response:
 ```json
   {
-<<<<<<< HEAD
     "amount":"{AMOUNT}",
     "songs": "{ARRAY_OF_SONG_IDS}",
     "error" : "{ERROR_CODE}"
@@ -496,8 +484,29 @@ Other {ERROR_CODE}s are:
 | :---: |:---|
 | invalidArgs | *id* is lower or equal to zero. |
 | unknownSong | No song is registered with that id |
-=======
-    "number": "{AMOUNT}",
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"songs"* | JSONArray of Integer |
+| *"amount"* | Integer |
+| *"error"* | String |
+
+#### GET /songs/search/?query={query}[&n={number}][&country={country}][&genre={genre}][&min_time={min_time}][&max_time={max_time}]
+This requests searches for songs in the database based on parameters.
+
+Accepts the following parameters in an HTTP GET request:
+  - query => Query to perform.
+  - n => Max number of songs to retrieve.
+  - country => Country to search
+  - genre => Genre to search
+  - min_time/max_time => Upload time range
+
+RestAPI will answer with this JSON response:
+```json
+{
+  "number": "{AMOUNT}",
     "songs": "{ARRAY_OF_SONGS}",
     "params":{
       "max_time": "{MAX_TIME}",
@@ -523,25 +532,154 @@ where *{ARRAY_OF_SONGS}* is
 *"songs"* is an **ORDERED** array. That means element 2 will have more score than element 3.
 
 *"params"* only contain the query parameters as given to the request.
->>>>>>> feature/find
 
 Types:
 
 | Parameter | Type |
 | :---: |:---|
-<<<<<<< HEAD
-| *"songs"* | JSONArray of Integer |
-| *"amount"* | Integer |
-| *"error"* | String |
-=======
 | *"songs"* | JSONArray of Songs |
 | *"number"* | Integer |
+| *"score"* | Double |
+| *"id"* | Long |
+| *"user_id"* | Long |
+| *"title"* | String |
+#### GET /songs/popular?n={amount}
+
+This requests gets the data of a all popular songs. A popular song is the song with more likes and, if two songs have the same amount of likes, the one with more reproductions.
+
+Accepts the following parameters in an HTTP GET request:
+  - n => Max amount of results to retrieve. Parameter n must be inside [0, 50] bounds.
+
+RestAPI will answer with this JSON response:
+```json
+  {
+"songs" : [
+      "{SongItem}"
+    ],
+    "results" : "{RESULT_AMOUNT}"
+  }
+```
+where SongItem is
+```json
+  {
+    "id" : "{ID}",
+    "user_id" : "{AUTHOR}",
+    "title" : "{TITLE}",
+    "country" : "{COUNTRY}",
+    "upload_time" : "{TIME}",
+    "likes" : "{LIKES}",
+    "reproductions" : "{REPRODUCTIONS}"
+  }
+```
+
+*"country"* contains the 2 character ISO Code specified in ISO_3166-1
+
+*"results"* contain the actual number of songs retrieved from DataBase. It's lower or equal than *"n"*.
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"songs"* | SongItem |
+| *"results"* | Integer |
 | *"id"* | Long |
 | *"user_id"* | Long |
 | *"title"* | String |
 | *"country"* | String |
 | *"upload_time"* | Long |
-| *"score"* | Double |
+| *"likes"* | Integer |
+| *"reproductions"* | Integer |
 
+#### GET /songs/popular/{country}?n={amount}
 
->>>>>>> feature/find
+This requests gets the data of a all popular songs. A popular song is the song with more likes and, if two songs have the same amount of likes, the one with more reproductions.
+
+Accepts the following parameters in an HTTP GET request:
+  - n => Max amount of results to retrieve. Parameter n must be inside [0, 50] bounds.
+  - country => The only country to retrieve songs from.
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "songs" : [
+      "{SongItem}"
+    ],
+    "results" : "{RESULT_AMOUNT}"
+  }
+```
+where SongItem is
+```json
+  {
+    "id" : "{ID}",
+    "user_id" : "{AUTHOR}",
+    "title" : "{TITLE}",
+    "country" : "{COUNTRY}",
+    "upload_time" : "{TIME}",
+    "likes" : "{LIKES}",
+    "reproductions" : "{REPRODUCTIONS}"
+  }
+```
+
+*"country"* contains the 2 character ISO Code specified in ISO_3166-1
+
+*"results"* contain the actual number of songs retrieved from DataBase. It's lower or equal than *"n"*.
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"songs"* | SongItem |
+| *"results"* | Integer |
+| *"id"* | Long |
+| *"user_id"* | Long |
+| *"title"* | String |
+| *"country"* | String |
+| *"upload_time"* | Long |
+| *"likes"* | Integer |
+| *"reproductions"* | Integer |
+
+#### GET /songs/user/{id}/popular?n={amount}
+
+This requests gets the data of all popular songs in user {id}'s country. A popular song is the song with more likes and, if two songs have the same amount of likes, the one with more reproductions.
+
+Accepts the following parameters in an HTTP GET request:
+  - n => Max amount of results to retrieve. Parameter n must be inside [0, 50] bounds.
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "songs" : [
+      "{SongItem}"
+    ],
+    "results" : "{RESULT_AMOUNT}"
+  }
+```
+where SongItem is
+```json
+  {
+    "id" : "{ID}",
+    "user_id" : "{AUTHOR}",
+    "title" : "{TITLE}",
+    "country" : "{COUNTRY}",
+    "upload_time" : "{TIME}",
+    "likes" : "{LIKES}",
+    "reproductions" : "{REPRODUCTIONS}"
+  }
+```
+
+*"results"* contain the actual number of songs retrieved from DataBase. It's lower or equal than *"n"*.
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"songs"* | SongItem |
+| *"results"* | Integer |
+| *"id"* | Long |
+| *"user_id"* | Long |
+| *"title"* | String |
+| *"country"* | String |
+| *"upload_time"* | Long |
+| *"likes"* | Integer |
+| *"reproductions"* | Integer |
+>>>>>>> feature/popularSongs
