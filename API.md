@@ -39,7 +39,11 @@ RestAPI will answer with this JSON response:
       "mail" : "{MAIL}",
       "country" : "{COUNTRY}",
       "birth_date" : "{BIRTH_DATE}",
-      "register_date" : "{REGISTER_DATE}"
+      "register_date" : "{REGISTER_DATE}",
+
+      "twitter" : "{TWITTER}",
+      "instagram" : "{INSTAGRAM}",
+      "facebook" : "{FACEBOOK}"
     },
     "error" : "true/false"
   }
@@ -65,6 +69,9 @@ Types:
 | *"birth_date"* | Date |
 | *"register_date"* | Long |
 | *"error"* | Boolean |
+| *"twitter"* | String |
+| *"instagram"* | String |
+| *"facebook"* | String |
 
 #### DELETE /users/{nick}?token={TOKEN}
 
@@ -124,6 +131,9 @@ Request body update keys and its values **MUST** be one of the following:
 | mail | String | `"mail" : "NewMail"` |
 | bio | String | `"bio" : "NewBio"` |
 | birth_date | Long | `"birth_date" : -1` |
+| twitter | String | `"twitter" : "TwitterAcc"` |
+| facebook | String | `"facebook" : "FacebookAcc"` |
+| instagram | String | `"instagram" : "InstagramAcc"` |
 | pass | JSONObject | `{"pass0" : "NewPass", "pass1" : "NewPass(again)", "old_pass" : "OldPass"}` |
 
 RestAPI will answer with this JSON response:
