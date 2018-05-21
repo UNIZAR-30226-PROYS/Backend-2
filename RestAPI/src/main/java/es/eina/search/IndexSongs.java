@@ -30,16 +30,16 @@ public class IndexSongs extends Index {
 
     @Override
     protected void reloadIndex() {
-
-
-        List<EntitySong> songs;
-        try(Session s = HibernateUtils.getSessionFactory().openSession()){
-            songs = s.createQuery("from songs", EntitySong.class).list();
-        }
-
         if (getWriter() != null) {
             closeIndexWriter();
         }
+
+        List<EntitySong> songs;
+        try(Session s = HibernateUtils.getSessionFactory().openSession()){
+            songs = s.createQuery("from song", EntitySong.class).list();
+        }
+
+
         constructWriter();
 
         if(songs != null){

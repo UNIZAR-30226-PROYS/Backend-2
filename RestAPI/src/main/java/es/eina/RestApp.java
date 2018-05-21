@@ -23,6 +23,7 @@ public class RestApp {
 		instance = this;
 		//index.openIndex("index/");
         try {
+        	new File("indices/").createNewFile();
             new File("indices/songIndex/").createNewFile();
         } catch (IOException e) {
             e.printStackTrace();

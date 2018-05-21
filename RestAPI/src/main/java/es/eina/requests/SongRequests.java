@@ -55,7 +55,7 @@ public class SongRequests {
     /**
      * Perform a search of products in the database.<br>
      *     <p>
-     *         URI: /products/search/?keywords=[&n={number}][&category={category}][&min_price={min_price}][&max_price={max_price}]
+     *         URI: /songs/search/?query=[&n={number}][&country={country}][&genre={genre}][&min_time={min_time}][&max_time={max_time}]
      *     </p>
      * @param number : Number of results to return
      * @param keywords : Keywords to search
@@ -77,9 +77,9 @@ public class SongRequests {
         JSONObject searchParams = new JSONObject();
         JSONArray songs = new JSONArray();
 
-        searchParams.put("keywords", keywords);
-        searchParams.put("min_price", minTime);
-        searchParams.put("max_price", maxTime);
+        searchParams.put("query", keywords);
+        searchParams.put("min_time", minTime);
+        searchParams.put("max_time", maxTime);
 
         IndexSongs index = RestApp.getSongsIndex();
         index.setSearchParams(genre, country, minTime, maxTime);
