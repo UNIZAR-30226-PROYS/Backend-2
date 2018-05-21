@@ -4,6 +4,7 @@ package es.eina;
 import es.eina.search.Index;
 import es.eina.search.IndexProduct;
 import es.eina.search.IndexSongs;
+import es.eina.search.IndexUsers;
 import es.eina.sql.MySQLConnection;
 
 import java.io.File;
@@ -18,17 +19,15 @@ public class RestApp {
 	private final Logger logger = Logger.getLogger("webLogger");
 	private static final Index index = new IndexProduct();
 	private static final IndexSongs songsIndex = new IndexSongs();
+	private static final IndexUsers usersIndex = new IndexUsers();
 
 	public RestApp() {
 		instance = this;
 		//index.openIndex("index/");
-        try {
-        	new File("indices/").createNewFile();
-            new File("indices/songIndex/").createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            new File("indices/songIndex/").mkdirs();
+            new File("indices/userIndex/").mkdirs();
         songsIndex.openIndex("indices/songIndex/");
+        usersIndex.openIndex("indices/userIndex/");
 
 	}
 
@@ -51,4 +50,8 @@ public class RestApp {
 	public static IndexSongs getSongsIndex() {
 		return songsIndex;
 	}
+
+    public static IndexUsers getUsersIndex() {
+        return usersIndex;
+    }
 }
