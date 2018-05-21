@@ -445,3 +445,48 @@ Types:
 | *"upload_time"* | Long |
 | *"likes"* | Integer |
 | *"reproductions"* | Integer |
+
+#### GET /songs/user/{id}/popular?n={amount}
+
+This requests gets the data of all popular songs in user {id}'s country. A popular song is the song with more likes and, if two songs have the same amount of likes, the one with more reproductions.
+
+Accepts the following parameters in an HTTP GET request:
+  - n => Max amount of results to retrieve. Parameter n must be inside [0, 50] bounds.
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "songs" : [
+      "{SongItem}"
+    ],
+    "results" : "{RESULT_AMOUNT}"
+  }
+```
+where SongItem is
+```json
+  {
+    "id" : "{ID}",
+    "user_id" : "{AUTHOR}",
+    "title" : "{TITLE}",
+    "country" : "{COUNTRY}",
+    "upload_time" : "{TIME}",
+    "likes" : "{LIKES}",
+    "reproductions" : "{REPRODUCTIONS}"
+  }
+```
+
+*"results"* contain the actual number of songs retrieved from DataBase. It's lower or equal than *"n"*.
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"songs"* | SongItem |
+| *"results"* | Integer |
+| *"id"* | Long |
+| *"user_id"* | Long |
+| *"title"* | String |
+| *"country"* | String |
+| *"upload_time"* | Long |
+| *"likes"* | Integer |
+| *"reproductions"* | Integer |
