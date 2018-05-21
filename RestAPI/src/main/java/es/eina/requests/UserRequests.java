@@ -217,15 +217,16 @@ public class UserRequests {
             userJSON.put("user", user.getUsername());
             userJSON.put("bio", user.getBio());
             userJSON.put("verified", user.isVerified());
+            userJSON.put("facebook", user.getFacebook());
+            userJSON.put("twitter", user.getTwitter());
+            userJSON.put("instagram", user.getInstagram());
+
             if (user.getToken().isValid(token)) {
                 userJSON.put("mail_visible", true);
                 userJSON.put("mail", user.getMail());
                 userJSON.put("country", user.getCountry());
                 userJSON.put("birth_date", user.getBirthDate());
                 userJSON.put("register_date", user.getRegisterDate());
-                userJSON.put("facebook", user.getFacebook());
-                userJSON.put("twitter", user.getTwitter());
-                userJSON.put("instagram", user.getInstagram());
             }
             obj.put("error", false);
         } else {
