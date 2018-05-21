@@ -307,6 +307,38 @@ Types:
 | :---: |:---|
 | *"error"* | String |
 
+#### GET /users/{nick}/songs
+This requests gets the songs a user with name {nick} has uploaded.
+
+Accepts the following parameters in an HTTP GET request:
+  - nick => User nick.
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "size": "{AMOUNT}",
+    "songs": "[{ARRAY_OF_INT}]",
+    "error": "{ERROR_CODE}"
+  }
+```
+
+If *"error"* is not "ok", the song will be empty, this means, all fields will be defined **but** its value is unspecified.
+
+Other {ERROR_CODE}s are:
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| invalidArgs | Empty or null user nick |
+| unknownUser | No user is registered with that id |
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"songs"* | JSONArray of Integer |
+| *"size"* | Integer |
+| *"error"* | String |
+
 ### **/songs**
 
 #### GET /songs/{id}
