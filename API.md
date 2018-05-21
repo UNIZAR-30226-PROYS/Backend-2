@@ -348,3 +348,59 @@ Types:
 | *"country"* | String |
 | *"upload_time"* | Long |
 | *"error"* | String |
+
+
+#### GET /songs/search/?query={query}[&n={number}][&country={country}][&genre={genre}][&min_time={min_time}][&max_time={max_time}]
+This requests searches for songs in the database based on parameters.
+
+Accepts the following parameters in an HTTP GET request:
+  - query => Query to perform.
+  - n => Max number of songs to retrieve.
+  - country => Country to search
+  - genre => Genre to search
+  - min_time/max_time => Upload time range
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "number": "{AMOUNT}",
+    "songs": "{ARRAY_OF_SONGS}",
+    "params":{
+      "max_time": "{MAX_TIME}",
+      "query": "{QUERY}",
+      "min_time": "{MIN_TIME}"
+    }
+  }
+```
+where *{ARRAY_OF_SONGS}* is
+```json
+  [
+    {
+      "country":"{COUNTRY}",
+      "upload_time":"{UPLOAD_TIME}",
+      "score": "{LUCENE_SCORE}",
+      "user_id":"{AUTHOR_ID}",
+      "id":"{SONG_ID}",
+      "title":"{TITLE}"
+    }
+  ]
+```
+
+*"songs"* is an **ORDERED** array. That means element 2 will have more score than element 3.
+
+*"params"* only contain the query parameters as given to the request.
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"songs"* | JSONArray of Songs |
+| *"number"* | Integer |
+| *"id"* | Long |
+| *"user_id"* | Long |
+| *"title"* | String |
+| *"country"* | String |
+| *"upload_time"* | Long |
+| *"score"* | Double |
+
+
