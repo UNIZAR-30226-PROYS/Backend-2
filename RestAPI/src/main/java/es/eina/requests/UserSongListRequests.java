@@ -319,8 +319,8 @@ public class UserSongListRequests {
      */
     @Path("{nick}/{listId}/unfollow")
     @Consumes(MediaType.APPLICATION_JSON)
-    @PUT
-    public String removefollower(@PathParam("nick") String nick, @FormParam("token") String userToken,
+    @DELETE
+    public String removefollower(@PathParam("nick") String nick, @QueryParam("token") String userToken,
                               @PathParam("listId") Long listId) {
 
 
