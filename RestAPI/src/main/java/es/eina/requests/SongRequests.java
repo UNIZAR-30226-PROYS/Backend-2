@@ -1,14 +1,12 @@
 package es.eina.requests;
 
+import es.eina.RestApp;
 import es.eina.cache.SongCache;
 import es.eina.geolocalization.Geolocalizer;
 import es.eina.sql.entities.EntitySong;
 import org.json.JSONObject;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 @Path("/songs/")
@@ -42,6 +40,16 @@ public class SongRequests {
         obj.put("song", songJSON);
 
         return obj.toString();
+    }
+
+    @Path("/{id}/recommend")
+    @GET
+    public String getSongRecommendation(@PathParam("id") long id, @QueryParam("n") @DefaultValue("16") int amount){
+        if(id > 0) {
+            return RestApp.getInstance().getRecommender().recommend(SongCache.getSong(id), amount).toString();
+        }else{
+            return "{\"error\": \"invalidArgs\"}";
+        }
     }
 
     static {
