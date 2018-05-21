@@ -3,6 +3,8 @@ package es.eina.requests;
 import es.eina.RestApp;
 import es.eina.cache.UserCache;
 import es.eina.geolocalization.Geolocalizer;
+import es.eina.search.IndexSongs;
+import es.eina.search.IndexUsers;
 import es.eina.sql.MySQLConnection;
 import es.eina.sql.MySQLQueries;
 import es.eina.sql.entities.EntityToken;
@@ -12,6 +14,8 @@ import es.eina.sql.parameters.SQLParameterString;
 import es.eina.utils.StringUtils;
 import es.eina.utils.UserUtils;
 import org.apache.commons.validator.routines.EmailValidator;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.search.ScoreDoc;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,10 +28,15 @@ import javax.ws.rs.core.MediaType;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 @Path("/users/")
 @Produces(MediaType.APPLICATION_JSON)
 public class UserRequests {
+
+    private static final int USER_SEARCH_NUMBER = 10;
+    private static final long USER_SEARCH_MIN_TIME = 0;
+    private static final long USER_SEARCH_MAX_TIME = Long.MAX_VALUE;
 
     @Context
     private HttpServletResponse response;
@@ -439,6 +448,70 @@ public class UserRequests {
         }
 
         return object.toString();
+    }
+
+    /**
+     * Perform a search of products in the database.<br>
+     *     <p>
+     *         URI: /songs/search/?query=[&n={number}][&country={country}][&genre={genre}][&min_time={min_time}][&max_time={max_time}]
+     *     </p>
+     * @param number : Number of results to return
+     * @param keywords : Keywords to search
+     * @return The result of this search as specified in API.
+     */
+    @Path("/search")
+    @GET
+    public String searchProducts(
+            @DefaultValue("" + USER_SEARCH_NUMBER) @QueryParam("n") int number,
+            @DefaultValue("") @QueryParam("query") String keywords,
+            @DefaultValue("") @QueryParam("country") String country,
+            @DefaultValue("" + USER_SEARCH_MIN_TIME) @QueryParam("min_birth_time") long minBirthTime,
+            @DefaultValue("" + USER_SEARCH_MAX_TIME) @QueryParam("max_birth_time") long maxBirthTime,
+            @DefaultValue("" + USER_SEARCH_MIN_TIME) @QueryParam("min_reg_time") long minRegTime,
+            @DefaultValue("" + USER_SEARCH_MAX_TIME) @QueryParam("max_reg_time") long maxRegTime
+    ){
+        minBirthTime = Math.max(USER_SEARCH_MIN_TIME, minBirthTime);
+        minRegTime = Math.max(USER_SEARCH_MIN_TIME, minRegTime);
+
+        JSONObject obj = new JSONObject();
+        JSONObject searchParams = new JSONObject();
+        JSONArray users = new JSONArray();
+
+        searchParams.put("query", keywords);
+        searchParams.put("min_birth_time", minBirthTime);
+        searchParams.put("max_birth_time", maxBirthTime);
+        searchParams.put("min_reg_time", minRegTime);
+        searchParams.put("max_reg_time", maxRegTime);
+
+        IndexUsers index = RestApp.getUsersIndex();
+        index.setSearchParams(country, minRegTime, maxRegTime, minBirthTime, maxBirthTime);
+        List<ScoreDoc> result = index.search(keywords, number);
+
+        if(result != null) {
+            for (ScoreDoc score : result) {
+                Document doc = index.getDocument(score.doc);
+                float luceneScore = score.score;
+
+                JSONObject user = new JSONObject(defaultUserJSON, JSONObject.getNames(defaultUserJSON));
+                user.put("id", doc.get(IndexUsers.ID_INDEX_COLUMN));
+                user.put("nick", doc.get(IndexUsers.NICK_INDEX_COLUMN));
+                user.put("user", doc.get(IndexUsers.USERNAME_INDEX_COLUMN));
+                user.put("bio", doc.get(IndexUsers.BIO_INDEX_COLUMN));
+                user.put("country", doc.get(IndexUsers.COUNTRY_INDEX_COLUMN));
+                user.put("birth_date", doc.get(IndexUsers.BIRTH_TIME_INDEX_COLUMN));
+                user.put("register_date", doc.get(IndexUsers.REGISTER_TIME_INDEX_COLUMN));
+                user.put("score", luceneScore);
+
+                users.put(user);
+            }
+            obj.put("number", result.size());
+        }else{
+            obj.put("number", 0);
+        }
+
+        obj.put("params", searchParams);
+        obj.put("users", users);
+        return obj.toString();
     }
 
     static {
