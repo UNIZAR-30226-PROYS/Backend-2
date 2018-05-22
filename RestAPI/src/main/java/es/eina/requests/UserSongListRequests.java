@@ -2,6 +2,7 @@ package es.eina.requests;
 
 import es.eina.cache.SongListCache;
 import es.eina.cache.UserCache;
+import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntitySongList;
 import es.eina.sql.entities.EntityUser;
 import es.eina.utils.StringUtils;
@@ -16,6 +17,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @Path("/user-lists/")
 @Produces(MediaType.APPLICATION_JSON)
@@ -104,6 +106,48 @@ public class UserSongListRequests {
 
         return result.toString();
     }
+
+    /**
+     * Get all list info
+     * <p>
+     * URI: /user-lists/{list}
+     * {token:"token"}
+     * </p>
+     *
+     * @param list : Nickname of a user to create the list
+     * @return Si no hay error devuelve todas las ids de las playlists del usuario.
+     */
+    @Path("{list}")
+    @GET
+    public String getLists(@PathParam("list") Long listID) {
+        JSONObject result = new JSONObject();
+        EntitySongList songlist = SongListCache.getSongList(listID);
+        if (songlist != null){
+                result.put("title", songlist.getTitle());
+                result.put("author", songlist.getUserId());
+                result.put("creation_time", songlist.getCreationTime());
+                result.put("songs_size", songlist.getSongs().size());
+                JSONArray jsonarray = new JSONArray();
+                for (EntitySong song: songlist.getSongs()
+                        ) {
+                    jsonarray.put(song.getId());
+                }
+                result.put("songs", jsonarray);
+            result.put("followers_size", songlist.getSongs().size());
+            jsonarray = new JSONArray();
+            for (EntityUser user: songlist.getFollowed()
+                    ) {
+                jsonarray.put(user.getId());
+            }
+            result.put("songs", jsonarray);
+            result.put("error", "ok");
+            }else{
+                result.put("error", "unknownList");
+            }
+
+        return result.toString();
+    }
+
 
     /**
      * Delete a list
@@ -340,6 +384,47 @@ public class UserSongListRequests {
                         default: result.put("error", "unexpectedError");
                             break;
                     }
+                }
+            } else {
+                result.put("error", "invalidToken");
+            }
+        }else{
+            result.put("error", "unknownUser");
+        }
+        return result.toString();
+
+    }
+    /**
+     * Delete a list
+     * <p>
+     * URI: /user-lists/{nick}/following
+     * token
+     * </p>
+     *
+     *
+     * @param nick  : Nickname of a user to create the list
+     * @return The result of this query as specified in API.
+     */
+    @Path("{nick}/following")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @DELETE
+    public String following (@PathParam("nick") String nick, @QueryParam("token") String userToken) {
+
+
+        JSONObject result = new JSONObject();
+        if(StringUtils.isValid(nick) && StringUtils.isValid(userToken)){
+            EntityUser user = UserCache.getUser(nick);
+            if(user != null){
+                if (user.getToken() != null && user.getToken().isValid(userToken)) {
+                    EntityUser oneuser = UserCache.getUser(nick);
+                    Set<EntitySongList> following = user.getFollowing();
+                    JSONArray jsonarray = new JSONArray();
+                    for (EntitySongList songlist: following
+                         ) {
+                        jsonarray.put(songlist.getId());
+                    }
+                    result.put("id", jsonarray);
+                    result.put("error", "ok");
                 }
             } else {
                 result.put("error", "invalidToken");
