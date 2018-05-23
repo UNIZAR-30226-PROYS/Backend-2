@@ -78,3 +78,4 @@ RestAPI/*.iml
 Tests/target/*
 Tests/*.iml
 RestAPI/src/main/resources/database.dat
+RestAPI/src/main/resources/database.properties
