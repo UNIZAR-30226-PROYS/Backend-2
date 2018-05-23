@@ -113,9 +113,7 @@ public class SongRequests {
                 if (user.getToken() != null && user.getToken().isValid(userToken)) {
                     EntitySong song = SongCache.getSong(songId);
                     if (song != null) {
-                        if (song.addListener(user) && user.listenSong(song)) {
-                            SongCache.updateSong(song);
-                            UserCache.updateUser(user);
+                        if (user.listenSong(song)) {
                             result.put("error", "ok");
                         } else {
                             result.put("error", "unknownError");
