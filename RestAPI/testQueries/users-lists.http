@@ -1,0 +1,73 @@
+# For a quick start check out our HTTP Requests collection (Tools|HTTP Client|Open HTTP Requests Collection).
+#
+# Following HTTP Request Live Templates are available:
+# * 'gtrp' and 'gtr' create a GET request with or without query parameters;
+# * 'ptr' and 'ptrp' create a POST request with a simple or parameter-like body;
+# * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
+
+PUT http://localhost:8080/user-lists/test-user/create/
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/x-www-form-urlencoded
+
+token=g2xoxjg2kbu2sdwa&title=list1
+
+###
+
+GET http://localhost:8080/user-lists/test-user
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/x-www-form-urlencoded
+
+###
+
+DELETE http://localhost:8080/user-lists/test-user/delete/?token=g2xoxjg2kbu2sdwa&listid=18
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/x-www-form-urlencoded
+
+###
+
+POST http://localhost:8080/user-lists/test-user/19/add
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{"token":"g2xoxjg2kbu2sdwa",
+"songsIds":[3,8,4]}
+
+### ****NO working yet****
+
+POST http://localhost:8080/user-lists/test-user/19/remove
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{"token":"g2xoxjg2kbu2sdwa",
+"songsIds":[3]}
+
+### FAILED ONES ###
+### Error Invalid token
+POST http://localhost:8080/user-lists/test-user/19/add
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{"token":"g2xoxjg2qweqweqewkbu2sdwa",
+"songsIds":[3,8,4]}
+### Error Invalid listID
+POST http://localhost:8080/user-lists/test-user/3/add
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{"token":"g2xoxjg2kbu2sdwa",
+"songsIds":[3,8,4]}
+### Error Invalid songID
+POST http://localhost:8080/user-lists/test-user/3/add
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{"token":"g2xoxjg2kbu2sdwa",
+"songsIds":[45,8,4]}

@@ -16,7 +16,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 @Path("/user-lists/")
@@ -32,7 +31,7 @@ public class UserSongListRequests {
     /**
      * Create a new list
      * <p>
-     * URI: /user-lists/{nick}/create/{title}
+     * URI: /user-lists/{nick}/create/
      * {token:"token"}
      * </p>
      *
@@ -53,6 +52,7 @@ public class UserSongListRequests {
                 if (user.getToken() != null && user.getToken().isValid(userToken)) {
                     EntitySongList newSong= new EntitySongList(title, user);
                     if(SongListCache.saveEntity(newSong)){
+                        result.put("id", newSong.getId());
                         result.put("error","ok");
                     }else{
                         result.put("error","unexpectedError");
@@ -73,8 +73,7 @@ public class UserSongListRequests {
     /**
      * Get all list from a user
      * <p>
-     * URI: /user-lists/{nick}/lists
-     * {token:"token"}
+     * URI: /user-lists/{nick}
      * </p>
      *
      * @param nick  : Nickname of a user to create the list
@@ -111,10 +110,8 @@ public class UserSongListRequests {
      * Get all list info
      * <p>
      * URI: /user-lists/{list}
-     * {token:"token"}
      * </p>
      *
-     * @param list : Nickname of a user to create the list
      * @return Si no hay error devuelve todas las ids de las playlists del usuario.
      */
     @Path("{list}")
@@ -407,7 +404,7 @@ public class UserSongListRequests {
      */
     @Path("{nick}/following")
     @Consumes(MediaType.APPLICATION_JSON)
-    @DELETE
+    @GET
     public String following (@PathParam("nick") String nick, @QueryParam("token") String userToken) {
 
 
