@@ -9,6 +9,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 
 import javax.annotation.Nullable;
+import javax.transaction.Transactional;
 import java.sql.Date;
 
 public class UserUtils {
@@ -29,11 +30,13 @@ public class UserUtils {
      * @param pass : Crypted password of this nick (see {@link Crypter}
      * @return Null if the user couldn't be added, the actual user if it could be added.
      */
+    @Transactional
     public static @Nullable EntityUser addUser(String nick, String mail, String pass, String user, String bio, Date birth, String country) {
         //(nick, username, mail, pass, birth_date, bio, country, register_date)
         Transaction transaction = null;
         EntityUser entityUser;
-        try (Session session = HibernateUtils.getSessionFactory().openSession()) {
+        try {
+            Session session = HibernateUtils.getSessionFactory().getCurrentSession();
             transaction = session.getTransaction();
             transaction.begin();
 
