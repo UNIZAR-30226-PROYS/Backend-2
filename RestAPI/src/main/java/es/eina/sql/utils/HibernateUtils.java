@@ -12,61 +12,42 @@ import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Environment;
+import org.hibernate.cfg.beanvalidation.HibernateTraversableResolver;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 public class HibernateUtils {
 
     private static StandardServiceRegistry registry;
     private static SessionFactory sessionFactory;
 
-    public static SessionFactory configureDatabase(String f) {
+    public static SessionFactory configureDatabase(InputStream f) {
         if (sessionFactory == null) {
+            Logger.getLogger("HibernateUtils").info("Reading " + f);
             try {
-                ClassLoader loader = RestApp.class.getClassLoader();
                 Properties login = new Properties();
-                File f2 = new File(loader.getResource(f).toURI());
-                if(!f2.exists()){
-                    System.out.println("Cannot load " + f2.getAbsolutePath() + " config file...");
-                }
-                System.out.println("Path: " + f2.getAbsolutePath());
-                String line;
-                try (FileReader in = new FileReader(f2)) {
-                    BufferedReader reader = new BufferedReader(in);
-                    while((line = reader.readLine()) != null){
-                        String[] lines = line.substring(1).split("=");
-                        if(lines.length == 2) {
-                            System.out.printf("Loaded key/value: %s, %s.\n", lines[0], lines[1]);
-                            login.put(lines[0], lines[1]);
-                        }else if(lines.length == 1){
-                            System.out.printf("Invalid key/value, only key provided (=): %s.\n", lines[0]);
-                        }
-                    }
-                }catch(Exception e){
-                    System.out.println("Cannot load properties file: " + e.getMessage());
-                    e.printStackTrace();
-                }
+                login.load(f);
+
+                Logger.getLogger("HibernateUtils").info("Connecting to " + login.getProperty("url"));
 
                 StandardServiceRegistryBuilder registryBuilder =
                         new StandardServiceRegistryBuilder();
 
-                System.out.println("jdbc:postgresql://" + login.getProperty("host") + "/" + login.getProperty("db"));
-                System.out.println(login.getProperty("user"));
-                System.out.println(login.getProperty("pass"));
-
                 Map<String, Object> settings = new HashMap<>();
-                //settings.put(Environment.DRIVER, "org.postgresql.ds.PGSimpleDataSource");
-                settings.put(Environment.DRIVER, "org.postgresql.Driver");
-                settings.put(Environment.URL, "jdbc:postgresql://" + login.getProperty("host") + "/" + login.getProperty("db"));
+                settings.put(Environment.DRIVER, login.getProperty("driver"));
+                settings.put(Environment.URL, login.getProperty("url"));
                 settings.put(Environment.USER, login.getProperty("user"));
                 settings.put(Environment.PASS, login.getProperty("pass"));
                 settings.put(Environment.HBM2DDL_AUTO, "update");
-                settings.put(Environment.SHOW_SQL, false);
+                settings.put(Environment.SHOW_SQL, true);
+                settings.put("hibernate.current_session_context_class", "org.hibernate.context.internal.ThreadLocalSessionContext");
 
                 // HikariCP settings
 
@@ -92,6 +73,7 @@ public class HibernateUtils {
 
                 Metadata metadata = sources.getMetadataBuilder().build();
                 sessionFactory = metadata.getSessionFactoryBuilder().build();
+                sessionFactory.openSession();
             } catch (Exception e) {
                 if (registry != null) {
                     StandardServiceRegistryBuilder.destroy(registry);
