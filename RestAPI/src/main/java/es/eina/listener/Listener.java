@@ -13,6 +13,7 @@ import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 import javax.servlet.http.HttpSessionBindingEvent;
+import java.io.InputStream;
 
 public class Listener implements ServletContextListener,
 		HttpSessionListener, HttpSessionAttributeListener {
@@ -38,7 +39,8 @@ public class Listener implements ServletContextListener,
          You can initialize servlet context related data here.
       */
 	  Geolocalizer.build("/GeoLite2-Country.mmdb");
-	  HibernateUtils.configureDatabase("database.dat");
+		InputStream f = getClass().getResourceAsStream("database.properties");
+	  HibernateUtils.configureDatabase(f);
 	  restApp = new RestApp();
 	  cache = new CleanUpCache();
 

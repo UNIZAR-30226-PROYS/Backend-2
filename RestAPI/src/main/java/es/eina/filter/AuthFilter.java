@@ -14,6 +14,6 @@ public class AuthFilter implements ContainerResponseFilter {
     @Override
     public void filter(ContainerRequestContext containerRequestContext, ContainerResponseContext containerResponseContext) throws IOException {
         containerResponseContext.getHeaders().putSingle("Random", "true");
-        RestApp.getInstance().getLogger().info("Auth required for " + containerRequestContext.getUriInfo().toString());
+        //RestApp.getInstance().getLogger().info("Auth required for " + containerRequestContext.getUriInfo().toString());
     }
 }
