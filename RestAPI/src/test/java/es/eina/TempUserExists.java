@@ -5,10 +5,13 @@ import es.eina.utils.UserUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.InputStream;
+
 public class TempUserExists {
 
     public void createDBConnection(){
-        HibernateUtils.configureDatabase("database.dat");
+        InputStream f = getClass().getResourceAsStream("/database-test.properties");
+        HibernateUtils.configureDatabase(f);
     }
 
     public void shutdown(){
