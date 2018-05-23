@@ -1,6 +1,10 @@
 package es.eina.sql.entities;
 
+import es.eina.sql.utils.HibernateUtils;
+import org.hibernate.Session;
+
 import javax.persistence.*;
+import javax.transaction.Transactional;
 import java.util.*;
 
 @Entity(name="song")
@@ -8,6 +12,7 @@ import java.util.*;
 public class EntitySong extends EntityBase {
 
     @Id
+    @GeneratedValue
     @Column(name = "id",nullable = false)
     private Long id;
 
@@ -29,25 +34,25 @@ public class EntitySong extends EntityBase {
     @Column(name = "lyrics")
     private String lyrics;  //ruta a la letra de cancion
 
-    @ManyToOne
+    @ManyToOne(cascade=CascadeType.ALL)
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private EntityUser user;
 
-    @ManyToOne
-    @JoinColumn(name = "songs")
+    @ManyToOne(cascade=CascadeType.ALL)
+    @JoinColumn(name = "album")
     private EntityAlbum album;
 
     @ManyToMany(mappedBy = "songsLiked")
-    Set<EntityUser> usersLikers = new HashSet<>();
+    private Set<EntityUser> usersLikers = new HashSet<>();
 
     @Column(name = "likes", insertable=false, updatable=false)
     private long likes;
 
     @ManyToMany(mappedBy = "songsFaved")
-    Set<EntityUser> usersFavers = new HashSet<>();
+    private Set<EntityUser> usersFavers = new HashSet<>();
 
     @ManyToMany(mappedBy = "songsListened")
-    Set<EntityUser> usersListeners = new HashSet<>();
+    private Set<EntityUser> usersListeners = new HashSet<>();
 
 
     /**
@@ -55,6 +60,13 @@ public class EntitySong extends EntityBase {
      */
     public EntitySong(){update();}
 
+    public EntitySong(EntityUser author, String title, String country) {
+        this.userId = author.getId();
+        this.title = title;
+        this.country = country;
+        this.uploadTime = System.currentTimeMillis();
+        update();
+    }
 
     public Long getId() {
         return id;
@@ -95,13 +107,9 @@ public class EntitySong extends EntityBase {
 
     public boolean unfavSong(EntityUser user){ return this.usersFavers.remove(user); }
 
-    public boolean addListener(EntityUser user){
-        if (this.usersListeners.add(user)){
-            this.listened++;
-            return true;
-        }else{
-            return false;
-        }
+    @Transactional
+    public Set<EntityUser> getListeners(){
+        return this.usersListeners;
     }
 
     public boolean setAlbum(EntityAlbum album){
@@ -124,6 +132,15 @@ public class EntitySong extends EntityBase {
         }
 
         return false;
+    }
+
+    @Override
+    @Transactional
+    public void save() {
+        Session s = HibernateUtils.getSessionFactory().getCurrentSession();
+        s.saveOrUpdate(this.usersFavers);
+        s.saveOrUpdate(this.usersLikers);
+        s.saveOrUpdate(this.usersListeners);
     }
 
 

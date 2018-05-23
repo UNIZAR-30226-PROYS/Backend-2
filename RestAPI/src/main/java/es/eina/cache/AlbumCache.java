@@ -41,11 +41,12 @@ public class AlbumCache {
     private static void saveEntities(Collection<EntityAlbum> remove) {
         Transaction tr = null;
         Session session;
-            session = HibernateUtils.getSessionFactory().openSession();
+            session = HibernateUtils.getSessionFactory().getCurrentSession();
             for (EntityAlbum data : remove) {
                 if (data.isDirty()) {
                     try {
                         tr = session.beginTransaction();
+                        data.save();
                         session.saveOrUpdate(data);
                         tr.commit();
                         albums.remove(data.getAlbumId());
@@ -60,9 +61,10 @@ public class AlbumCache {
 
     public static boolean saveEntity(EntityAlbum data){
         Transaction tr = null;
-        try (Session session = HibernateUtils.getSessionFactory().openSession()) {
+        try (Session session = HibernateUtils.getSessionFactory().getCurrentSession()) {
             try {
                 tr = session.beginTransaction();
+                //data.save();
                 session.saveOrUpdate(data);
                 tr.commit();
                 AlbumCache.addAlbum(data);
@@ -87,7 +89,7 @@ public class AlbumCache {
     private static EntityAlbum loadAlbum(long albumID) {
         EntityAlbum album = null;
         Transaction tr = null;
-        try (Session session = HibernateUtils.getSessionFactory().openSession()) {
+        try (Session session = HibernateUtils.getSessionFactory().getCurrentSession()) {
             tr = session.beginTransaction();
             album = session.get(EntityAlbum.class, albumID);
             tr.commit();
@@ -120,7 +122,7 @@ public class AlbumCache {
 
     public static boolean deleteAlbum(EntityAlbum album) {
         Transaction tr = null;
-        try (Session session = HibernateUtils.getSessionFactory().openSession()) {
+        try (Session session = HibernateUtils.getSessionFactory().getCurrentSession()) {
             long id = album.getAlbumId();
             tr = session.beginTransaction();
             session.delete(album);

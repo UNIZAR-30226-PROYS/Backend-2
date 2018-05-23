@@ -1,5 +1,6 @@
 package es.eina.cache;
 
+import es.eina.RestApp;
 import es.eina.sql.entities.EntitySong;
 import es.eina.sql.utils.HibernateUtils;
 import org.hibernate.Session;
@@ -39,11 +40,13 @@ public class SongCache {
 
     private static void saveEntities(Collection<EntitySong> remove) {
         Transaction tr = null;
-        try (Session session = HibernateUtils.getSessionFactory().openSession()) {
+        try (Session session = HibernateUtils.getSessionFactory().getCurrentSession()) {
             for (EntitySong data : remove) {
                 if (data.isDirty()) {
                     try {
                         tr = session.beginTransaction();
+                        RestApp.getInstance().getLogger().info(data.getId() + " is dirty, updating...");
+                        //data.save();
                         session.saveOrUpdate(data);
                         tr.commit();
                         songs.remove(data.getId());
@@ -70,7 +73,7 @@ public class SongCache {
         Transaction tr = null;
         Session session;
         try{
-            session = HibernateUtils.getSessionFactory().openSession();
+            session = HibernateUtils.getSessionFactory().getCurrentSession();
             tr = session.beginTransaction();
             song = session.get(EntitySong.class, songId);
             tr.commit();
@@ -104,7 +107,7 @@ public class SongCache {
 
     public static boolean deleteSong(EntitySong song) {
         Transaction tr = null;
-        try (Session session = HibernateUtils.getSessionFactory().openSession()) {
+        try (Session session = HibernateUtils.getSessionFactory().getCurrentSession()) {
             long id = song.getId();
             tr = session.beginTransaction();
             session.delete(song);

@@ -32,6 +32,8 @@ public abstract class EntityBase {
         return time <= invalidateTime;
     }
 
+    public abstract void save();
+
     protected int deleteEntity(){
         Transaction tr = null;
         try (Session session = HibernateUtils.getSessionFactory().openSession()) {

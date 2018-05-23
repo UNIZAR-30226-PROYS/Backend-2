@@ -1,9 +1,12 @@
 package es.eina.sql.entities;
 
+import es.eina.sql.utils.HibernateUtils;
 import es.eina.utils.RandomString;
+import org.hibernate.Session;
 
 import javax.persistence.*;
 import javax.persistence.Entity;
+import javax.transaction.Transactional;
 
 @Entity(name="token")
 @Table(name="sessions")
@@ -16,13 +19,13 @@ public class EntityToken extends EntityBase{
     @Column(name = "user_id")
     private long user_id;
 
-    @Column(name = "token")
+    @Column(name = "token", nullable = false)
     private String token;
 
-    @Column(name = "time")
+    @Column(name = "time", nullable = false)
     private long time;
 
-    @OneToOne
+    @OneToOne(cascade=CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private EntityUser user;
 
@@ -59,5 +62,12 @@ public class EntityToken extends EntityBase{
 
     public boolean isValid(String token) {
         return time >= System.currentTimeMillis() && this.token.equals(token);
+    }
+
+    @Override
+    @Transactional
+    public void save() {
+        Session s = HibernateUtils.getSessionFactory().getCurrentSession();
+        s.saveOrUpdate(this.user);
     }
 }

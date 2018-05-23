@@ -1,6 +1,10 @@
 package es.eina.sql.entities;
 
+import es.eina.sql.utils.HibernateUtils;
+import org.hibernate.Session;
+
 import javax.persistence.*;
+import javax.transaction.Transactional;
 
 @Entity(name="userData")
 @Table(name="user_values")
@@ -16,7 +20,7 @@ public class EntityUserValues extends EntityBase{
     @Column(name = "verified")
     private boolean verified;
 
-    @OneToOne
+    @OneToOne(cascade=CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private EntityUser user;
 
@@ -60,5 +64,12 @@ public class EntityUserValues extends EntityBase{
 
     public boolean cleanUp() {
         return verified || admin;
+    }
+
+    @Override
+    @Transactional
+    public void save() {
+        Session s = HibernateUtils.getSessionFactory().getCurrentSession();
+        s.saveOrUpdate(this.user);
     }
 }

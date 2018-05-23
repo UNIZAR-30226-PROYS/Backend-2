@@ -6,6 +6,7 @@ import org.hibernate.Transaction;
 import org.json.JSONArray;
 
 import javax.persistence.*;
+import javax.transaction.Transactional;
 import java.util.*;
 
 @Entity(name="album")
@@ -35,9 +36,14 @@ public class EntityAlbum extends EntityBase {
     @Column(name = "image",nullable = false)
     private String image;	//es un URI de una imagen
 
-    @OneToMany
+    @OneToMany(cascade=CascadeType.ALL)
     @JoinColumn(name = "id", insertable=false, updatable=false)
     Set<EntitySong> songs = new HashSet<>();
+
+
+    @OneToMany(cascade=CascadeType.ALL)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    private EntityUser user;
 
 
     /**
@@ -96,6 +102,13 @@ public class EntityAlbum extends EntityBase {
     	    arr.put(song.getId());
     	}
     	return arr;
+    }
+
+    @Override
+    @Transactional
+    public void save() {
+        Session s = HibernateUtils.getSessionFactory().getCurrentSession();
+        s.saveOrUpdate(this.songs);
     }
 
 }

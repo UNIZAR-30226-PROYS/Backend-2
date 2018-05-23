@@ -9,6 +9,7 @@ import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.annotations.NaturalId;
+import org.hibernate.annotations.Persister;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -62,7 +63,11 @@ public class EntityUser extends EntityBase {
     @OneToMany(mappedBy = "user")
     Set<EntitySong> songs = new HashSet<>();
 
-    @ManyToMany()
+
+    @ManyToOne(cascade=CascadeType.ALL)
+    Set<EntityAlbum> albums = new HashSet<>();
+
+    @ManyToMany(cascade=CascadeType.ALL)
     @JoinTable(
         name = "user_liked_songs",
         joinColumns = { @JoinColumn(name = "user_id")},
@@ -70,7 +75,7 @@ public class EntityUser extends EntityBase {
     )
     Set<EntitySong> songsLiked = new HashSet<>();
 
-    @ManyToMany()
+    @ManyToMany(cascade=CascadeType.ALL)
     @JoinTable(
             name = "user_faved_songs",
             joinColumns = { @JoinColumn(name = "user_id")},
@@ -78,7 +83,7 @@ public class EntityUser extends EntityBase {
     )
     Set<EntitySong> songsFaved = new HashSet<>();
 
-    @ManyToMany()
+    @ManyToMany(cascade=CascadeType.ALL)
     @JoinTable(
             name = "user_listened_songs",
             joinColumns = { @JoinColumn(name = "user_id")},
@@ -276,6 +281,26 @@ public class EntityUser extends EntityBase {
 
     public boolean unfavSong(EntitySong song){ return this.songsFaved.remove(song);}
 
-    public boolean listenSong(EntitySong song){ return this.songsListened.add(song);}
+    @Transactional
+    public boolean listenSong(EntitySong song){
+        Session s = HibernateUtils.getSessionFactory().getCurrentSession();
+        update();
+        //song.getListeners().add(this);
+        Transaction t = s.beginTransaction();
+        boolean b = this.songsListened.add(song);
+        t.commit();
+        return b;
+    }
 
+    @Override
+    @Transactional
+    public void save() {
+        Session s = HibernateUtils.getSessionFactory().getCurrentSession();
+        Transaction tr = s.beginTransaction();
+        s.saveOrUpdate(this.songs);
+        s.saveOrUpdate(this.songsFaved);
+        s.saveOrUpdate(this.songsLiked);
+        s.saveOrUpdate(this.songsListened);
+        tr.commit();
+    }
 }

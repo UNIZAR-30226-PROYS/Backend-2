@@ -43,15 +43,17 @@ public class UserCache {
         saveEntities(users.values());
     }
 
+
     private static void saveEntities(Collection<EntityUser> remove){
         Transaction tr = null;
-        try (Session session = HibernateUtils.getSessionFactory().openSession()) {
+
+        Session session = HibernateUtils.getSessionFactory().getCurrentSession();
             for (EntityUser data : remove) {
-                System.err.println("Check " + data.getNick());
                 if(data.isDirty() || data.getToken().isDirty() || data.getUserValues().isDirty()) {
                     System.err.println(data.getNick() + " is dirty, updating");
                     try {
                         tr = session.beginTransaction();
+                        //data = (EntityUser) session.merge(data);
                         session.saveOrUpdate(data);
                         EntityToken token = data.getToken();
                         EntityUserValues userValues = data.getUserValues();
@@ -60,6 +62,7 @@ public class UserCache {
                         if(userValues != null && userValues.isDirty()) session.saveOrUpdate(userValues);
 
                         tr.commit();
+                        //data.save();
                         users.remove(data.getId());
                         nameToId.remove(data.getNick());
                         idToName.remove(data.getId());
@@ -67,10 +70,10 @@ public class UserCache {
                         if (tr != null) {
                             tr.rollback();
                         }
+                        e.printStackTrace();
                     }
                 }
             }
-        }
     }
 
 
@@ -90,7 +93,7 @@ public class UserCache {
         Transaction tr = null;
         Session session = null;
         try{
-            session = HibernateUtils.getSessionFactory().openSession();
+            session = HibernateUtils.getSessionFactory().getCurrentSession();
             tr = session.beginTransaction();
             user = session.byNaturalId(EntityUser.class)
                     .using("nick", nick)
@@ -110,7 +113,7 @@ public class UserCache {
     private static EntityUser loadUser(long userId) {
         EntityUser user = null;
         Transaction tr = null;
-        try (Session session = HibernateUtils.getSessionFactory().openSession()) {
+        try (Session session = HibernateUtils.getSessionFactory().getCurrentSession()) {
             tr = session.beginTransaction();
             user = session.get(EntityUser.class, userId);
             tr.commit();
@@ -153,7 +156,7 @@ public class UserCache {
 
     public static boolean deleteUser(EntityUser user){
         Transaction tr = null;
-        try (Session session = HibernateUtils.getSessionFactory().openSession()) {
+        try (Session session = HibernateUtils.getSessionFactory().getCurrentSession()) {
             String nick = user.getNick();
             long id = user.getId();
             tr = session.beginTransaction();
