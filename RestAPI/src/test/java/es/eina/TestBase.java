@@ -9,7 +9,7 @@ import java.io.InputStream;
 
 public class TestBase {
 
-    protected void openDB(){
+    protected static void openDB(){
             InputStream f = HibernateUtilsTest.class.getResourceAsStream("/database-test.properties");
             //InputStream f = HibernateUtilsTest.class.getResourceAsStream("/database-test.properties");
             Assert.assertNotNull(f);
@@ -17,7 +17,7 @@ public class TestBase {
             Assert.assertNotNull(session);
     }
 
-    protected void closeDB() {
+    protected static void closeDB() {
 
     }
 }
