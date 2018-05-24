@@ -99,7 +99,9 @@ public class UserCache {
                     .using("nick", nick)
                     .load();
             tr.commit();
-            addUser(user);
+            if(user != null) {
+                addUser(user);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             if (tr != null && tr.isActive()) {
