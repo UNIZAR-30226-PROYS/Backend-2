@@ -104,7 +104,7 @@ public class SongRequests {
     @Path("{songId}/listen")
     @Transactional
     @POST
-    public String addListenedSong(@FormParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
+    public JSONObject addListenedSong(@FormParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
                                   @PathParam("songId") long songId) {
         JSONObject result = new JSONObject();
         if (StringUtils.isValid(nick) && StringUtils.isValid(userToken)) {
@@ -131,7 +131,7 @@ public class SongRequests {
             result.put("error", "invalidArgs");
         }
 
-        return result.toString();
+        return result;
 
     }
 
