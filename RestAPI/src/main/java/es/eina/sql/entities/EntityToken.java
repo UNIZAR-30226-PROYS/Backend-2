@@ -15,16 +15,13 @@ public class EntityToken extends EntityBase{
     private static final RandomString randomTokenGenerator = new RandomString(16);
     private static final long TOKEN_VALID_TIME = 2592000000L;
 
-    @Id
-    @Column(name = "user_id")
-    private long user_id;
-
     @Column(name = "token", nullable = false)
     private String token;
 
     @Column(name = "time", nullable = false)
     private long time;
 
+    @Id
     @OneToOne(cascade=CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private EntityUser user;
@@ -37,7 +34,6 @@ public class EntityToken extends EntityBase{
     }
 
     public EntityToken(EntityUser user) {
-        this.user_id = user.getId();
         this.user = user;
         updateToken();
     }
@@ -55,8 +51,10 @@ public class EntityToken extends EntityBase{
     }
 
     void updateToken() {
-        this.token = randomTokenGenerator.nextString();
-        this.time = System.currentTimeMillis() + TOKEN_VALID_TIME;
+        if(time < System.currentTimeMillis()) {
+            this.token = randomTokenGenerator.nextString();
+            this.time = System.currentTimeMillis() + TOKEN_VALID_TIME;
+        }
         update();
     }
 

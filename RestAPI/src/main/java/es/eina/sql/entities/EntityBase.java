@@ -5,7 +5,9 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.json.JSONObject;
 
-public abstract class EntityBase {
+import java.io.Serializable;
+
+public abstract class EntityBase implements Serializable {
     public static final long CACHE_INVALIDATE_TIME = 1800000L;
 
     private long invalidateTime;

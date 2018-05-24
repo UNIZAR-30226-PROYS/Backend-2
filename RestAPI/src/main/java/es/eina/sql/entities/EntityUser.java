@@ -54,18 +54,15 @@ public class EntityUser extends EntityBase {
     @Column(name="register_date", nullable = false)
     private long register_date;
 
-    @OneToOne(mappedBy = "user")
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "user")
     private EntityToken token;
 
-    @OneToOne(mappedBy = "user")
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "user")
     private EntityUserValues userValues;
 
-    @OneToMany(mappedBy = "user")
-    Set<EntitySong> songs = new HashSet<>();
 
-
-    @ManyToOne(cascade=CascadeType.ALL)
-    Set<EntityAlbum> albums = new HashSet<>();
+    @OneToMany(mappedBy = "user", cascade=CascadeType.ALL)
+    private Set<EntityAlbum> albums = new HashSet<>();
 
     @ManyToMany(cascade=CascadeType.ALL)
     @JoinTable(
@@ -83,13 +80,8 @@ public class EntityUser extends EntityBase {
     )
     Set<EntitySong> songsFaved = new HashSet<>();
 
-    @ManyToMany(cascade=CascadeType.ALL)
-    @JoinTable(
-            name = "user_listened_songs",
-            joinColumns = { @JoinColumn(name = "user_id")},
-            inverseJoinColumns = {@JoinColumn(name = "song_id")}
-    )
-    Set<EntitySong> songsListened = new HashSet<>();
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
+    Set<EntityUserListenSong> songsListened = new HashSet<>();
 
     /**
      * DO NOT use this method as it can only be used by Hibernate
@@ -255,16 +247,19 @@ public class EntityUser extends EntityBase {
         return userValues != null && userValues.isVerified();
     }
 
-    public Set<EntitySong> getSongs() {
+    /*public Set<EntitySong> getSongs() {
         return songs;
-    }
+    }*/
 
     @Transactional
     public JSONArray getUserSongs() {
         JSONArray songs = new JSONArray();
-        RestApp.getInstance().getLogger().severe("Length: " + this.songs.size());
-        for (EntitySong song : this.songs) {
-            songs.put(song.getId());
+        RestApp.getInstance().getLogger().severe("Length: " + this.albums.size());
+        for (EntityAlbum album : this.albums) {
+            JSONArray albumSongs = album.getSongsAsArray();
+            for(int i = 0; i < albumSongs.length(); i++) {
+                songs.put(albumSongs.get(i));
+            }
         }
         return songs;
     }
@@ -287,7 +282,7 @@ public class EntityUser extends EntityBase {
         update();
         //song.getListeners().add(this);
         Transaction t = s.beginTransaction();
-        boolean b = this.songsListened.add(song);
+        boolean b = this.songsListened.add(new EntityUserListenSong(this, song));
         t.commit();
         return b;
     }
@@ -297,7 +292,6 @@ public class EntityUser extends EntityBase {
     public void save() {
         Session s = HibernateUtils.getSessionFactory().getCurrentSession();
         Transaction tr = s.beginTransaction();
-        s.saveOrUpdate(this.songs);
         s.saveOrUpdate(this.songsFaved);
         s.saveOrUpdate(this.songsLiked);
         s.saveOrUpdate(this.songsListened);

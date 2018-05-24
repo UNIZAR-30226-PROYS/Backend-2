@@ -34,25 +34,21 @@ public class EntitySong extends EntityBase {
     @Column(name = "lyrics")
     private String lyrics;  //ruta a la letra de cancion
 
-    @ManyToOne(cascade=CascadeType.ALL)
-    @JoinColumn(name = "user_id", insertable = false, updatable = false)
-    private EntityUser user;
+    @Column(name = "likes", insertable=false, updatable=false)
+    private long likes;
 
     @ManyToOne(cascade=CascadeType.ALL)
-    @JoinColumn(name = "album")
+    @JoinColumn(name = "album_id")
     private EntityAlbum album;
 
     @ManyToMany(mappedBy = "songsLiked")
     private Set<EntityUser> usersLikers = new HashSet<>();
 
-    @Column(name = "likes", insertable=false, updatable=false)
-    private long likes;
-
     @ManyToMany(mappedBy = "songsFaved")
     private Set<EntityUser> usersFavers = new HashSet<>();
 
-    @ManyToMany(mappedBy = "songsListened")
-    private Set<EntityUser> usersListeners = new HashSet<>();
+    @OneToMany(mappedBy = "song")
+    private Set<EntityUserListenSong> usersListeners = new HashSet<>();
 
 
     /**
@@ -108,7 +104,7 @@ public class EntitySong extends EntityBase {
     public boolean unfavSong(EntityUser user){ return this.usersFavers.remove(user); }
 
     @Transactional
-    public Set<EntityUser> getListeners(){
+    public Set<EntityUserListenSong> getListeners(){
         return this.usersListeners;
     }
 

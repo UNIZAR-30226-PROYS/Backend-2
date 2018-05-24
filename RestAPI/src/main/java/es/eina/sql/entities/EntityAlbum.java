@@ -36,12 +36,11 @@ public class EntityAlbum extends EntityBase {
     @Column(name = "image",nullable = false)
     private String image;	//es un URI de una imagen
 
-    @OneToMany(cascade=CascadeType.ALL)
-    @JoinColumn(name = "id", insertable=false, updatable=false)
-    Set<EntitySong> songs = new HashSet<>();
+    @OneToMany(mappedBy = "album", cascade=CascadeType.ALL)
+    private Set<EntitySong> songs = new HashSet<>();
 
 
-    @OneToMany(cascade=CascadeType.ALL)
+    @ManyToOne(cascade=CascadeType.ALL)
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private EntityUser user;
 
