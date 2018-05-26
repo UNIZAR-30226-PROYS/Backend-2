@@ -32,9 +32,6 @@ public class EntityAlbum extends EntityBase {
 
     @Column(name = "upload_time",nullable = false)
     private long uploadTime;
-    
-    @Column(name = "image",nullable = false)
-    private String image;	//es un URI de una imagen
 
     @OneToMany(mappedBy = "album", cascade=CascadeType.ALL)
     private Set<EntitySong> songs = new HashSet<>();
@@ -50,12 +47,11 @@ public class EntityAlbum extends EntityBase {
      */
     public EntityAlbum(){update();}
 
-    public EntityAlbum(EntityUser user, String title, int year, String image) {
+    public EntityAlbum(EntityUser user, String title, int year) {
 
         this.userId = user.getId();
         this.title = title;
         this.publishYear = year;
-        this.image = image;
         this.updateTime = System.currentTimeMillis();
         this.uploadTime = updateTime;
 
@@ -85,10 +81,6 @@ public class EntityAlbum extends EntityBase {
 
     public long getUpdateTime() {
         return updateTime;
-    }
-    
-    public String getImage() {
-        return image;
     }
     
     public Set<EntitySong> getSongs() {

@@ -29,16 +29,14 @@ public class AlbumRequests {
      * @param nick : ID from user author of album.
 	 * @param userToken : User's token.
      * @param title : Given name for the new album.
-     * @param image : path to the image resource used as album cover.
      * @param year : year of the original album release.
      *
      * @return The result of this request.
      */
     @Path("{nick}/create")
     @POST
-    public String create(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
-						 @FormParam("title") String title, @FormParam("image") String image,
-						 @FormParam("year") int year){
+    public JSONObject create(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
+						 @FormParam("title") String title, @FormParam("year") int year){
 
         JSONObject obj = new JSONObject();
         JSONObject albumJSON = new JSONObject(defaultAlbumJSON, JSONObject.getNames(defaultAlbumJSON));
@@ -47,16 +45,14 @@ public class AlbumRequests {
 			EntityUser user = UserCache.getUser(nick);
 			if(user != null){
 				if (user.getToken() != null && user.getToken().isValid(userToken)) {
-						if(StringUtils.isValid(image)) {
 							if(year > 1900) {
-								EntityAlbum album = AlbumUtils.createAlbum(user, title, year, image);
+								EntityAlbum album = AlbumUtils.createAlbum(user, title, year);
 								if(album != null && AlbumCache.addAlbum(album)){
 									albumJSON.put("id", album.getAlbumId());
 									albumJSON.put("user_id", album.getUserId());
 									albumJSON.put("title", album.getTitle());
 									albumJSON.put("publish_year", album.getPublishYear());
 									albumJSON.put("update_time", album.getUpdateTime());
-									albumJSON.put("image", album.getImage());
 									albumJSON.put("songs", album.getSongsAsArray());
 									obj.put("error", "ok");
 								}else {
@@ -65,9 +61,6 @@ public class AlbumRequests {
 							}else {
 								obj.put("error", "invalidYear");
 							}
-						}else {
-							obj.put("error", "invalidImage");
-						}
 				} else {
 					obj.put("error", "invalidToken");
 				}
@@ -80,7 +73,7 @@ public class AlbumRequests {
 
         obj.put("album", albumJSON);
 
-        return obj.toString();
+        return obj;
     }
 
     /**

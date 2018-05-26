@@ -22,8 +22,8 @@ public class AlbumUtils {
      * @return Null if the album couldn't be created, the actual album if it could be created.
      */
     public static @Nullable
-    EntityAlbum createAlbum(EntityUser user, String title, int year, String image) {
-        EntityAlbum entityAlbum = new EntityAlbum(user, title, year, image);
+    EntityAlbum createAlbum(EntityUser user, String title, int year) {
+        EntityAlbum entityAlbum = new EntityAlbum(user, title, year);
 
         return AlbumCache.addAlbum(entityAlbum) ? entityAlbum : null;
 
