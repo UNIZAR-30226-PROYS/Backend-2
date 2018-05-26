@@ -103,11 +103,4 @@ public class EntityAlbum extends EntityBase {
     	return arr;
     }
 
-    @Override
-    @Transactional
-    public void save() {
-        Session s = HibernateUtils.getSessionFactory().getCurrentSession();
-        s.saveOrUpdate(this.songs);
-    }
-
 }

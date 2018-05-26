@@ -61,11 +61,4 @@ public class EntityToken extends EntityBase{
     public boolean isValid(String token) {
         return time >= System.currentTimeMillis() && this.token.equals(token);
     }
-
-    @Override
-    @Transactional
-    public void save() {
-        Session s = HibernateUtils.getSessionFactory().getCurrentSession();
-        s.saveOrUpdate(this.user);
-    }
 }

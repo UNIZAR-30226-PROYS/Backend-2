@@ -1,9 +1,6 @@
 package es.eina.sql.entities;
 
 import es.eina.sql.utils.HibernateUtils;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.json.JSONObject;
 
 import java.io.Serializable;
 
@@ -34,22 +31,8 @@ public abstract class EntityBase implements Serializable {
         return time <= invalidateTime;
     }
 
-    public abstract void save();
-
     protected int deleteEntity(){
-        Transaction tr = null;
-        try (Session session = HibernateUtils.getSessionFactory().openSession()) {
-            tr = session.beginTransaction();
-            session.delete(this);
-            tr.commit();
-            return 0;
-        } catch (Exception e) {
-            e.printStackTrace();
-            if (tr != null && tr.isActive()) {
-                tr.rollback();
-            }
-            return -1;
-        }
+        return HibernateUtils.deleteFromDB(this) ? 0 : 1;
     }
 
 }

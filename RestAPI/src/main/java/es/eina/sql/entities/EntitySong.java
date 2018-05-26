@@ -2,6 +2,7 @@ package es.eina.sql.entities;
 
 import es.eina.sql.utils.HibernateUtils;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 import javax.persistence.*;
 import javax.transaction.Transactional;
@@ -34,7 +35,8 @@ public class EntitySong extends EntityBase {
     @Column(name = "lyrics")
     private String lyrics;  //ruta a la letra de cancion
 
-    @Column(name = "likes", insertable=false, updatable=false)
+    @Deprecated
+    @Column(name = "likes")
     private long likes;
 
     @ManyToOne(cascade=CascadeType.ALL)
@@ -48,7 +50,7 @@ public class EntitySong extends EntityBase {
     private Set<EntityUser> usersFavers = new HashSet<>();
 
     @OneToMany(mappedBy = "song")
-    private Set<EntityUserListenSong> usersListeners = new HashSet<>();
+    private Set<EntityUserSongData> usersListeners = new HashSet<>();
 
 
     /**
@@ -89,7 +91,14 @@ public class EntitySong extends EntityBase {
         else return "No Lyrics";
     }
 
-    public boolean isSongLiked(EntityUser user){ return this.usersLikers.contains(user); }
+    @Transactional
+    public boolean isSongLiked(EntityUser user){
+        Session s = HibernateUtils.getSession();
+        Transaction t = s.beginTransaction();
+        boolean b = this.usersLikers.contains(user);
+        t.commit();
+        return b;
+    }
 
     public boolean likeSong(EntityUser user){ if (this.usersLikers.add(user)){ this.likes++; return true;}else{ return false; }}
 
@@ -97,14 +106,18 @@ public class EntitySong extends EntityBase {
 
     public long getLikes(){ return this.likes;}
 
-    public boolean isSongFaved(EntityUser user){ return this.usersFavers.contains(user); }
+    @Transactional
+    public boolean isSongFaved(EntityUser user){
+        boolean b = this.usersFavers.contains(user);
+        return b;
+    }
 
     public boolean favSong(EntityUser user){ return this.usersFavers.add(user); }
 
     public boolean unfavSong(EntityUser user){ return this.usersFavers.remove(user); }
 
     @Transactional
-    public Set<EntityUserListenSong> getListeners(){
+    public Set<EntityUserSongData> getListeners(){
         return this.usersListeners;
     }
 
@@ -129,15 +142,5 @@ public class EntitySong extends EntityBase {
 
         return false;
     }
-
-    @Override
-    @Transactional
-    public void save() {
-        Session s = HibernateUtils.getSessionFactory().getCurrentSession();
-        s.saveOrUpdate(this.usersFavers);
-        s.saveOrUpdate(this.usersLikers);
-        s.saveOrUpdate(this.usersListeners);
-    }
-
 
 }

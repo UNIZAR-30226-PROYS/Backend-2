@@ -5,11 +5,9 @@ import es.eina.crypt.Crypter;
 import es.eina.sql.utils.HibernateUtils;
 import es.eina.utils.StringUtils;
 import es.eina.utils.UserUtils;
-import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.annotations.NaturalId;
-import org.hibernate.annotations.Persister;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -81,7 +79,7 @@ public class EntityUser extends EntityBase {
     Set<EntitySong> songsFaved = new HashSet<>();
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
-    Set<EntityUserListenSong> songsListened = new HashSet<>();
+    Set<EntityUserSongData> songsListened = new HashSet<>();
 
     /**
      * DO NOT use this method as it can only be used by Hibernate
@@ -264,13 +262,27 @@ public class EntityUser extends EntityBase {
         return songs;
     }
 
-    public boolean isSongLiked(EntitySong song){ return this.songsLiked.contains(song); }
+    @Transactional
+    public boolean isSongLiked(EntitySong song){
+        Session s = HibernateUtils.getSession();
+        Transaction t = s.beginTransaction();
+        boolean b = this.songsLiked.contains(song);
+        t.commit();
+        return b;
+    }
 
     public boolean likeSong(EntitySong song){ return this.songsLiked.add(song); }
 
     public boolean unlikeSong(EntitySong song){ return this.songsLiked.remove(song); }
 
-    public boolean isSongFaved(EntitySong song){ return this.songsFaved.contains(song); }
+    @Transactional
+    public boolean isSongFaved(EntitySong song){
+        Session s = HibernateUtils.getSession();
+        Transaction t = s.beginTransaction();
+        boolean b = this.songsFaved.contains(song);
+        t.commit();
+        return b;
+    }
 
     public boolean favSong(EntitySong song){ return this.songsFaved.add(song); }
 
@@ -278,23 +290,12 @@ public class EntityUser extends EntityBase {
 
     @Transactional
     public boolean listenSong(EntitySong song){
-        Session s = HibernateUtils.getSessionFactory().getCurrentSession();
+        Session s = HibernateUtils.getSession();
         update();
         //song.getListeners().add(this);
         Transaction t = s.beginTransaction();
-        boolean b = this.songsListened.add(new EntityUserListenSong(this, song));
+        boolean b = this.songsListened.add(new EntityUserSongData(this, song));
         t.commit();
         return b;
-    }
-
-    @Override
-    @Transactional
-    public void save() {
-        Session s = HibernateUtils.getSessionFactory().getCurrentSession();
-        Transaction tr = s.beginTransaction();
-        s.saveOrUpdate(this.songsFaved);
-        s.saveOrUpdate(this.songsLiked);
-        s.saveOrUpdate(this.songsListened);
-        tr.commit();
     }
 }

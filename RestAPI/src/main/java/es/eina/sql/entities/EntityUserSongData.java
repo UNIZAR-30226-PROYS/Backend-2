@@ -4,7 +4,7 @@ import javax.persistence.*;
 
 @Table(name = "user_listened_songs")
 @Entity(name = "listenedSong")
-public class EntityUserListenSong extends EntityBase {
+public class EntityUserSongData extends EntityBase {
 
     @Id
     @Column(name="time")
@@ -20,20 +20,15 @@ public class EntityUserListenSong extends EntityBase {
     @JoinColumn(name="song_id")
     private EntitySong song;
 
-    public EntityUserListenSong(){
+    public EntityUserSongData(){
         update();
     }
 
-    public EntityUserListenSong(EntityUser user, EntitySong song){
+    public EntityUserSongData(EntityUser user, EntitySong song){
         this.song = song;
         this.author = user;
         this.time = System.currentTimeMillis();
         update();
     }
 
-
-    @Override
-    public void save() {
-
-    }
 }
