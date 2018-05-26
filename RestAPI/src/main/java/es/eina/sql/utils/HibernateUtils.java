@@ -46,6 +46,8 @@ public class HibernateUtils {
                 settings.put(Environment.PASS, login.getProperty("pass"));
                 settings.put(Environment.HBM2DDL_AUTO, "update");
                 settings.put(Environment.SHOW_SQL, true);
+                //settings.put(Environment.USE_SQL_COMMENTS, true);
+
                 //settings.put(Environment.FORMAT_SQL, true);
                 settings.put("hibernate.current_session_context_class", "org.hibernate.context.internal.ThreadLocalSessionContext");
                 String createDrop = login.getProperty("create-drop");
@@ -64,7 +66,20 @@ public class HibernateUtils {
                 settings.put("hibernate.hikari.maximumPoolSize", "20");
                 // Maximum time that a connection is allowed to sit ideal in the pool
                 settings.put("hibernate.hikari.idleTimeout", "300000");
-                settings.put("log4j.logger.org.hibernate.SQL", "debug");
+
+                settings.put("log4j.logger.org.hibernate", "INFO, hb");
+                settings.put("log4j.logger.org.hibernate.SQL", "DEBUG");
+                settings.put("log4j.logger.org.hibernate.type", "TRACE");
+                settings.put("log4j.logger.org.hibernate.hql.ast.AST", "info");
+                settings.put("log4j.logger.org.hibernate.tool.hbm2ddl", "warn");
+                settings.put("log4j.logger.org.hibernate.hql", "debug");
+                settings.put("log4j.logger.org.hibernate.cache", "info");
+                settings.put("log4j.logger.org.hibernate.jdbc", "debug");
+
+                settings.put("log4j.appender.hb", "org.apache.log4j.ConsoleAppender");
+                settings.put("log4j.appender.hb.layout", "org.apache.log4j.PatternLayout");
+                settings.put("log4j.appender.hb.layout.ConversionPattern", "HibernateLog --> %d{HH:mm:ss} %-5p %c - %m%n");
+                settings.put("log4j.appender.hb.Threshold", "TRACE");
 
                 registryBuilder.applySettings(settings);
 

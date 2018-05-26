@@ -10,11 +10,11 @@ import java.io.InputStream;
 public class TestBase {
 
     protected static void openDB(){
-            InputStream f = HibernateUtilsTest.class.getResourceAsStream("/database-test.properties");
-            //InputStream f = HibernateUtilsTest.class.getResourceAsStream("/database-test.properties");
-            Assert.assertNotNull(f);
-            SessionFactory session = HibernateUtils.configureDatabase(f);
-            Assert.assertNotNull(session);
+        InputStream f = HibernateUtilsTest.class.getResourceAsStream("/database-test.properties");
+        //InputStream f = HibernateUtilsTest.class.getResourceAsStream("/database-test.properties");
+        Assert.assertNotNull(f);
+        SessionFactory session = HibernateUtils.configureDatabase(f);
+        Assert.assertNotNull(session);
     }
 
     protected static void closeDB() {

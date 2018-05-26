@@ -31,14 +31,11 @@ public class UserReproduceSongTest extends TestBase {
     public void setupTest(){
         user = UserUtils.addUser("test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
         song = SongUtils.addSong(user, "Song 1", "ES");
-
-        Assert.assertNotNull(user);
-        Assert.assertNotNull(song);
     }
 
     @After
     public void endTest(){
-        Assert.assertTrue(UserCache.deleteUser(user));
+        UserCache.deleteUser(user);
     }
 
     @Test

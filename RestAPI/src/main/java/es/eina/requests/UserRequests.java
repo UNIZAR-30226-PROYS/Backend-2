@@ -223,7 +223,7 @@ public class UserRequests {
 
     @Path("/{nick}/verify")
     @POST
-    public String verifyAccount(@PathParam("nick") String nick,
+    public JSONObject verifyAccount(@PathParam("nick") String nick,
                                 @FormParam("self") String adminUser,
                                 @DefaultValue("") @FormParam("token") String token,
                                 @FormParam("verify") boolean verify) {
@@ -266,7 +266,7 @@ public class UserRequests {
             obj.put("error", "invalidArgs");
         }
 
-        return obj.toString();
+        return obj;
     }
 
     @Path("/{nick}")
