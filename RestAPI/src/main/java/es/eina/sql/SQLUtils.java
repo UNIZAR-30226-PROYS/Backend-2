@@ -11,7 +11,9 @@ public class SQLUtils {
         Session session = HibernateUtils.getSession();
         Transaction t = session.beginTransaction();
         try{
-            rowCount = (Long) session.createQuery("SELECT COUNT(e) as c FROM " + table + " e WHERE " + where).iterate().next();
+            rowCount = (Long) session.createQuery("SELECT COUNT(e) as c FROM " + table + " e WHERE " + where)
+                    .iterate()
+                    .next();
             t.commit();
         } catch (Exception e) {
             t.rollback();

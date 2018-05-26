@@ -23,17 +23,15 @@ public class Geolocalizer {
 
     private DatabaseReader reader = null;
 
-    public Geolocalizer(String f) {
+    public Geolocalizer(InputStream stream) {
         // This creates the DatabaseReader object. To improve performance, reuse
         // the object across lookups. The object is thread-safe.
         try {
-            ClassLoader loader = RestApp.class.getClassLoader();
-            InputStream stream = loader.getResourceAsStream(f);
             if(stream == null){
-                throw new RuntimeException("Cannot read inner file: " + f);
+                throw new RuntimeException("Cannot read inner file.");
             }
             reader = new DatabaseReader.Builder(stream).build();
-            logger.info("Read GeoIP database from " + f);
+            logger.info("Read GeoIP database from " + stream.toString());
         } catch (IOException e) {
             logger.error("Cannot read database file, all requests will return O1 ISO country code.");
         }
@@ -65,7 +63,7 @@ public class Geolocalizer {
         return DEFAULT_COUNTRY;
     }
 
-    public static Geolocalizer build(String f){
+    public static Geolocalizer build(InputStream f){
         if(instance == null){
             instance = new Geolocalizer(f);
         }
@@ -75,5 +73,13 @@ public class Geolocalizer {
 
     public static Geolocalizer getInstance(){
         return instance;
+    }
+
+    public static String getCountryISOCode(String ip){
+        if(instance != null){
+            return instance.getCountryCode(ip);
+        }else{
+            return "O1";
+        }
     }
 }

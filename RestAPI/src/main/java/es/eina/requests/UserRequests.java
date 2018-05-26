@@ -93,7 +93,7 @@ public class UserRequests {
      */
     @Path("/{nick}/signup")
     @POST
-    public String signup(@PathParam("nick") String nick, @FormParam("mail") String mail,
+    public JSONObject signup(@PathParam("nick") String nick, @FormParam("mail") String mail,
                          @FormParam("pass0") String pass0, @FormParam("pass1") String pass1,
                          @FormParam("user") String user, @FormParam("birth") long birth, @FormParam("bio") String bio) {
         JSONObject response = new JSONObject();
@@ -102,13 +102,13 @@ public class UserRequests {
         //String birth_date = StringUtils.isValid(birth) ? StringUtils.isDate(birth) : null;
 
         if (StringUtils.isValid(nick, 3, 32) && StringUtils.isValid(mail) && StringUtils.isValid(pass0) &&
-                StringUtils.isValid(pass1) && StringUtils.isValid(nick)) {
+                StringUtils.isValid(pass1)) {
             if (mailValidator.isValid(mail)) {
                 Date birth_date = new Date(birth);
                 if (!StringUtils.isValid(bio)) bio = "";
                 if (pass0.equals(pass1)) {
                     if (!UserUtils.userExists(nick)) {
-                        String country = Geolocalizer.getInstance().getCountryCode(request.getRemoteAddr());
+                        String country = Geolocalizer.getCountryISOCode(getIP());
                         EntityUser userData = UserUtils.addUser(nick, mail, pass0, user, bio, birth_date, country);
                         if (userData != null) {
                             response.put("token", userData.getToken().getToken());
@@ -130,7 +130,11 @@ public class UserRequests {
         }
 
 
-        return response.toString();
+        return response;
+    }
+
+    private String getIP() {
+        return request != null ? request.getRemoteAddr() : "127.0.0.1";
     }
 
     /**

@@ -35,7 +35,8 @@ public class Listener implements ServletContextListener,
          initialized(when the Web application is deployed). 
          You can initialize servlet context related data here.
       */
-	  Geolocalizer.build("/GeoLite2-Country.mmdb");
+		InputStream stream = Listener.class.getResourceAsStream("/GeoLite2-Country.mmdb");
+	  Geolocalizer.build(stream);
 		InputStream f = getClass().getResourceAsStream("database.properties");
 	  HibernateUtils.configureDatabase(f);
 	  restApp = new RestApp();
