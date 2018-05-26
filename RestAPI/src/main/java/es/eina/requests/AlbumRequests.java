@@ -103,7 +103,7 @@ public class AlbumRequests {
 							obj.put("error", "unknownAlbum");
 						}
 					} else {
-						obj.put("error", "invalidAlbum");
+                        obj.put("error", "invalidAlbum");
 					}
 				} else {
 					obj.put("error", "invalidToken");
@@ -131,7 +131,7 @@ public class AlbumRequests {
 	 */
 	@Path("/{nick}/{albumID}/add")
 	@POST
-	public String addSongToAlbum(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
+	public JSONObject addSongToAlbum(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
 						 @PathParam("albumID") long albumId, @FormParam("songId") long songId){
 		JSONObject obj = new JSONObject();
 
@@ -178,7 +178,7 @@ public class AlbumRequests {
 			obj.put("error", "invalidArgs");
 		}
 
-		return obj.toString();
+		return obj;
 
 	}
 
