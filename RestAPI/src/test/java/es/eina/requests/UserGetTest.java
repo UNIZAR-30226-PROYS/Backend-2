@@ -15,7 +15,6 @@ import java.sql.Date;
 public class UserGetTest extends TestBase {
 
     private EntityUser user;
-    private EntitySong song;
 
     @BeforeClass
     public static void start(){
@@ -30,10 +29,6 @@ public class UserGetTest extends TestBase {
     @Before
     public void setupTest(){
         user = UserUtils.addUser("test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
-        song = SongUtils.addSong(user, "Song 1", "ES");
-
-        Assert.assertNotNull(user);
-        Assert.assertNotNull(song);
     }
 
     @After
@@ -43,45 +38,25 @@ public class UserGetTest extends TestBase {
 
     @Test
     public void testErrorsInvalidArgs(){
-        JSONObject obj = new SongRequests().listenSong("", user.getToken().getToken(), song.getId());
-        Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new SongRequests().listenSong(null, user.getToken().getToken(), song.getId());
-        Assert.assertEquals("invalidArgs", obj.getString("error"));
-
-        obj = new SongRequests().listenSong(user.getNick(), "", song.getId());
-        Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new SongRequests().listenSong(user.getNick(), null, song.getId());
-        Assert.assertEquals("invalidArgs", obj.getString("error"));
-
+        JSONObject obj = new UserRequests().getUserData("unknown-user", user.getToken().getToken());
+        Assert.assertTrue(obj.getBoolean("error"));
     }
 
     @Test
-    public void testErrorsUnknownUser(){
-        JSONObject obj = new SongRequests().listenSong("invalid-user", user.getToken().getToken(), song.getId());
-        Assert.assertEquals("unknownUser", obj.getString("error"));
+    public void testErrorsNoToken(){
+        JSONObject obj = new UserRequests().getUserData(user.getNick(), "invalid-token");
+        Assert.assertFalse(obj.getBoolean("error"));
+        Assert.assertEquals((long)user.getId(), obj.getJSONObject("profile").getLong("id"));
+        Assert.assertFalse(obj.getJSONObject("profile").getBoolean("mail_visible"));
     }
 
     @Test
-    public void testErrorsInvalidToken(){
-        JSONObject obj = new SongRequests().listenSong(user.getNick(), "invalid+" + user.getToken().getToken(), song.getId());
-        Assert.assertEquals("invalidToken", obj.getString("error"));
-    }
-
-    @Test
-    public void testErrorsUnknownSong(){
-        JSONObject obj = new SongRequests().listenSong(user.getNick(), user.getToken().getToken(), -1);
-        Assert.assertEquals("unknownSong", obj.getString("error"));
-        obj = new SongRequests().listenSong(user.getNick(), user.getToken().getToken(), Integer.MAX_VALUE);
-        Assert.assertEquals("unknownSong", obj.getString("error"));
-    }
-
-    @Test
-    public void testOK(){
-
-        JSONObject obj = new SongRequests().listenSong(user.getNick(), user.getToken().getToken(), song.getId());
-
-        Assert.assertEquals(1, SQLUtils.getRowCountSQL("user_listened_songs", "user_id = " + user.getId() + " and song_id = " + song.getId()));
-        Assert.assertEquals("ok", obj.getString("error"));
+    public void testErrorsOK(){
+        JSONObject obj = new UserRequests().getUserData(user.getNick(), user.getToken().getToken());
+        Assert.assertFalse(obj.getBoolean("error"));
+        Assert.assertEquals((long)user.getId(), obj.getJSONObject("profile").getLong("id"));
+        Assert.assertTrue(obj.getJSONObject("profile").getBoolean("mail_visible"));
+        Assert.assertEquals(user.getMail(), obj.getJSONObject("profile").getString("mail"));
     }
 
 }
