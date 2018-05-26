@@ -1,7 +1,6 @@
 package es.eina.requests;
 
 import es.eina.TestBase;
-import es.eina.cache.SongCache;
 import es.eina.cache.UserCache;
 import es.eina.sql.SQLUtils;
 import es.eina.sql.entities.EntitySong;
@@ -44,42 +43,42 @@ public class UserReproduceSongTest extends TestBase {
 
     @Test
     public void testErrorsInvalidArgs(){
-        JSONObject obj = new SongRequests().addListenedSong("", user.getToken().getToken(), song.getId());
+        JSONObject obj = new SongRequests().listenSong("", user.getToken().getToken(), song.getId());
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new SongRequests().addListenedSong(null, user.getToken().getToken(), song.getId());
+        obj = new SongRequests().listenSong(null, user.getToken().getToken(), song.getId());
         Assert.assertEquals("invalidArgs", obj.getString("error"));
 
-        obj = new SongRequests().addListenedSong(user.getNick(), "", song.getId());
+        obj = new SongRequests().listenSong(user.getNick(), "", song.getId());
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new SongRequests().addListenedSong(user.getNick(), null, song.getId());
+        obj = new SongRequests().listenSong(user.getNick(), null, song.getId());
         Assert.assertEquals("invalidArgs", obj.getString("error"));
 
     }
 
     @Test
     public void testErrorsUnknownUser(){
-        JSONObject obj = new SongRequests().addListenedSong("invalid-user", user.getToken().getToken(), song.getId());
+        JSONObject obj = new SongRequests().listenSong("invalid-user", user.getToken().getToken(), song.getId());
         Assert.assertEquals("unknownUser", obj.getString("error"));
     }
 
     @Test
     public void testErrorsInvalidToken(){
-        JSONObject obj = new SongRequests().addListenedSong(user.getNick(), "invalid+" + user.getToken().getToken(), song.getId());
+        JSONObject obj = new SongRequests().listenSong(user.getNick(), "invalid+" + user.getToken().getToken(), song.getId());
         Assert.assertEquals("invalidToken", obj.getString("error"));
     }
 
     @Test
     public void testErrorsUnknownSong(){
-        JSONObject obj = new SongRequests().addListenedSong(user.getNick(), user.getToken().getToken(), -1);
+        JSONObject obj = new SongRequests().listenSong(user.getNick(), user.getToken().getToken(), -1);
         Assert.assertEquals("unknownSong", obj.getString("error"));
-        obj = new SongRequests().addListenedSong(user.getNick(), user.getToken().getToken(), Integer.MAX_VALUE);
+        obj = new SongRequests().listenSong(user.getNick(), user.getToken().getToken(), Integer.MAX_VALUE);
         Assert.assertEquals("unknownSong", obj.getString("error"));
     }
 
     @Test
     public void testOK(){
 
-        JSONObject obj = new SongRequests().addListenedSong(user.getNick(), user.getToken().getToken(), song.getId());
+        JSONObject obj = new SongRequests().listenSong(user.getNick(), user.getToken().getToken(), song.getId());
 
         Assert.assertEquals(1, SQLUtils.getRowCountSQL("user_listened_songs", "user_id = " + user.getId() + " and song_id = " + song.getId()));
         Assert.assertEquals("ok", obj.getString("error"));
