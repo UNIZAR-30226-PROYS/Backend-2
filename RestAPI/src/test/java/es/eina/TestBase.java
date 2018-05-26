@@ -18,6 +18,6 @@ public class TestBase {
     }
 
     protected static void closeDB() {
-
+        HibernateUtils.shutdown();
     }
 }

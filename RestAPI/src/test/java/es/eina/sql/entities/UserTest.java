@@ -17,7 +17,7 @@ import java.sql.Date;
 public class UserTest extends TestBase {
 
     public void start(){
-        super.openDB();
+        openDB();
     }
 
     @Test
@@ -26,8 +26,7 @@ public class UserTest extends TestBase {
         EntityUser user = new EntityUser("random_user", "Usuario 1", "a@a.com",
                 Crypter.hashPassword("123456", false), new Date(0),
                 "Empty bio", "O1");
-        SessionFactory factory = HibernateUtils.getSessionFactory();
-        Session s = factory.getCurrentSession();
+        Session s = HibernateUtils.getSession();
         Transaction t = s.beginTransaction();
         try {
             s.saveOrUpdate(user);
@@ -42,7 +41,7 @@ public class UserTest extends TestBase {
         Assert.assertTrue(!UserUtils.userExists("invalid_user"));
         Assert.assertTrue(UserUtils.checkPassword(user, "123456"));
 
-        s = factory.getCurrentSession();
+        s = HibernateUtils.getSession();
         t = s.beginTransaction();
         try {
             s.delete(user);
