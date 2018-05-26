@@ -374,58 +374,6 @@ public class UserRequests {
     }
 
 
-
-
-
-
-    /**
-     * Remove a  like in the database.
-     *
-     * @param nick   : User's nick.
-     * @param token  : User's token.
-     * @param songID : Song's ID.
-     * @return A JSON with response.
-     */
-    @Path("{nick}/liked-songs/{songId}/delete")
-    @DELETE
-    public static String unlikeSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String token,
-                                    @PathParam("songId") Long songID) {
-        JSONObject result = new JSONObject();
-        if (StringUtils.isValid(nick) && StringUtils.isValid(token)) {
-            EntityUser user = UserCache.getUser(nick);
-            if (user != null) {
-                if (user.getToken() != null && user.getToken().isValid(token)) {
-                    EntitySong song = SongCache.getSong(songID);
-                    if (song != null) {
-                        if (song.isSongLiked(user) && user.isSongLiked(song)) {
-                            if (song.unlikeSong(user) && user.unlikeSong(song)) {
-                                result.put("error", "ok");
-                            } else {
-                                result.put("error", "unknownError");
-                            }
-                        } else {
-                            result.put("error", "noLike");
-                        }
-                    } else {
-                        result.put("error", "unknownSong");
-                    }
-                } else {
-                    result.put("error", "invalidToken");
-                }
-            } else {
-                result.put("error", "unknownUser");
-            }
-        } else {
-            result.put("error", "invalidArgs");
-        }
-
-        return result.toString();
-    }
-
-
-
-
-
     static {
         defaultUserJSON = new JSONObject();
         defaultUserJSON.put("id", -1);
