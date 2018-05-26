@@ -46,6 +46,7 @@ public class HibernateUtils {
                 settings.put(Environment.PASS, login.getProperty("pass"));
                 settings.put(Environment.HBM2DDL_AUTO, "update");
                 settings.put(Environment.SHOW_SQL, true);
+                //settings.put(Environment.FORMAT_SQL, true);
                 settings.put("hibernate.current_session_context_class", "org.hibernate.context.internal.ThreadLocalSessionContext");
                 String createDrop = login.getProperty("create-drop");
                 if("true".equals(createDrop)){

@@ -149,11 +149,11 @@ public class UserRequests {
      */
     @Path("/{nick}/login")
     @DELETE
-    public String deleteLogin(@PathParam("nick") String nick,
+    public JSONObject deleteLogin(@PathParam("nick") String nick,
                               @DefaultValue("") @FormParam("token") String token) {
         JSONObject obj = new JSONObject();
 
-        if (StringUtils.isValid(token)) {
+        if (StringUtils.isValid(nick) && StringUtils.isValid(token)) {
             EntityUser user = UserCache.getUser(nick);
             if (user != null) {
                 if (user.getToken() != null && user.getToken().isValid(token)) {
@@ -175,7 +175,7 @@ public class UserRequests {
             obj.put("error", "invalidArgs");
         }
 
-        return obj.toString();
+        return obj;
     }
 
     /**

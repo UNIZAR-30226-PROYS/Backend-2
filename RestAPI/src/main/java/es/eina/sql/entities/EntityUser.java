@@ -52,7 +52,7 @@ public class EntityUser extends EntityBase {
     @Column(name="register_date", nullable = false)
     private long register_date;
 
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "user")
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "user")
     private EntityToken token;
 
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "user")
@@ -180,15 +180,18 @@ public class EntityUser extends EntityBase {
         return code;
     }
 
+    @Transactional
     public int deleteToken(){
         if(this.token != null) {
-            int code = token.deleteEntity();
+            token.removeUser();
+            EntityToken token = this.token;
+            this.token = null;
+            Session s = HibernateUtils.getSession();
+            s.beginTransaction();
+            s.delete(token);
+            s.getTransaction().commit();
 
-            if(code == 0) {
-                this.token = null;
-                update();
-            }
-            return code;
+            return 0;
         }
         return -2;
     }

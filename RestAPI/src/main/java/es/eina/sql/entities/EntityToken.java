@@ -22,7 +22,7 @@ public class EntityToken extends EntityBase{
     private long time;
 
     @Id
-    @OneToOne(cascade=CascadeType.ALL)
+    @OneToOne(cascade=CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "user_id")
     private EntityUser user;
 
@@ -60,5 +60,9 @@ public class EntityToken extends EntityBase{
 
     public boolean isValid(String token) {
         return time >= System.currentTimeMillis() && this.token.equals(token);
+    }
+
+    void removeUser(){
+        this.user = null;
     }
 }
