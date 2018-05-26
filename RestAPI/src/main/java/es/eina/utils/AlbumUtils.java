@@ -18,7 +18,6 @@ public class AlbumUtils {
      * @param user  : Album creator.
      * @param title : Title given to the album.
      * @param year  : Publish year of the album.
-     * @param image : Path to the album cover image.
      * @return Null if the album couldn't be created, the actual album if it could be created.
      */
     public static @Nullable
