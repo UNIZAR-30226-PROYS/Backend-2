@@ -1,10 +1,8 @@
 package es.eina.listener;
 
 import es.eina.RestApp;
-import es.eina.cache.UserCache;
 import es.eina.geolocalization.Geolocalizer;
 import es.eina.sql.utils.HibernateUtils;
-import es.eina.task.CleanUpCache;
 import es.eina.task.TaskBase;
 
 import javax.servlet.ServletContextEvent;
@@ -19,7 +17,6 @@ public class Listener implements ServletContextListener,
 		HttpSessionListener, HttpSessionAttributeListener {
 
 	private RestApp restApp;
-	private CleanUpCache cache;
 
 	// Public constructor is required by servlet spec
 	public Listener() {
@@ -42,7 +39,6 @@ public class Listener implements ServletContextListener,
 		InputStream f = getClass().getResourceAsStream("database.properties");
 	  HibernateUtils.configureDatabase(f);
 	  restApp = new RestApp();
-	  cache = new CleanUpCache();
 
 	}
 
@@ -56,7 +52,6 @@ public class Listener implements ServletContextListener,
          Application Server shuts down.
       */
 		System.out.println("Close MySQL");
-		cache.cancel();
 		TaskBase.cleanUp();
 		HibernateUtils.shutdown();
 	}
