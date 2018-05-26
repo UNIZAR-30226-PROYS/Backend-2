@@ -194,7 +194,7 @@ public class AlbumRequests {
 	 */
 	@Path("/{nick}/{albumID}/delete")
 	@POST
-	public String removeSongFromAlbum(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
+	public JSONObject removeSongFromAlbum(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
 						 @PathParam("albumID") long albumId, @FormParam("songId") long songId){
 		JSONObject obj = new JSONObject();
 
@@ -239,7 +239,7 @@ public class AlbumRequests {
 			obj.put("error", "invalidArgs");
 		}
 
-		return obj.toString();
+		return obj;
 
 	}
 
