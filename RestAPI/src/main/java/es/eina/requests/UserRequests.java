@@ -6,6 +6,7 @@ import es.eina.geolocalization.Geolocalizer;
 import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntityToken;
 import es.eina.sql.entities.EntityUser;
+import es.eina.sql.utils.HibernateUtils;
 import es.eina.utils.StringUtils;
 import es.eina.utils.UserUtils;
 import org.apache.commons.validator.routines.EmailValidator;
@@ -272,7 +273,7 @@ public class UserRequests {
     @Path("/{nick}")
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
-    public String putUserData(
+    public JSONObject putUserData(
             @PathParam("nick") String nick,
             @DefaultValue("") @QueryParam("token") String token,
             String c
@@ -295,10 +296,12 @@ public class UserRequests {
                         if (user.getToken() != null) {
                             if (user.getToken().isValid(token)) {
                                 JSONObject updateResult = new JSONObject();
+                                boolean dirty = false;
                                 for (String key : updateObject.keySet()) {
                                     Object data = updateObject.get(key);
                                     int code = user.updateUser(key, data);
                                     if (code == 0) {
+                                        dirty = true;
                                         updateResult.put(key, "ok");
                                     } else if (code == -1) {
                                         updateResult.put(key, "invalidValue");
@@ -306,6 +309,11 @@ public class UserRequests {
                                         updateResult.put(key, "passError");
                                     }
                                 }
+
+                                if(dirty){
+                                    HibernateUtils.addEntityToDB(user);
+                                }
+
                                 result.put("error", updateResult);
                             } else {
                                 result.put("error", "invalidToken");
@@ -324,7 +332,7 @@ public class UserRequests {
             result.put("error", "invalidArgs");
         }
 
-        return result.toString();
+        return result;
     }
 
     @Path("/{nick}")

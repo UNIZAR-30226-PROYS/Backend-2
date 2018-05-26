@@ -168,7 +168,7 @@ public class EntityUser extends EntityBase {
             }
         }else if("birth_date".equals(key)){
             if(value instanceof Number){
-                this.birthDate = new Date((Long) value);
+                this.birthDate = new Date(((Number) value).longValue());
                 code = 0;
             }
         }else if("pass".equals(key)){
