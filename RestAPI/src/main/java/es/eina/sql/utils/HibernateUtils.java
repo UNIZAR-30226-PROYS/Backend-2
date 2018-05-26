@@ -64,6 +64,7 @@ public class HibernateUtils {
                 settings.put("hibernate.hikari.maximumPoolSize", "20");
                 // Maximum time that a connection is allowed to sit ideal in the pool
                 settings.put("hibernate.hikari.idleTimeout", "300000");
+                settings.put("log4j.logger.org.hibernate.SQL", "debug");
 
                 registryBuilder.applySettings(settings);
 

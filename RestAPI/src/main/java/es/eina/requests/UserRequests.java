@@ -190,7 +190,7 @@ public class UserRequests {
      */
     @Path("/{nick}")
     @GET
-    public String getUserData(
+    public JSONObject getUserData(
             @PathParam("nick") String nick,
             @DefaultValue("") @QueryParam("token") String token
     ) {
@@ -218,7 +218,7 @@ public class UserRequests {
 
         obj.put("profile", userJSON);
 
-        return obj.toString();
+        return obj;
     }
 
     @Path("/{nick}/verify")
