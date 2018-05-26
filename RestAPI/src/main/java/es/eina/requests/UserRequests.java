@@ -337,7 +337,7 @@ public class UserRequests {
 
     @Path("/{nick}")
     @DELETE
-    public String deleteUserData(
+    public JSONObject deleteUserData(
             @PathParam("nick") String nick,
             @DefaultValue("") @FormParam("token") String token
     ) {
@@ -362,7 +362,7 @@ public class UserRequests {
             obj.put("error", "invalidArgs");
         }
 
-        return obj.toString();
+        return obj;
     }
 
     @Path("/{user}/songs")
