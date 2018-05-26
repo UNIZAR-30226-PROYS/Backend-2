@@ -49,6 +49,7 @@ public class HibernateUtils {
                 settings.put("hibernate.current_session_context_class", "org.hibernate.context.internal.ThreadLocalSessionContext");
                 String createDrop = login.getProperty("create-drop");
                 if("true".equals(createDrop)){
+                    LOG.debug("Enable CREATE-DROP property!!!! Beware, this MUST be a debug/test environment.");
                     settings.put(Environment.HBM2DDL_AUTO, "create-drop");
                 }
 
@@ -91,6 +92,9 @@ public class HibernateUtils {
 
     public static Session getSession(){
         //return getSessionFactory().openSession();
+        if (session == null) {
+            throw new RuntimeException("Cannot access a non-built Session.");
+        }
         return session;
     }
 
@@ -103,6 +107,7 @@ public class HibernateUtils {
 
     public static void shutdown() {
         if (registry != null) {
+            sessionFactory.close();
             StandardServiceRegistryBuilder.destroy(registry);
         }
     }
