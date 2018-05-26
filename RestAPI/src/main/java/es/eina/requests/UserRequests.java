@@ -367,7 +367,7 @@ public class UserRequests {
 
     @Path("/{user}/songs")
     @GET
-    public String getUserSongs(@PathParam("user") String user) {
+    public JSONObject getUserSongs(@PathParam("user") String user) {
         JSONObject obj = new JSONObject();
         if (StringUtils.isValid(user)) {
             EntityUser myuser = UserCache.getUser(user);
@@ -382,7 +382,7 @@ public class UserRequests {
         } else {
             obj.put("error", "invalidArgs");
         }
-        return obj.toString();
+        return obj;
     }
 
 

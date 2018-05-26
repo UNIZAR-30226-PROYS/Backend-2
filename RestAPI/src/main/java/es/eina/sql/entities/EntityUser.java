@@ -274,11 +274,12 @@ public class EntityUser extends EntityBase {
     @Transactional
     public JSONArray getUserSongs() {
         JSONArray songs = new JSONArray();
-        RestApp.getInstance().getLogger().severe("Length: " + this.albums.size());
-        for (EntityAlbum album : this.albums) {
-            JSONArray albumSongs = album.getSongsAsArray();
-            for(int i = 0; i < albumSongs.length(); i++) {
-                songs.put(albumSongs.get(i));
+        if(this.albums != null) {
+            for (EntityAlbum album : this.albums) {
+                JSONArray albumSongs = album.getSongsAsArray();
+                for (int i = 0; i < albumSongs.length(); i++) {
+                    songs.put(albumSongs.get(i));
+                }
             }
         }
         return songs;
@@ -318,5 +319,9 @@ public class EntityUser extends EntityBase {
         boolean b = this.songsListened.add(new EntityUserSongData(this, song));
         t.commit();
         return b;
+    }
+
+    public boolean addAlbum(EntityAlbum entityAlbum) {
+        return this.albums.add(entityAlbum);
     }
 }

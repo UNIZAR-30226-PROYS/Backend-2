@@ -1,6 +1,7 @@
 package es.eina.requests;
 
 import es.eina.TestBase;
+import es.eina.cache.AlbumCache;
 import es.eina.cache.UserCache;
 import es.eina.sql.SQLUtils;
 import es.eina.sql.entities.EntityAlbum;
@@ -19,6 +20,7 @@ public class SongGetTest extends TestBase {
 
     private EntityUser user;
     private EntitySong song;
+    private EntityAlbum album;
 
     @BeforeClass
     public static void start() {
@@ -33,13 +35,15 @@ public class SongGetTest extends TestBase {
     @Before
     public void setupTest() {
         user = UserUtils.addUser("test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
-        song = SongUtils.addSong(user, "Random Song", "O1");
+        album = AlbumUtils.createAlbum(user, "Title", 1970);
+        song = SongUtils.addSong(album, "Random Song", "O1");
     }
 
     @After
     public void endTest() {
         HibernateUtils.deleteFromDB(song);
         HibernateUtils.deleteFromDB(user);
+        AlbumCache.deleteAlbum(album);
     }
 
     @Test

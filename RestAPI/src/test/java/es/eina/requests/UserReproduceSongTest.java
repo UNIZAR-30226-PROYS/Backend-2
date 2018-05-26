@@ -1,10 +1,13 @@
 package es.eina.requests;
 
 import es.eina.TestBase;
+import es.eina.cache.AlbumCache;
 import es.eina.cache.UserCache;
 import es.eina.sql.SQLUtils;
+import es.eina.sql.entities.EntityAlbum;
 import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntityUser;
+import es.eina.utils.AlbumUtils;
 import es.eina.utils.SongUtils;
 import es.eina.utils.UserUtils;
 import org.json.JSONObject;
@@ -15,6 +18,7 @@ import java.sql.Date;
 public class UserReproduceSongTest extends TestBase {
 
     private EntityUser user;
+    private EntityAlbum album;
     private EntitySong song;
 
     @BeforeClass
@@ -30,12 +34,14 @@ public class UserReproduceSongTest extends TestBase {
     @Before
     public void setupTest(){
         user = UserUtils.addUser("test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
-        song = SongUtils.addSong(user, "Song 1", "ES");
+        album = AlbumUtils.createAlbum(user, "Title", 1970);
+        song = SongUtils.addSong(album, "Song 1", "ES");
     }
 
     @After
     public void endTest(){
         UserCache.deleteUser(user);
+        AlbumCache.deleteAlbum(album);
     }
 
     @Test

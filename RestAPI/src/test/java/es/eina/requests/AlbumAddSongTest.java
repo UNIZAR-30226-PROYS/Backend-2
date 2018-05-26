@@ -34,8 +34,8 @@ public class AlbumAddSongTest extends TestBase {
     @Before
     public void setupTest() {
         user = UserUtils.addUser("test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
-        song = SongUtils.addSong(user, "Random Song", "O1");
         album = AlbumUtils.createAlbum(user, "Random Album", 1900);
+        song = SongUtils.addSong(album, "Random Song", "O1");
     }
 
     @After

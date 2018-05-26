@@ -17,9 +17,6 @@ public class EntitySong extends EntityBase {
     @Column(name = "id",nullable = false)
     private Long id;
 
-    @Column(name = "user_id",nullable = false)
-    private long userId;
-
     @Column(name = "title",nullable = false)
     private String title;
 
@@ -58,8 +55,8 @@ public class EntitySong extends EntityBase {
      */
     public EntitySong(){}
 
-    public EntitySong(EntityUser author, String title, String country) {
-        this.userId = author.getId();
+    public EntitySong(EntityAlbum album, String title, String country) {
+        this.album = album;
         this.title = title;
         this.country = country;
         this.uploadTime = System.currentTimeMillis();
@@ -70,7 +67,7 @@ public class EntitySong extends EntityBase {
     }
 
     public long getUserId() {
-        return userId;
+        return album.getUserId();
     }
 
     public String getTitle() {
@@ -125,6 +122,9 @@ public class EntitySong extends EntityBase {
             this.album = album;
             album.updateAlbum();
             return true;
+        }else if(album == null){
+            this.album.removeSong(this);
+            this.album = null;
         }
 
         return false;

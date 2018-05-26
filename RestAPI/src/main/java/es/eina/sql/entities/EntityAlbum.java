@@ -33,7 +33,7 @@ public class EntityAlbum extends EntityBase {
     @Column(name = "upload_time",nullable = false)
     private long uploadTime;
 
-    @OneToMany(mappedBy = "album", cascade=CascadeType.ALL)
+    @OneToMany(cascade=CascadeType.ALL, mappedBy = "album")
     private Set<EntitySong> songs = new HashSet<>();
 
 
@@ -92,4 +92,11 @@ public class EntityAlbum extends EntityBase {
     	return arr;
     }
 
+    public void removeSong(EntitySong entitySong) {
+        this.songs.remove(entitySong);
+    }
+
+    public boolean addSong(EntitySong entitySong) {
+        return this.songs.add(entitySong);
+    }
 }

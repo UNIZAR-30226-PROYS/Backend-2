@@ -2,6 +2,7 @@ package es.eina.utils;
 
 import es.eina.cache.SongCache;
 import es.eina.crypt.Crypter;
+import es.eina.sql.entities.EntityAlbum;
 import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntityUser;
 
@@ -20,9 +21,10 @@ public class SongUtils {
      */
     @Transactional
     public static @Nullable
-    EntitySong addSong(EntityUser author, String title, String country) {
+    EntitySong addSong(EntityAlbum album, String title, String country) {
 
-        EntitySong entitySong = new EntitySong(author, title, country);
+        EntitySong entitySong = new EntitySong(album, title, country);
+        album.addSong(entitySong);
 
         return SongCache.addSong(entitySong) ? entitySong : null;
 

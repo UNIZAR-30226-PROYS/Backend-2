@@ -26,6 +26,7 @@ public class SongCache {
     }
 
     public static boolean deleteSong(EntitySong song) {
+        song.setAlbum(null);
         return HibernateUtils.deleteFromDB(song);
     }
 

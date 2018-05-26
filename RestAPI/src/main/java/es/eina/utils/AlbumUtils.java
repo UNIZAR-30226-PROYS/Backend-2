@@ -23,6 +23,7 @@ public class AlbumUtils {
     public static @Nullable
     EntityAlbum createAlbum(EntityUser user, String title, int year) {
         EntityAlbum entityAlbum = new EntityAlbum(user, title, year);
+        user.addAlbum(entityAlbum);
 
         return AlbumCache.addAlbum(entityAlbum) ? entityAlbum : null;
 
