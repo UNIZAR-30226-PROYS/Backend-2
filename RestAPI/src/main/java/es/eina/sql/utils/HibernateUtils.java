@@ -1,37 +1,40 @@
 package es.eina.sql.utils;
 
-import es.eina.RestApp;
 import es.eina.sql.entities.*;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Environment;
-import org.hibernate.cfg.beanvalidation.HibernateTraversableResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import javax.persistence.EntityManager;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Logger;
 
 public class HibernateUtils {
 
+    private static final Logger LOG = LoggerFactory.getLogger(HibernateUtils.class);
+
     private static StandardServiceRegistry registry;
     private static SessionFactory sessionFactory;
+    private static Session session;
 
     public static SessionFactory configureDatabase(InputStream f) {
         if (sessionFactory == null) {
-            Logger.getLogger("HibernateUtils").info("Reading " + f);
+            LOG.debug("Reading " + f);
             try {
                 Properties login = new Properties();
                 login.load(f);
 
-                Logger.getLogger("HibernateUtils").info("Connecting to " + login.getProperty("url"));
+                LOG.debug("Connecting to " + login.getProperty("url"));
 
                 StandardServiceRegistryBuilder registryBuilder =
                         new StandardServiceRegistryBuilder();
@@ -44,6 +47,10 @@ public class HibernateUtils {
                 settings.put(Environment.HBM2DDL_AUTO, "update");
                 settings.put(Environment.SHOW_SQL, true);
                 settings.put("hibernate.current_session_context_class", "org.hibernate.context.internal.ThreadLocalSessionContext");
+                String createDrop = login.getProperty("create-drop");
+                if("true".equals(createDrop)){
+                    settings.put(Environment.HBM2DDL_AUTO, "create-drop");
+                }
 
                 // HikariCP settings
 
@@ -66,11 +73,12 @@ public class HibernateUtils {
                 sources.addAnnotatedClass(EntityUserValues.class);
                 sources.addAnnotatedClass(EntitySong.class);
                 sources.addAnnotatedClass(EntityAlbum.class);
-                sources.addAnnotatedClass(EntityUserListenSong.class);
+                sources.addAnnotatedClass(EntityUserSongData.class);
 
                 Metadata metadata = sources.getMetadataBuilder().build();
                 sessionFactory = metadata.getSessionFactoryBuilder().build();
-                sessionFactory.openSession();
+                session = sessionFactory.openSession();
+
             } catch (Exception e) {
                 if (registry != null) {
                     StandardServiceRegistryBuilder.destroy(registry);
@@ -79,6 +87,11 @@ public class HibernateUtils {
             }
         }
         return sessionFactory;
+    }
+
+    public static Session getSession(){
+        //return getSessionFactory().openSession();
+        return session;
     }
 
     public static SessionFactory getSessionFactory() {
@@ -92,6 +105,79 @@ public class HibernateUtils {
         if (registry != null) {
             StandardServiceRegistryBuilder.destroy(registry);
         }
+    }
+
+    public static boolean addEntityToDB(EntityBase entity){
+        Session session = HibernateUtils.getSession();
+        Transaction tr = session.beginTransaction();
+        try {
+            session.saveOrUpdate(entity);
+            tr.commit();
+            return true;
+        } catch (Exception e) {
+            if (tr != null && tr.isActive()) {
+                tr.rollback();
+            }
+
+            LOG.debug("Cannot add Entity to DB", e);
+        }
+
+        return false;
+    }
+
+    public static boolean deleteFromDB(EntityBase entity){
+        Session session = HibernateUtils.getSession();
+        Transaction tr = session.beginTransaction();
+        try {
+            session.delete(entity);
+            tr.commit();
+            return true;
+        } catch (Exception e) {
+            if (tr != null && tr.isActive()) {
+                tr.rollback();
+            }
+            e.printStackTrace();
+            LOG.debug("Cannot delete Entity from DB", e);
+        }
+
+        return false;
+    }
+
+    public static <T extends EntityBase> T getEntity(Class<T> clazz, Serializable key){
+        T entity = null;
+        Transaction tr = null;
+        Session session = HibernateUtils.getSession();
+        try{
+            tr = session.beginTransaction();
+            entity = session.get(clazz, key);
+            tr.commit();
+        } catch (Exception e) {
+            if (tr != null) {
+                tr.rollback();
+            }
+            LOG.debug("Cannot load Entity from DB", e);
+        }
+        return entity;
+    }
+
+    public static <T extends EntityBase> T getEntityByAttribute(Class<T> clazz, String attribute, Serializable key){
+        T entity = null;
+        Transaction tr = null;
+        Session session = HibernateUtils.getSession();
+        try{
+            tr = session.beginTransaction();
+            entity = session.byNaturalId(clazz)
+                    .using(attribute, key)
+                    .load();
+            tr.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (tr != null && tr.isActive()) {
+                tr.rollback();
+            }
+        }
+
+        return entity;
     }
 
 }
