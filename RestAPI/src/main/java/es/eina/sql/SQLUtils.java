@@ -4,6 +4,8 @@ import es.eina.sql.utils.HibernateUtils;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
+import java.math.BigInteger;
+
 public class SQLUtils {
 
     public static long getRowCount(String table, String where){
@@ -29,7 +31,7 @@ public class SQLUtils {
         Session session = HibernateUtils.getSession();
         Transaction t = session.beginTransaction();
         try{
-            rowCount = session.createSQLQuery("SELECT COUNT(e) as c FROM " + table + " e WHERE " + where).list().size();
+            rowCount = ((BigInteger) session.createSQLQuery("SELECT COUNT(e) as c FROM " + table + " e WHERE " + where).uniqueResult()).longValue();
             t.commit();
         } catch (Exception e) {
             t.rollback();

@@ -120,11 +120,9 @@ public class EntityUser extends EntityBase {
 
         userValues.setVerified(false);
         if(userValues.cleanUp()){
-            int code = userValues.deleteEntity();
-            if(code == 0) {
-                userValues = null;
-            }
-            return code;
+            EntityUserValues values = userValues;
+            userValues = null;
+            return values.deleteEntity();
         }
         return 0;
     }

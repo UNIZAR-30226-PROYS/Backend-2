@@ -55,6 +55,10 @@ public class EntityUserValues extends EntityBase{
     }
 
     public boolean cleanUp() {
-        return verified || admin;
+        return !verified && !admin;
+    }
+
+    void removeEntity(){
+        this.user = null;
     }
 }
