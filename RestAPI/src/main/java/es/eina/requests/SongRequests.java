@@ -21,7 +21,7 @@ public class SongRequests {
 
     @Path("/{id}/")
     @GET
-    public String getSong(@PathParam("id") long id){
+    public JSONObject getSong(@PathParam("id") long id){
         JSONObject obj = new JSONObject();
         JSONObject songJSON = new JSONObject(defaultSongJSON, JSONObject.getNames(defaultSongJSON));
 
@@ -43,7 +43,7 @@ public class SongRequests {
 
         obj.put("song", songJSON);
 
-        return obj.toString();
+        return obj;
     }
 
 
