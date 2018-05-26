@@ -30,7 +30,7 @@ public class EntityToken extends EntityBase{
      * DO NOT use this method as it can only be used by Hibernate
      */
     public EntityToken(){
-        update();
+
     }
 
     public EntityToken(EntityUser user) {
@@ -55,7 +55,6 @@ public class EntityToken extends EntityBase{
             this.token = randomTokenGenerator.nextString();
             this.time = System.currentTimeMillis() + TOKEN_VALID_TIME;
         }
-        update();
     }
 
     public boolean isValid(String token) {

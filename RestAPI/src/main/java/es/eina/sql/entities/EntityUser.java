@@ -85,7 +85,7 @@ public class EntityUser extends EntityBase {
      * DO NOT use this method as it can only be used by Hibernate
      */
     public EntityUser(){
-        update();
+
     }
 
     public EntityUser(String nick, String username, String mail, String pass, Date birthDate, String bio, String country) {
@@ -97,8 +97,6 @@ public class EntityUser extends EntityBase {
         this.bio = bio;
         this.country = country;
         this.register_date = System.currentTimeMillis();
-
-        update();
     }
 
     public void updateToken(){
@@ -107,7 +105,6 @@ public class EntityUser extends EntityBase {
         }else{
             this.token = new EntityToken(this);
         }
-        update();
     }
 
     public void verifyAccount(){
@@ -116,7 +113,6 @@ public class EntityUser extends EntityBase {
         }
 
         userValues.setVerified(true);
-        update();
     }
 
     public int unverifyAccount(){
@@ -127,7 +123,28 @@ public class EntityUser extends EntityBase {
             int code = userValues.deleteEntity();
             if(code == 0) {
                 userValues = null;
-                update();
+            }
+            return code;
+        }
+        return 0;
+    }
+
+    public void makeAdmin(){
+        if(userValues == null){
+            userValues = new EntityUserValues(this);
+        }
+
+        userValues.setAdmin(true);
+    }
+
+    public int demoteAdmin(){
+        if(userValues == null) return -2;
+
+        userValues.setAdmin(false);
+        if(userValues.cleanUp()){
+            int code = userValues.deleteEntity();
+            if(code == 0) {
+                userValues = null;
             }
             return code;
         }
@@ -176,7 +193,6 @@ public class EntityUser extends EntityBase {
             }
         }
 
-        if(code == 0) update();
         return code;
     }
 
@@ -299,7 +315,6 @@ public class EntityUser extends EntityBase {
     @Transactional
     public boolean listenSong(EntitySong song){
         Session s = HibernateUtils.getSession();
-        update();
         //song.getListeners().add(this);
         Transaction t = s.beginTransaction();
         boolean b = this.songsListened.add(new EntityUserSongData(this, song));

@@ -45,7 +45,7 @@ public class EntityAlbum extends EntityBase {
     /**
      * DO NOT use this method as it can only be used by Hibernate
      */
-    public EntityAlbum(){update();}
+    public EntityAlbum(){}
 
     public EntityAlbum(EntityUser user, String title, int year) {
 
@@ -54,13 +54,10 @@ public class EntityAlbum extends EntityBase {
         this.publishYear = year;
         this.updateTime = System.currentTimeMillis();
         this.uploadTime = updateTime;
-
-        update();
     }
 
     public void updateAlbum(){
         this.updateTime = System.currentTimeMillis();
-        update();
     }
     
     public long getAlbumId() {

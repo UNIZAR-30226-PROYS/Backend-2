@@ -21,14 +21,12 @@ public class EntityUserSongData extends EntityBase {
     private EntitySong song;
 
     public EntityUserSongData(){
-        update();
     }
 
     public EntityUserSongData(EntityUser user, EntitySong song){
         this.song = song;
         this.author = user;
         this.time = System.currentTimeMillis();
-        update();
     }
 
 }

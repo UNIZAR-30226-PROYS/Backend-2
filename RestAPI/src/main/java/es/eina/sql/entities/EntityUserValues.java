@@ -21,7 +21,7 @@ public class EntityUserValues extends EntityBase{
      * DO NOT use this method as it can only be used by Hibernate
      */
     public EntityUserValues(){
-        update();
+
     }
 
     public EntityUserValues(EntityUser user){

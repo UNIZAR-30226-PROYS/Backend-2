@@ -56,14 +56,13 @@ public class EntitySong extends EntityBase {
     /**
      * DO NOT use this method as it can only be used by Hibernate
      */
-    public EntitySong(){update();}
+    public EntitySong(){}
 
     public EntitySong(EntityUser author, String title, String country) {
         this.userId = author.getId();
         this.title = title;
         this.country = country;
         this.uploadTime = System.currentTimeMillis();
-        update();
     }
 
     public Long getId() {
@@ -124,7 +123,6 @@ public class EntitySong extends EntityBase {
     public boolean setAlbum(EntityAlbum album){
         if(this.album == null) {
             this.album = album;
-            update();
             album.updateAlbum();
             return true;
         }
@@ -136,7 +134,6 @@ public class EntitySong extends EntityBase {
         if(this.album != null) {
             album.updateAlbum();
             this.album = null;
-            update();
             return true;
         }
 
