@@ -1,5 +1,6 @@
 package es.eina.utils;
 
+import es.eina.cache.AlbumCache;
 import es.eina.sql.entities.EntityAlbum;
 import es.eina.sql.entities.EntityUser;
 import es.eina.sql.utils.HibernateUtils;
@@ -22,25 +23,9 @@ public class AlbumUtils {
      */
     public static @Nullable
     EntityAlbum createAlbum(EntityUser user, String title, int year, String image) {
+        EntityAlbum entityAlbum = new EntityAlbum(user, title, year, image);
 
-        Transaction transaction = null;
-        EntityAlbum entityAlbum;
-        try (Session session = HibernateUtils.getSessionFactory().openSession()) {
-            transaction = session.getTransaction();
-            transaction.begin();
-            entityAlbum = new EntityAlbum(user, title, year, image);
-            session.save(entityAlbum);
-
-            transaction.commit();
-
-        } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            entityAlbum = null;
-        }
-
-        return entityAlbum;
+        return AlbumCache.addAlbum(entityAlbum) ? entityAlbum : null;
 
     }
 
@@ -51,24 +36,7 @@ public class AlbumUtils {
      * @return True if delete was correct, False otherwise.
      */
     public static boolean deleteAlbum(EntityAlbum album) {
-        boolean OK = true;
-        Transaction transaction = null;
-        try (Session session = HibernateUtils.getSessionFactory().openSession()) {
-            transaction = session.getTransaction();
-            transaction.begin();
-            long albumID = album.getAlbumId();
-            session.delete(album);
-            //session.createQuery("DELETE FROM album WHERE id = "+ albumID);
-
-            transaction.commit();
-
-        } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            OK = false;
-        }
-        return OK;
+        return AlbumCache.deleteAlbum(album);
     }
 
 }

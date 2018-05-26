@@ -3,7 +3,9 @@ package es.eina.utils;
 import es.eina.cache.UserCache;
 import es.eina.crypt.Crypter;
 import es.eina.sql.SQLUtils;
+import es.eina.sql.entities.EntityToken;
 import es.eina.sql.entities.EntityUser;
+import es.eina.sql.entities.EntityUserValues;
 import es.eina.sql.utils.HibernateUtils;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -33,30 +35,13 @@ public class UserUtils {
     @Transactional
     public static @Nullable EntityUser addUser(String nick, String mail, String pass, String user, String bio, Date birth, String country) {
         //(nick, username, mail, pass, birth_date, bio, country, register_date)
-        Transaction transaction = null;
-        EntityUser entityUser;
-        try {
-            Session session = HibernateUtils.getSessionFactory().getCurrentSession();
-            transaction = session.getTransaction();
-            transaction.begin();
-
-            entityUser = new EntityUser(nick, user, mail,
+        EntityUser entityUser = new EntityUser(nick, user, mail,
                     Crypter.hashPassword(pass, false), birth, bio, country);
-            session.save(entityUser);
-            entityUser.updateToken();
-            session.save(entityUser.getToken()); //TODO: DO NOT SAVE HERE
+        boolean b = UserCache.addUser(entityUser);
+        entityUser.updateToken();
+        boolean b2 = HibernateUtils.addEntityToDB(entityUser.getToken());
 
-            transaction.commit();
-
-            UserCache.addUser(entityUser);
-        } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            entityUser = null;
-        }
-
-        return entityUser;
+        return b && b2 ? entityUser : null;
 
     }
 
