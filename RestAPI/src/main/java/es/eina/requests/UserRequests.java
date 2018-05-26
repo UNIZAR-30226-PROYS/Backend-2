@@ -50,7 +50,7 @@ public class UserRequests {
      */
     @Path("/{nick}/login")
     @POST
-    public String login(@PathParam("nick") String nick, @FormParam("pass") String pass) {
+    public JSONObject login(@PathParam("nick") String nick, @FormParam("pass") String pass) {
         JSONObject response = new JSONObject();
         response.put("user", nick);
         response.put("token", "");
@@ -74,7 +74,7 @@ public class UserRequests {
         }
 
 
-        return response.toString();
+        return response;
     }
 
     /**
