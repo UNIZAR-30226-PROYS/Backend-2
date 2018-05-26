@@ -50,7 +50,7 @@ public class AlbumRequests {
 						if(StringUtils.isValid(image)) {
 							if(year > 1900) {
 								EntityAlbum album = AlbumUtils.createAlbum(user, title, year, image);
-								if(album != null && AlbumCache.saveEntity(album)){
+								if(album != null && AlbumCache.addAlbum(album)){
 									albumJSON.put("id", album.getAlbumId());
 									albumJSON.put("user_id", album.getUserId());
 									albumJSON.put("title", album.getTitle());
@@ -154,7 +154,6 @@ public class AlbumRequests {
                                     if (song != null) {
                                         if(album.getUserId() == user.getId() && album.getUserId() == song.getUserId()) {
                                             if (song.setAlbum(album)) {
-                                                AlbumCache.updateAlbum(album);
                                                 obj.put("error", "ok");
                                             } else {
                                                 obj.put("error", "alreadyAdded");
@@ -218,7 +217,6 @@ public class AlbumRequests {
                                     EntitySong song = SongCache.getSong(songId);
                                     if (song != null) {
                                         if (song.removeFromAlbum()) {
-                                            AlbumCache.updateAlbum(album);
                                             obj.put("error", "ok");
                                         } else {
                                             obj.put("error", "alreadyRemoved");

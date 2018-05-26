@@ -67,6 +67,50 @@ public class SongRequests {
         return result.toString();
     }
 
+    /**
+     * Add a new like in the database.
+     *
+     * @param nick   : User's nick.
+     * @param token  : User's token.
+     * @param songID : Song's ID.
+     * @return A JSON with response.
+     */
+    @Path("{songId}/liked")
+    @POST
+    public JSONObject likeSong(@FormParam("nick") String nick, @DefaultValue("") @FormParam("token") String token,
+                                  @PathParam("songId") Long songID) {
+        JSONObject result = new JSONObject();
+        if (StringUtils.isValid(nick) && StringUtils.isValid(token)) {
+            EntityUser user = UserCache.getUser(nick);
+            if (user != null) {
+                if (user.getToken() != null && user.getToken().isValid(token)) {
+                    EntitySong song = SongCache.getSong(songID);
+                    if (song != null) {
+                        if (!song.isSongLiked(user) && !user.isSongLiked(song)) {
+                            if (song.likeSong(user) && user.likeSong(song)) {
+                                result.put("error", "ok");
+                            } else {
+                                result.put("error", "unknownError");
+                            }
+                        } else {
+                            result.put("error", "alreadyLike");
+                        }
+                    } else {
+                        result.put("error", "unknownSong");
+                    }
+                } else {
+                    result.put("error", "invalidToken");
+                }
+            } else {
+                result.put("error", "unknownUser");
+            }
+        } else {
+            result.put("error", "invalidArgs");
+        }
+
+        return result;
+    }
+
 
     @Path("/{id}/lyrics")
     @GET
@@ -133,6 +177,94 @@ public class SongRequests {
 
         return result;
 
+    }
+
+    /**
+     * Add a song to user's fav list.
+     *
+     * @param nick   : User's nick.
+     * @param token  : User's token.
+     * @param songID : Song's ID.
+     * @return A JSON with response.
+     */
+    @Path("user/{nick}/fav")
+    @POST
+    public JSONObject favSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String token,
+                                 @FormParam("songId") Long songID) {
+        JSONObject result = new JSONObject();
+        if (StringUtils.isValid(nick) && StringUtils.isValid(token)) {
+            EntityUser user = UserCache.getUser(nick);
+            if (user != null) {
+                if (user.getToken() != null && user.getToken().isValid(token)) {
+                    EntitySong song = SongCache.getSong(songID);
+                    if (song != null) {
+                        if (!song.isSongFaved(user) && !user.isSongFaved(song)) {
+                            if (song.favSong(user) && user.favSong(song)) {
+                                result.put("error", "ok");
+                            } else {
+                                result.put("error", "unknownError");
+                            }
+                        } else {
+                            result.put("error", "alreadyFav");
+                        }
+                    } else {
+                        result.put("error", "unknownSong");
+                    }
+                } else {
+                    result.put("error", "invalidToken");
+                }
+            } else {
+                result.put("error", "unknownUser");
+            }
+        } else {
+            result.put("error", "invalidArgs");
+        }
+
+        return result;
+    }
+
+    /**
+     * Remove a song from user's fav list.
+     *
+     * @param nick   : User's nick.
+     * @param token  : User's token.
+     * @param songID : Song's ID.
+     * @return A JSON with response.
+     */
+    @Path("user/{nick}/unfav")
+    @POST
+    public JSONObject unfavSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String token,
+                                   @FormParam("songId") Long songID) {
+        JSONObject result = new JSONObject();
+        if (StringUtils.isValid(nick) && StringUtils.isValid(token)) {
+            EntityUser user = UserCache.getUser(nick);
+            if (user != null) {
+                if (user.getToken() != null && user.getToken().isValid(token)) {
+                    EntitySong song = SongCache.getSong(songID);
+                    if (song != null) {
+                        if (song.isSongFaved(user) && user.isSongFaved(song)) {
+                            if (song.unfavSong(user) && user.unfavSong(song)) {
+                                result.put("error", "ok");
+                            } else {
+                                result.put("error", "unknownError");
+                            }
+                        } else {
+                            result.put("error", "noFav");
+                        }
+                    } else {
+                        result.put("error", "unknownSong");
+                    }
+                } else {
+                    result.put("error", "invalidToken");
+                }
+            } else {
+                result.put("error", "unknownUser");
+            }
+        } else {
+            result.put("error", "invalidArgs");
+        }
+
+        return result;
     }
 
     static {
