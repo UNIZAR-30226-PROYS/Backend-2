@@ -55,4 +55,9 @@ public class UserCache {
         //return HibernateUtils.deleteFromDB(user);
     }
 
+    public static EntityUser getUserByNick(Session s, String nick) {
+        return s.byNaturalId(EntityUser.class)
+                .using("nick", nick)
+                .load();
+    }
 }
