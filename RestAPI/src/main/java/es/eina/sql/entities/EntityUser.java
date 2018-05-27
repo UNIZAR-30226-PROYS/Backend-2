@@ -363,4 +363,12 @@ public class EntityUser extends EntityBase {
 
         return false;
     }
+
+    public JSONArray getFavedSongs() {
+        JSONArray array = new JSONArray();
+        for (EntitySong song: songsFaved) {
+            array.put(song.getId());
+        }
+        return array;
+    }
 }

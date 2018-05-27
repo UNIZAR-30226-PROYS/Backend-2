@@ -10,6 +10,7 @@ import es.eina.sql.utils.HibernateUtils;
 import es.eina.utils.StringUtils;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.ws.rs.*;
@@ -269,6 +270,44 @@ public class SongRequests {
                         } else {
                             result.put("error", "unknownSong");
                         }
+                } else {
+                    result.put("error", "unknownUser");
+                }
+
+                if(ok) {
+                    t.commit();
+                }else{
+                    t.rollback();
+                }
+            }
+        } else {
+            result.put("error", "invalidArgs");
+        }
+
+        return result;
+    }
+
+    /**
+     * Remove a song from user's fav list.
+     *
+     * @param nick   : User's nick.
+     * @return A JSON with response.
+     */
+    @Path("user/{nick}/faved")
+    @GET
+    public JSONObject getFavedSongs(@PathParam("nick") String nick) {
+        JSONObject result = new JSONObject();
+        if (StringUtils.isValid(nick)) {
+            try(Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntityUser user = UserCache.getUser(s, nick);
+                if (user != null) {
+                    JSONArray favedSongs = user.getFavedSongs();
+                    result.put("songs", favedSongs);
+                    result.put("size", favedSongs.length());
+                    result.put("error", "ok");
+                    ok = true;
                 } else {
                     result.put("error", "unknownUser");
                 }
