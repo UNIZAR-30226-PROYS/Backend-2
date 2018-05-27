@@ -92,6 +92,7 @@ public class HibernateUtils {
                 sources.addAnnotatedClass(EntitySong.class);
                 sources.addAnnotatedClass(EntityAlbum.class);
                 sources.addAnnotatedClass(EntityUserSongData.class);
+                sources.addAnnotatedClass(EntityUserFollowers.class);
 
                 Metadata metadata = sources.getMetadataBuilder().build();
                 sessionFactory = metadata.getSessionFactoryBuilder().build();

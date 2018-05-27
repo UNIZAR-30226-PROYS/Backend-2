@@ -78,8 +78,17 @@ public class EntityUser extends EntityBase {
     )
     Set<EntitySong> songsFaved = new HashSet<>();
 
+
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
     Set<EntityUserSongData> songsListened = new HashSet<>();
+
+    //This user has this followers
+    @OneToMany(mappedBy = "followee", cascade=CascadeType.ALL)
+    private Set<EntityAlbum> followers = new HashSet<>();
+
+    //This user follows this users
+    @OneToMany(mappedBy = "follower", cascade=CascadeType.ALL)
+    private Set<EntityAlbum> followees = new HashSet<>();
 
     /**
      * DO NOT use this method as it can only be used by Hibernate
