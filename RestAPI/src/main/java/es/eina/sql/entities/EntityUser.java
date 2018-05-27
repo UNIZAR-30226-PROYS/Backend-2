@@ -11,6 +11,7 @@ import javax.persistence.*;
 import javax.persistence.Entity;
 import java.sql.Date;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -56,7 +57,7 @@ public class EntityUser extends EntityBase {
 
 
     @ManyToMany(mappedBy = "followers")
-    private Set<EntitySongList> following;
+    private Set<EntitySongList> following = new LinkedHashSet<>();
 
     /**
      * DO NOT use this method as it can only be used by Hibernate

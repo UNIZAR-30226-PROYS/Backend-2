@@ -51,7 +51,7 @@ public class UserSongListRequests {
             if(user != null){
                 if (user.getToken() != null && user.getToken().isValid(userToken)) {
                     EntitySongList newSong= new EntitySongList(title, user);
-                    if(SongListCache.saveEntity(newSong)){
+                    if(SongListCache.addSongList(newSong)){
                         result.put("id", newSong.getId());
                         result.put("error","ok");
                     }else{
@@ -73,20 +73,20 @@ public class UserSongListRequests {
     /**
      * Get all list from a user
      * <p>
-     * URI: /user-lists/{nick}
+     * URI: /user-lists/{nick}/lists
      * </p>
      *
      * @param nick  : Nickname of a user to create the list
      * @return Si no hay error devuelve todas las ids de las playlists del usuario.
      */
-    @Path("{nick}")
+    @Path("{nick}/lists")
     @GET
     public String getLists(@PathParam("nick") String nick) {
         JSONObject result = new JSONObject();
         if(StringUtils.isValid(nick)){
             EntityUser user = UserCache.getUser(nick);
             if(user != null){
-                List<EntitySongList> songlists = SongListCache.getSongLists(nick);
+                Set<EntitySongList> songlists = SongListCache.getSongLists(nick);
                 result.put("size", songlists.size());
                 JSONArray jsonarray = new JSONArray();
                 for (EntitySongList song: songlists
@@ -112,7 +112,7 @@ public class UserSongListRequests {
      * URI: /user-lists/{list}
      * </p>
      *
-     * @return Si no hay error devuelve todas las ids de las playlists del usuario.
+     * @return Si no hay error devuelve todas la info de la playlist{list}.
      */
     @Path("{list}")
     @GET
@@ -168,8 +168,16 @@ public class UserSongListRequests {
             EntityUser user = UserCache.getUser(nick);
             if(user != null){
                 if (user.getToken() != null && user.getToken().isValid(userToken)) {
-                    SongListCache.deleteSongList(listId);
-                    result.put("error", "ok");
+                    EntitySongList songlist = SongListCache.getSongList(listId);
+                    if (songlist.getUserId() == user.getId()){
+                        if(SongListCache.deleteSongList(songlist)){
+                            result.put("error", "ok");
+                        }else{
+                            result.put("error", "unExpectedError");
+                        }
+                    }else{
+                        result.put("error", "unAuthorized");
+                    }
                 } else {
                     result.put("error", "invalidToken");
                 }

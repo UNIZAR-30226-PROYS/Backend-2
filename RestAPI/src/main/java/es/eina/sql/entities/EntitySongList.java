@@ -2,7 +2,7 @@ package es.eina.sql.entities;
 
 import javax.persistence.*;
 import java.util.HashSet;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Entity(name="song_list")
@@ -28,7 +28,7 @@ public class EntitySongList extends EntityBase{
     @JoinColumn(name = "author_id", insertable=false, updatable=false)
     private EntityUser author;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "song_list_songs",
             joinColumns = { @JoinColumn(name = "list_id")},
@@ -42,7 +42,7 @@ public class EntitySongList extends EntityBase{
             joinColumns = { @JoinColumn(name = "song_list_id", nullable = false, referencedColumnName = "id")},
             inverseJoinColumns = {@JoinColumn(name = "user_id", nullable = false, referencedColumnName = "id")}
     )
-    private Set<EntityUser> followers;
+    private Set<EntityUser> followers = new LinkedHashSet<>();
 
     /**
      * DO NOT use this method as it can only be used by Hibernate

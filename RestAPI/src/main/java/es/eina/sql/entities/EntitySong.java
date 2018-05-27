@@ -4,6 +4,7 @@ import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Entity(name="song")
@@ -31,7 +32,7 @@ public class EntitySong extends EntityBase {
     private EntityUser user;
 
     @ManyToMany (mappedBy = "songs", cascade = CascadeType.ALL)
-    private Set<EntitySongList> lists = new HashSet<>();
+    private Set<EntitySongList> lists = new LinkedHashSet<>();
 
 
 
@@ -61,4 +62,11 @@ public class EntitySong extends EntityBase {
         return uploadTime;
     }
 
+    public Set<EntitySongList> getLists() {
+        return lists;
+    }
+
+    public void setLists(Set<EntitySongList> lists) {
+        this.lists = lists;
+    }
 }
