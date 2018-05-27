@@ -27,7 +27,9 @@ public class AlbumCache {
             Transaction tr = session.beginTransaction();
             try {
                 EntityAlbum album = session.get(EntityAlbum.class, ent.getAlbumId());
-                session.delete(album);
+                if(album != null) {
+                    session.delete(album);
+                }
                 tr.commit();
                 b = true;
             } catch (Exception e) {
