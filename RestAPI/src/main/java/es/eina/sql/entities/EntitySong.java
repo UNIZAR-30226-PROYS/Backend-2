@@ -89,10 +89,12 @@ public class EntitySong extends EntityBase {
 
     @Transactional
     public boolean isSongLiked(EntityUser user){
-        Session s = HibernateUtils.getSession();
-        Transaction t = s.beginTransaction();
-        boolean b = this.usersLikers.contains(user);
-        t.commit();
+        boolean b;
+        try(Session s = HibernateUtils.getSession()) {
+            Transaction t = s.beginTransaction();
+            b = this.usersLikers.contains(user);
+            t.commit();
+        }
         return b;
     }
 

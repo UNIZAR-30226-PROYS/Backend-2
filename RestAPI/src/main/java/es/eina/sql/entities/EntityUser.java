@@ -1,6 +1,7 @@
 package es.eina.sql.entities;
 
 import es.eina.RestApp;
+import es.eina.cache.UserFollowersCache;
 import es.eina.crypt.Crypter;
 import es.eina.sql.utils.HibernateUtils;
 import es.eina.utils.StringUtils;
@@ -84,11 +85,11 @@ public class EntityUser extends EntityBase {
 
     //This user has this followers
     @OneToMany(mappedBy = "followee", cascade=CascadeType.ALL)
-    private Set<EntityAlbum> followers = new HashSet<>();
+    private Set<EntityUserFollowers> followers = new HashSet<>();
 
     //This user follows this users
     @OneToMany(mappedBy = "follower", cascade=CascadeType.ALL)
-    private Set<EntityAlbum> followees = new HashSet<>();
+    private Set<EntityUserFollowers> followees = new HashSet<>();
 
     /**
      * DO NOT use this method as it can only be used by Hibernate
@@ -208,18 +209,20 @@ public class EntityUser extends EntityBase {
             token.removeUser();
             EntityToken token = this.token;
             this.token = null;
-            Session s = HibernateUtils.getSession();
-            Transaction t = s.beginTransaction();
-            try {
-                s.delete(token);
-                t.commit();
-            }catch(Exception e){
-                t.rollback();
-                e.printStackTrace();
-                return -1;
+            int code = 0;
+            try(Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                try {
+                    s.delete(token);
+                    t.commit();
+                } catch (Exception e) {
+                    t.rollback();
+                    e.printStackTrace();
+                    code = -1;
+                }
             }
 
-            return 0;
+            return code;
         }
         return -2;
     }
@@ -296,10 +299,12 @@ public class EntityUser extends EntityBase {
 
     @Transactional
     public boolean isSongLiked(EntitySong song){
-        Session s = HibernateUtils.getSession();
-        Transaction t = s.beginTransaction();
-        boolean b = this.songsLiked.contains(song);
-        t.commit();
+        boolean b;
+        try(Session s = HibernateUtils.getSession()) {
+            Transaction t = s.beginTransaction();
+            b = this.songsLiked.contains(song);
+            t.commit();
+        }
         return b;
     }
 
@@ -309,10 +314,12 @@ public class EntityUser extends EntityBase {
 
     @Transactional
     public boolean isSongFaved(EntitySong song){
-        Session s = HibernateUtils.getSession();
-        Transaction t = s.beginTransaction();
-        boolean b = this.songsFaved.contains(song);
-        t.commit();
+        boolean b;
+        try(Session s = HibernateUtils.getSession()) {
+            Transaction t = s.beginTransaction();
+            b = this.songsFaved.contains(song);
+            t.commit();
+        }
         return b;
     }
 
@@ -322,11 +329,13 @@ public class EntityUser extends EntityBase {
 
     @Transactional
     public boolean listenSong(EntitySong song){
-        Session s = HibernateUtils.getSession();
-        //song.getListeners().add(this);
-        Transaction t = s.beginTransaction();
-        boolean b = this.songsListened.add(new EntityUserSongData(this, song));
-        t.commit();
+        boolean b;
+        try(Session s = HibernateUtils.getSession()) {
+            //song.getListeners().add(this);
+            Transaction t = s.beginTransaction();
+            b = this.songsListened.add(new EntityUserSongData(this, song));
+            t.commit();
+        }
         return b;
     }
 
@@ -342,5 +351,60 @@ public class EntityUser extends EntityBase {
             }
         }
         return albums;
+    }
+
+    /**
+     * Returns a list of users who are following this user
+     */
+    public Set<EntityUser> getFollowers(){
+        Set<EntityUser> user = new HashSet<>();
+        for(EntityUserFollowers followee : followers){
+            user.add(followee.getFollower());
+        }
+        return user;
+    }
+
+    /**
+     * Returns a list of users this user follows
+     */
+    public Set<EntityUser> getFollowees(){
+        Set<EntityUser> user = new HashSet<>();
+        for(EntityUserFollowers followers : followees){
+            user.add(followers.getFollowee());
+        }
+        return user;
+    }
+
+    private void addFollowee(EntityUser usr){
+        this.followers.add(new EntityUserFollowers(usr, this));
+    }
+
+    private void removeFollowee(EntityUserFollowers usr){
+        this.followers.remove(usr);
+    }
+
+    public boolean followUser(EntityUser other){
+        if(!getFollowers().contains(other)){
+            EntityUserFollowers obj = new EntityUserFollowers(this, other);
+            UserFollowersCache.addFollower(obj);
+            other.addFollowee(this);
+            this.followees.add(obj);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean unFollowUser(EntityUser other){
+        if(getFollowers().contains(other)){
+            EntityUserFollowers obj = UserFollowersCache.getFollower(other, this);
+            other.removeFollowee(obj);
+            this.followees.remove(obj);
+            UserFollowersCache.addFollower(obj);
+            return true;
+        }
+
+        return false;
     }
 }

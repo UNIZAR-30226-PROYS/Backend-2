@@ -113,7 +113,8 @@ public class HibernateUtils {
         if (session == null) {
             throw new RuntimeException("Cannot access a non-built Session.");
         }
-        return session;
+        //return session;
+        return sessionFactory.openSession();
     }
 
     public static SessionFactory getSessionFactory() {
@@ -131,54 +132,59 @@ public class HibernateUtils {
     }
 
     public static boolean addEntityToDB(EntityBase entity){
-        Session session = HibernateUtils.getSession();
-        Transaction tr = session.beginTransaction();
-        try {
-            session.saveOrUpdate(entity);
-            tr.commit();
-            return true;
-        } catch (Exception e) {
-            if (tr != null && tr.isActive()) {
-                tr.rollback();
-            }
+        boolean b = false;
+        try(Session session = HibernateUtils.getSession()) {
+            Transaction tr = session.beginTransaction();
+            try {
+                session.saveOrUpdate(entity);
+                tr.commit();
+                b = true;
+            } catch (Exception e) {
+                if (tr != null && tr.isActive()) {
+                    tr.rollback();
+                }
 
-            LOG.debug("Cannot add Entity to DB", e);
+                LOG.debug("Cannot add Entity to DB", e);
+            }
         }
 
-        return false;
+        return b;
     }
 
     public static boolean deleteFromDB(EntityBase entity){
-        Session session = HibernateUtils.getSession();
-        Transaction tr = session.beginTransaction();
-        try {
-            session.delete(entity);
-            tr.commit();
-            return true;
-        } catch (Exception e) {
-            if (tr != null && tr.isActive()) {
-                tr.rollback();
+        boolean b = false;
+        try(Session session = HibernateUtils.getSession()) {
+            Transaction tr = session.beginTransaction();
+            try {
+                session.delete(entity);
+                tr.commit();
+                b = true;
+            } catch (Exception e) {
+                if (tr != null && tr.isActive()) {
+                    tr.rollback();
+                }
+                e.printStackTrace();
+                LOG.debug("Cannot delete Entity from DB", e);
             }
-            e.printStackTrace();
-            LOG.debug("Cannot delete Entity from DB", e);
         }
 
-        return false;
+        return b;
     }
 
     public static <T extends EntityBase> T getEntity(Class<T> clazz, Serializable key){
         T entity = null;
         Transaction tr = null;
-        Session session = HibernateUtils.getSession();
-        try{
-            tr = session.beginTransaction();
-            entity = session.get(clazz, key);
-            tr.commit();
-        } catch (Exception e) {
-            if (tr != null) {
-                tr.rollback();
+        try(Session session = HibernateUtils.getSession()) {
+            try {
+                tr = session.beginTransaction();
+                entity = session.get(clazz, key);
+                tr.commit();
+            } catch (Exception e) {
+                if (tr != null) {
+                    tr.rollback();
+                }
+                LOG.debug("Cannot load Entity from DB", e);
             }
-            LOG.debug("Cannot load Entity from DB", e);
         }
         return entity;
     }
@@ -186,17 +192,18 @@ public class HibernateUtils {
     public static <T extends EntityBase> T getEntityByAttribute(Class<T> clazz, String attribute, Serializable key){
         T entity = null;
         Transaction tr = null;
-        Session session = HibernateUtils.getSession();
-        try{
-            tr = session.beginTransaction();
-            entity = session.byNaturalId(clazz)
-                    .using(attribute, key)
-                    .load();
-            tr.commit();
-        } catch (Exception e) {
-            e.printStackTrace();
-            if (tr != null && tr.isActive()) {
-                tr.rollback();
+        try(Session session = HibernateUtils.getSession()) {
+            try {
+                tr = session.beginTransaction();
+                entity = session.byNaturalId(clazz)
+                        .using(attribute, key)
+                        .load();
+                tr.commit();
+            } catch (Exception e) {
+                e.printStackTrace();
+                if (tr != null && tr.isActive()) {
+                    tr.rollback();
+                }
             }
         }
 
