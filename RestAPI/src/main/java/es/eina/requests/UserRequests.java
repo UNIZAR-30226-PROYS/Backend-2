@@ -9,6 +9,7 @@ import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntityToken;
 import es.eina.sql.entities.EntityUser;
 import es.eina.sql.utils.HibernateUtils;
+import es.eina.utils.SongUtils;
 import es.eina.utils.StringUtils;
 import es.eina.utils.UserUtils;
 import org.apache.commons.validator.routines.EmailValidator;
@@ -387,7 +388,7 @@ public class UserRequests {
         return obj;
     }
 
-    @Path("/{user}/songs")
+    @Path("/{user}/albums")
     @GET
     public JSONObject getUserAlbums(@PathParam("user") String user) {
         JSONObject obj = new JSONObject();
@@ -395,11 +396,35 @@ public class UserRequests {
             EntityUser myuser = UserCache.getUser(user);
             if (myuser != null) {
                 JSONArray userAlbums = myuser.getUserAlbums();
-                obj.put("songs", userAlbums);
+                obj.put("albums", userAlbums);
                 obj.put("size", userAlbums.length());
                 obj.put("error", "ok");
             } else {
                 obj.put("error", "unknownUser");
+            }
+        } else {
+            obj.put("error", "invalidArgs");
+        }
+        return obj;
+    }
+
+    @Path("/{nick}/songs/lastListened")
+    @GET
+    public JSONObject getLastListenedSongs(@PathParam("nick") String nick, @QueryParam("n") @DefaultValue("1") int amount) {
+        JSONObject obj = new JSONObject();
+        if (StringUtils.isValid(nick)) {
+            if(amount > 0) {
+                EntityUser user = UserCache.getUser(nick);
+                if (user != null) {
+                    JSONArray songs = SongUtils.getLastListenedSongs(user, amount);
+                    obj.put("songs", songs);
+                    obj.put("size", songs.length());
+                    obj.put("error", "ok");
+                } else {
+                    obj.put("error", "unknownUser");
+                }
+            } else {
+                obj.put("error", "invalidAmount");
             }
         } else {
             obj.put("error", "invalidArgs");
