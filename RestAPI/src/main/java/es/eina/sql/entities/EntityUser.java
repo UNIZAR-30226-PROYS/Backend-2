@@ -1,6 +1,7 @@
 package es.eina.sql.entities;
 
 import es.eina.RestApp;
+import es.eina.cache.AlbumCache;
 import es.eina.cache.UserFollowersCache;
 import es.eina.crypt.Crypter;
 import es.eina.sql.utils.HibernateUtils;
@@ -8,6 +9,7 @@ import es.eina.utils.StringUtils;
 import es.eina.utils.UserUtils;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.NaturalId;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -56,11 +58,13 @@ public class EntityUser extends EntityBase {
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "user")
     private EntityToken token;
 
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "user")
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true)
     private EntityUserValues userValues;
 
 
-    @OneToMany(mappedBy = "user", cascade=CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "user")
+    //@Cascade({org.hibernate.annotations.CascadeType.SAVE_UPDATE, org.hibernate.annotations.CascadeType.DELETE})
+    //@Cascade(org.hibernate.annotations.CascadeType.ALL)
     private Set<EntityAlbum> albums = new HashSet<>();
 
     @ManyToMany(cascade=CascadeType.ALL)
@@ -80,15 +84,17 @@ public class EntityUser extends EntityBase {
     Set<EntitySong> songsFaved = new HashSet<>();
 
 
-    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+    //@Cascade(org.hibernate.annotations.CascadeType.ALL)
     Set<EntityUserSongData> songsListened = new HashSet<>();
 
     //This user has this followers
-    @OneToMany(mappedBy = "followee", cascade=CascadeType.ALL)
+    @OneToMany(mappedBy = "followee", cascade=CascadeType.ALL, orphanRemoval = true)
+    //@Cascade(org.hibernate.annotations.CascadeType.ALL)
     private Set<EntityUserFollowers> followers = new HashSet<>();
 
     //This user follows this users
-    @OneToMany(mappedBy = "follower", cascade=CascadeType.ALL)
+    @OneToMany(mappedBy = "follower", cascade=CascadeType.ALL, orphanRemoval = true)
     private Set<EntityUserFollowers> followees = new HashSet<>();
 
     /**
@@ -333,7 +339,9 @@ public class EntityUser extends EntityBase {
         try(Session s = HibernateUtils.getSession()) {
             //song.getListeners().add(this);
             Transaction t = s.beginTransaction();
-            b = this.songsListened.add(new EntityUserSongData(this, song));
+            EntityUserSongData entity = new EntityUserSongData(this, song);
+            b = this.songsListened.add(entity);
+            s.saveOrUpdate(entity);
             t.commit();
         }
         return b;

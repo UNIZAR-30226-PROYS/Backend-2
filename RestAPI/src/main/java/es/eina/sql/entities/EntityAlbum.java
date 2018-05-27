@@ -3,6 +3,7 @@ package es.eina.sql.entities;
 import es.eina.sql.utils.HibernateUtils;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.annotations.Cascade;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -21,9 +22,6 @@ public class EntityAlbum extends EntityBase {
     @Column(name = "id",nullable = false)
     private Long id;
 
-    @Column(name = "user_id",nullable = false)
-    private long userId;
-
     @Column(name = "title",nullable = false)
     private String title;
     
@@ -36,12 +34,12 @@ public class EntityAlbum extends EntityBase {
     @Column(name = "upload_time",nullable = false)
     private long uploadTime;
 
-    @OneToMany(cascade=CascadeType.ALL, mappedBy = "album")
+    @OneToMany(mappedBy = "album", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<EntitySong> songs = new HashSet<>();
 
 
-    @ManyToOne(cascade=CascadeType.ALL)
-    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    @ManyToOne
+    @JoinColumn(name = "user_id")
     private EntityUser user;
 
 
@@ -52,7 +50,6 @@ public class EntityAlbum extends EntityBase {
 
     public EntityAlbum(EntityUser user, String title, int year) {
         this.user = user;
-        this.userId = user.getId();
         this.title = title;
         this.publishYear = year;
         this.updateTime = System.currentTimeMillis();
@@ -68,7 +65,7 @@ public class EntityAlbum extends EntityBase {
     }
 
     public long getUserId() {
-        return userId;
+        return user.getId();
     }
 
     public String getTitle() {
@@ -86,12 +83,12 @@ public class EntityAlbum extends EntityBase {
     public Set<EntitySong> getSongs() {
     	return songs;
     }
-    
+
     public JSONArray getSongsAsArray() {
     	JSONArray arr = new JSONArray();
-    	for (EntitySong song: songs) {
-    	    arr.put(song.getId());
-    	}
+            for (EntitySong song : songs) {
+                arr.put(song.getId());
+            }
     	return arr;
     }
 

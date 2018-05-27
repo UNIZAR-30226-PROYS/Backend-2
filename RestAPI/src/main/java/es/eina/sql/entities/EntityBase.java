@@ -9,5 +9,4 @@ public abstract class EntityBase implements Serializable {
     protected int deleteEntity(){
         return HibernateUtils.deleteFromDB(this) ? 0 : 1;
     }
-
 }

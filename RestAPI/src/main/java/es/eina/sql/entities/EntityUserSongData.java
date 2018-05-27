@@ -11,12 +11,12 @@ public class EntityUserSongData extends EntityBase {
     private long time;
 
     @Id
-    @ManyToOne(cascade=CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name="user_id")
     private EntityUser author;
 
     @Id
-    @ManyToOne(cascade=CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name="song_id")
     private EntitySong song;
 

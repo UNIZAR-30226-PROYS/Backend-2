@@ -3,6 +3,7 @@ package es.eina.sql.entities;
 import es.eina.sql.utils.HibernateUtils;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
 import javax.transaction.Transactional;
@@ -40,13 +41,14 @@ public class EntitySong extends EntityBase {
     @JoinColumn(name = "album_id")
     private EntityAlbum album;
 
-    @ManyToMany(mappedBy = "songsLiked")
+    @ManyToMany(mappedBy = "songsLiked", cascade = CascadeType.ALL)
     private Set<EntityUser> usersLikers = new HashSet<>();
 
-    @ManyToMany(mappedBy = "songsFaved")
+    @ManyToMany(mappedBy = "songsFaved", cascade = CascadeType.ALL)
     private Set<EntityUser> usersFavers = new HashSet<>();
 
-    @OneToMany(mappedBy = "song")
+    @OneToMany(mappedBy = "song", cascade = CascadeType.ALL)
+    @Cascade(org.hibernate.annotations.CascadeType.ALL)
     private Set<EntityUserSongData> usersListeners = new HashSet<>();
 
 
@@ -67,7 +69,7 @@ public class EntitySong extends EntityBase {
     }
 
     public long getUserId() {
-        return album.getUserId();
+        return album != null ? album.getUserId() : -1;
     }
 
     public String getTitle() {
@@ -120,16 +122,26 @@ public class EntitySong extends EntityBase {
     }
 
     public boolean setAlbum(EntityAlbum album){
-        if(this.album == null) {
-            this.album = album;
-            album.updateAlbum();
-            return true;
-        }else if(album == null){
-            this.album.removeSong(this);
-            this.album = null;
+        boolean b = false;
+        try(Session s = HibernateUtils.getSession()) {
+            Transaction t = s.beginTransaction();
+            if (this.album == null) {
+                this.album = album;
+                album.updateAlbum();
+                s.saveOrUpdate(this);
+                s.saveOrUpdate(album);
+                b = true;
+            } else if (album == null) {
+                this.album.removeSong(this);
+                this.album = null;
+                s.saveOrUpdate(this);
+                s.saveOrUpdate(album);
+                b = true;
+            }
+            t.commit();
         }
 
-        return false;
+        return b;
     }
 
     public boolean removeFromAlbum(){
