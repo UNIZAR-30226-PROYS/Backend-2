@@ -43,13 +43,13 @@ public class EntityUserFollowers extends EntityBase{
 
     public static class FollowerPrimaryKey implements Serializable {
 
-        private EntityUser follower;
+        private long follower;
 
-        private EntityUser followee;
+        private long followee;
 
         public FollowerPrimaryKey() {}
 
-        public FollowerPrimaryKey(EntityUser follower, EntityUser followee) {
+        public FollowerPrimaryKey(long follower, long followee) {
             this.follower = follower;
             this.followee = followee;
         }

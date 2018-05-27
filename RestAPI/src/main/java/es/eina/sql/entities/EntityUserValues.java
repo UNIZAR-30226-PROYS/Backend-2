@@ -13,7 +13,7 @@ public class EntityUserValues extends EntityBase{
     private boolean verified;
 
     @Id
-    @OneToOne(cascade=CascadeType.ALL)
+    @OneToOne(cascade=CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "user_id")
     private EntityUser user;
 

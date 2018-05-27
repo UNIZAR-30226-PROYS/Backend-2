@@ -85,28 +85,6 @@ public class EntitySong extends EntityBase {
         return uploadTime;
     }
 
-    public String getLyrics() {
-        if (this.lyrics != null) return lyrics;
-        else return "No Lyrics";
-    }
-
-    @Transactional
-    public boolean isSongLiked(EntityUser user){
-        boolean b;
-        try(Session s = HibernateUtils.getSession()) {
-            Transaction t = s.beginTransaction();
-            b = this.usersLikers.contains(user);
-            t.commit();
-        }
-        return b;
-    }
-
-    public boolean likeSong(EntityUser user){ if (this.usersLikers.add(user)){ this.likes++; return true;}else{ return false; }}
-
-    public boolean unlikeSong(EntityUser user){ if (this.usersLikers.remove(user)){ this.likes--; return true;}else{ return false; }}
-
-    public long getLikes(){ return this.likes;}
-
     public boolean isSongFaved(EntityUser user){
         return this.usersFavers.contains(user);
     }
@@ -115,30 +93,21 @@ public class EntitySong extends EntityBase {
 
     public boolean unfavSong(EntityUser user){ return this.usersFavers.remove(user); }
 
-    @Transactional
     public Set<EntityUserSongData> getListeners(){
         return this.usersListeners;
     }
 
     public boolean setAlbum(EntityAlbum album){
         boolean b = false;
-        try(Session s = HibernateUtils.getSession()) {
-            Transaction t = s.beginTransaction();
             if (this.album == null) {
                 this.album = album;
                 album.updateAlbum();
-                s.saveOrUpdate(this);
-                s.saveOrUpdate(album);
                 b = true;
             } else if (album == null) {
                 this.album.removeSong(this);
-                s.delete(this.album);
                 this.album = null;
-                s.saveOrUpdate(this);
                 b = true;
             }
-            t.commit();
-        }
 
         return b;
     }

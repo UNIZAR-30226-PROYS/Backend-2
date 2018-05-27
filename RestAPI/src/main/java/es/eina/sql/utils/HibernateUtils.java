@@ -3,7 +3,6 @@ package es.eina.sql.utils;
 import es.eina.sql.entities.*;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
@@ -12,7 +11,6 @@ import org.hibernate.cfg.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.EntityManager;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -51,7 +49,7 @@ public class HibernateUtils {
                 //settings.put(Environment.FORMAT_SQL, true);
                 settings.put("hibernate.current_session_context_class", "org.hibernate.context.internal.ThreadLocalSessionContext");
                 String createDrop = login.getProperty("create-drop");
-                if("true".equals(createDrop)){
+                if ("true".equals(createDrop)) {
                     LOG.debug("Enable CREATE-DROP property!!!! Beware, this MUST be a debug/test environment.");
                     settings.put(Environment.HBM2DDL_AUTO, "create-drop");
                 }
@@ -108,7 +106,7 @@ public class HibernateUtils {
         return sessionFactory;
     }
 
-    public static Session getSession(){
+    public static Session getSession() {
         //return getSessionFactory().openSession();
         if (session == null) {
             throw new RuntimeException("Cannot access a non-built Session.");
@@ -117,94 +115,58 @@ public class HibernateUtils {
         return sessionFactory.openSession();
     }
 
-    public static SessionFactory getSessionFactory() {
-        if (sessionFactory == null) {
-            throw new RuntimeException("Cannot access a non-built SessionFactory.");
-        }
-        return sessionFactory;
-    }
-
     public static void shutdown() {
         if (registry != null) {
             sessionFactory.close();
+            sessionFactory = null;
             StandardServiceRegistryBuilder.destroy(registry);
         }
     }
 
-    public static boolean addEntityToDB(EntityBase entity){
+    public static boolean addEntityToDB(Session s, EntityBase entity) {
         boolean b = false;
-        try(Session session = HibernateUtils.getSession()) {
-            Transaction tr = session.beginTransaction();
-            try {
-                session.saveOrUpdate(entity);
-                tr.commit();
-                b = true;
-            } catch (Exception e) {
-                if (tr != null && tr.isActive()) {
-                    tr.rollback();
-                }
+        try {
+            s.saveOrUpdate(entity);
+            b = true;
+        } catch (Exception e) {
 
-                LOG.debug("Cannot add Entity to DB", e);
-            }
+            LOG.info("Cannot add Entity to DB", e);
         }
 
         return b;
     }
 
-    public static boolean deleteFromDB(EntityBase entity){
+    public static boolean deleteFromDB(Session s, EntityBase entity) {
         boolean b = false;
-        try(Session session = HibernateUtils.getSession()) {
-            Transaction tr = session.beginTransaction();
-            try {
-                session.delete(entity);
-                tr.commit();
-                b = true;
-            } catch (Exception e) {
-                if (tr != null && tr.isActive()) {
-                    tr.rollback();
-                }
-                e.printStackTrace();
-                LOG.debug("Cannot delete Entity from DB", e);
-            }
+        try {
+            s.delete(entity);
+            b = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOG.debug("Cannot delete Entity from DB", e);
         }
 
         return b;
     }
 
-    public static <T extends EntityBase> T getEntity(Class<T> clazz, Serializable key){
+    public static <T extends EntityBase> T getEntity(Session s, Class<T> clazz, Serializable key) {
         T entity = null;
-        Transaction tr = null;
-        try(Session session = HibernateUtils.getSession()) {
-            try {
-                tr = session.beginTransaction();
-                entity = session.get(clazz, key);
-                tr.commit();
-            } catch (Exception e) {
-                if (tr != null) {
-                    tr.rollback();
-                }
-                LOG.debug("Cannot load Entity from DB", e);
-            }
+        try {
+            entity = s.get(clazz, key);
+        } catch (Exception e) {
+            LOG.debug("Cannot load Entity from DB", e);
         }
         return entity;
     }
 
-    public static <T extends EntityBase> T getEntityByAttribute(Class<T> clazz, String attribute, Serializable key){
+    public static <T extends EntityBase> T getEntityByAttribute(Session s, Class<T> clazz, String attribute, Serializable key) {
         T entity = null;
-        Transaction tr = null;
-        try(Session session = HibernateUtils.getSession()) {
-            try {
-                tr = session.beginTransaction();
-                entity = session.byNaturalId(clazz)
-                        .using(attribute, key)
-                        .load();
-                tr.commit();
-            } catch (Exception e) {
-                e.printStackTrace();
-                if (tr != null && tr.isActive()) {
-                    tr.rollback();
-                }
-            }
+        try {
+            entity = s.byNaturalId(clazz)
+                    .using(attribute, key)
+                    .load();
+        } catch (Exception e) {
+            LOG.debug("Cannot retrieve entity from DB", e);
         }
 
         return entity;

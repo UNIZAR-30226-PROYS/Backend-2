@@ -7,9 +7,12 @@ import es.eina.cache.UserCache;
 import es.eina.sql.entities.EntityAlbum;
 import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntityUser;
+import es.eina.sql.utils.HibernateUtils;
 import es.eina.utils.AlbumUtils;
 import es.eina.utils.StringUtils;
 
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.json.JSONObject;
 
 import javax.ws.rs.*;
@@ -39,26 +42,36 @@ public class AlbumRequests {
         JSONObject albumJSON = EntityAlbum.defaultAlbumJSON;
 
 		if(StringUtils.isValid(nick) && StringUtils.isValid(userToken) && StringUtils.isValid(title, 1, 255)){
-			EntityUser user = UserCache.getUser(nick);
-			if(user != null){
-				if (user.getToken() != null && user.getToken().isValid(userToken)) {
-							if(year > 1900) {
-								EntityAlbum album = AlbumUtils.createAlbum(user, title, year);
-								if(album != null && AlbumCache.addAlbum(album)){
-									albumJSON = album.toJSON();
-									obj.put("error", "ok");
-								}else {
-									obj.put("error", "unknownError");
-								}
-							}else {
-								obj.put("error", "invalidYear");
-							}
-				} else {
-					obj.put("error", "invalidToken");
-				}
-			}else{
-				obj.put("error", "unknownUser");
-			}
+		    try(Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntityUser user = UserCache.getUser(s, nick);
+                if (user != null) {
+                    if (user.getToken() != null && user.getToken().isValid(userToken)) {
+                        if (year > 1900) {
+                            EntityAlbum album = AlbumUtils.createAlbum(s, user, title, year);
+                            if (album != null && AlbumCache.addAlbum(s, album)) {
+                                albumJSON = album.toJSON();
+                                ok = true;
+                                obj.put("error", "ok");
+                            } else {
+                                obj.put("error", "unknownError");
+                            }
+                        } else {
+                            obj.put("error", "invalidYear");
+                        }
+                    } else {
+                        obj.put("error", "invalidToken");
+                    }
+                } else {
+                    obj.put("error", "unknownUser");
+                }
+                if(ok) {
+                    t.commit();
+                }else{
+                    t.rollback();
+                }
+            }
         }else{
             obj.put("error", "invalidArgs");
         }
@@ -84,25 +97,40 @@ public class AlbumRequests {
     	JSONObject obj = new JSONObject();
 
 		if(StringUtils.isValid(nick) && StringUtils.isValid(userToken)){
-			EntityUser user = UserCache.getUser(nick);
-			if(user != null){
-				if (user.getToken() != null && user.getToken().isValid(userToken)) {
-					if(albumId > 0) {
-						EntityAlbum album = AlbumCache.getAlbum(albumId);
-						if (album != null) {
-							obj.put("error", AlbumCache.deleteAlbum(album) ? "ok" : "unknownAlbum");
-						} else {
-							obj.put("error", "unknownAlbum");
-						}
-					} else {
-                        obj.put("error", "invalidAlbum");
-					}
-				} else {
-					obj.put("error", "invalidToken");
-				}
-			}else{
-				obj.put("error", "unknownUser");
-			}
+		    try(Session s = HibernateUtils.getSession()) {
+		        boolean ok = false;
+		        Transaction t = s.beginTransaction();
+                EntityUser user = UserCache.getUser(s, nick);
+                if (user != null) {
+                    if (user.getToken() != null && user.getToken().isValid(userToken)) {
+                        if (albumId > 0) {
+                            EntityAlbum album = AlbumCache.getAlbum(s, albumId);
+                            if (album != null) {
+                                if(AlbumCache.deleteAlbum(s, album)) {
+                                    obj.put("error", "ok");
+                                    ok = true;
+                                }else{
+                                    obj.put("error", "unknownAlbum");
+                                }
+                            } else {
+                                obj.put("error", "unknownAlbum");
+                            }
+                        } else {
+                            obj.put("error", "invalidAlbum");
+                        }
+                    } else {
+                        obj.put("error", "invalidToken");
+                    }
+                } else {
+                    obj.put("error", "unknownUser");
+                }
+
+                if(ok) {
+                    t.commit();
+                }else{
+                    t.rollback();
+                }
+            }
 		}else{
 			obj.put("error", "invalidArgs");
 		}
@@ -123,13 +151,18 @@ public class AlbumRequests {
 		JSONObject obj = new JSONObject();
 		JSONObject albumJSON = EntityAlbum.defaultAlbumJSON;
 		if(id > 0){
-			EntityAlbum album = AlbumCache.getAlbum(id);
-			if(album != null){
-				albumJSON = album.toJSON();
-				obj.put("error", "ok");
-			}else{
-				obj.put("error", "unknownAlbum");
-			}
+		    try (Session s = HibernateUtils.getSession()){
+		        Transaction t = s.beginTransaction();
+                EntityAlbum album = AlbumCache.getAlbum(s, id);
+                if(album != null){
+                    albumJSON = album.toJSON();
+                    obj.put("error", "ok");
+                    t.commit();
+                }else{
+                    obj.put("error", "unknownAlbum");
+                    t.rollback();
+                }
+            }
 		}else{
 			obj.put("error", "invalidArgs");
 		}
@@ -156,22 +189,26 @@ public class AlbumRequests {
 		JSONObject obj = new JSONObject();
 
 		if(StringUtils.isValid(nick) && StringUtils.isValid(userToken)){
-			EntityUser user = UserCache.getUser(nick);
-			if(user != null){
-				if (user.getToken() != null && user.getToken().isValid(userToken)) {
-				    if(albumId > 0) {
-                        EntityAlbum album = AlbumCache.getAlbum(albumId);
-                        if (album != null) {
+		    try(Session s = HibernateUtils.getSession()) {
+		        Transaction t = s.beginTransaction();
+		        boolean ok = false;
+                EntityUser user = UserCache.getUser(s, nick);
+                if (user != null) {
+                    if (user.getToken() != null && user.getToken().isValid(userToken)) {
+                        if (albumId > 0) {
+                            EntityAlbum album = AlbumCache.getAlbum(s, albumId);
+                            if (album != null) {
                                 if (songId > 0) {
-                                    EntitySong song = SongCache.getSong(songId);
+                                    EntitySong song = SongCache.getSong(s, songId);
                                     if (song != null) {
-                                        if(album.getUserId() == user.getId() && (song.getUserId() < 0 || album.getUserId() == song.getUserId())) {
+                                        if (album.getUserId() == user.getId() && (song.getUserId() < 0 || album.getUserId() == song.getUserId())) {
                                             if (song.setAlbum(album)) {
+                                                ok = true;
                                                 obj.put("error", "ok");
                                             } else {
                                                 obj.put("error", "alreadyAdded");
                                             }
-                                        }else{
+                                        } else {
                                             obj.put("error", "notAuthor");
                                         }
                                     } else {
@@ -182,18 +219,25 @@ public class AlbumRequests {
                                     obj.put("error", "invalidSong");
                                 }
 
+                            } else {
+                                obj.put("error", "unknownAlbum");
+                            }
                         } else {
-                            obj.put("error", "unknownAlbum");
+                            obj.put("error", "invalidAlbum");
                         }
-                    }else{
-				        obj.put("error", "invalidAlbum");
+                    } else {
+                        obj.put("error", "invalidToken");
                     }
-				} else {
-					obj.put("error", "invalidToken");
-				}
-			}else{
-				obj.put("error", "unknownUser");
-			}
+                } else {
+                    obj.put("error", "unknownUser");
+                }
+
+                if(ok){
+                    t.commit();
+                }else{
+                    t.rollback();
+                }
+            }
 		}else{
 			obj.put("error", "invalidArgs");
 		}
@@ -219,41 +263,52 @@ public class AlbumRequests {
         JSONObject obj = new JSONObject();
 
         if (StringUtils.isValid(nick) && StringUtils.isValid(userToken)) {
-            EntityUser user = UserCache.getUser(nick);
-            if (user != null) {
-                if (user.getToken() != null && user.getToken().isValid(userToken)) {
-                    if (albumId > 0) {
-                        EntityAlbum album = AlbumCache.getAlbum(albumId);
-                        if (album != null) {
-                            if (album.getUserId() == user.getId()) {
-                                if (songId > 0) {
-                                    EntitySong song = SongCache.getSong(songId);
-                                    if (song != null) {
-                                        if (song.removeFromAlbum()) {
-                                            obj.put("error", "ok");
+            try(Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntityUser user = UserCache.getUser(s, nick);
+                if (user != null) {
+                    if (user.getToken() != null && user.getToken().isValid(userToken)) {
+                        if (albumId > 0) {
+                            EntityAlbum album = AlbumCache.getAlbum(s, albumId);
+                            if (album != null) {
+                                if (album.getUserId() == user.getId()) {
+                                    if (songId > 0) {
+                                        EntitySong song = SongCache.getSong(s, songId);
+                                        if (song != null) {
+                                            if (song.removeFromAlbum()) {
+                                                obj.put("error", "ok");
+                                                ok = true;
+                                            } else {
+                                                obj.put("error", "alreadyRemoved");
+                                            }
                                         } else {
-                                            obj.put("error", "alreadyRemoved");
+                                            obj.put("error", "unknownSong");
                                         }
                                     } else {
-                                        obj.put("error", "unknownSong");
+                                        obj.put("error", "invalidSong");
                                     }
                                 } else {
-                                    obj.put("error", "invalidSong");
+                                    obj.put("error", "notAuthor");
                                 }
                             } else {
-                                obj.put("error", "notAuthor");
+                                obj.put("error", "unknownAlbum");
                             }
                         } else {
-                            obj.put("error", "unknownAlbum");
+                            obj.put("error", "invalidAlbum");
                         }
                     } else {
-                        obj.put("error", "invalidAlbum");
+                        obj.put("error", "invalidToken");
                     }
                 } else {
-                    obj.put("error", "invalidToken");
+                    obj.put("error", "unknownUser");
                 }
-            } else {
-                obj.put("error", "unknownUser");
+
+                if(ok) {
+                    t.commit();
+                }else{
+                    t.rollback();
+                }
             }
         } else {
             obj.put("error", "invalidArgs");

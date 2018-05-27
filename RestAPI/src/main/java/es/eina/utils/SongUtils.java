@@ -27,29 +27,27 @@ public class SongUtils {
      */
     @Transactional
     public static @Nullable
-    EntitySong addSong(EntityAlbum album, String title, String country) {
+    EntitySong addSong(Session s, EntityAlbum album, String title, String country) {
 
         EntitySong entitySong = new EntitySong(album, title, country);
         if(album != null) {
             album.addSong(entitySong);
         }
 
-        return SongCache.addSong(entitySong) ? entitySong : null;
+        return SongCache.addSong(s, entitySong) ? entitySong : null;
 
     }
 
 
-    public static JSONArray getLastListenedSongs(@NotNull EntityUser user, int limit){
+    public static JSONArray getLastListenedSongs(Session s, @NotNull EntityUser user, int limit){
         limit = Math.max(1, limit);
         JSONArray songs = new JSONArray();
-        try(Session s = HibernateUtils.getSession()){
             NativeQuery q = s
                     .createSQLQuery("SELECT song_id FROM user_listened_songs WHERE user_id = :id ORDER BY time DESC LIMIT "+limit+";")
                     .setParameter("id", user.getId());
             for(Object o : q.list()){
                 songs.put(o);
             }
-        }
 
         return songs;
 

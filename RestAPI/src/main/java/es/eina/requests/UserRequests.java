@@ -1,11 +1,7 @@
 package es.eina.requests;
 
-import es.eina.cache.AlbumCache;
-import es.eina.cache.SongCache;
 import es.eina.cache.UserCache;
 import es.eina.geolocalization.Geolocalizer;
-import es.eina.sql.entities.EntityAlbum;
-import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntityToken;
 import es.eina.sql.entities.EntityUser;
 import es.eina.sql.utils.HibernateUtils;
@@ -13,6 +9,8 @@ import es.eina.utils.SongUtils;
 import es.eina.utils.StringUtils;
 import es.eina.utils.UserUtils;
 import org.apache.commons.validator.routines.EmailValidator;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,9 +31,6 @@ public class UserRequests {
 
     @Context
     private HttpServletRequest request;
-
-    private static final int DEFAULT_COMMENT_NUMBER = 10;
-    private static final int DEFAULT_COMMENT_LIKES_NUMBER = 10;
 
     private static final JSONObject defaultUserJSON;
     private static final JSONObject defaultCommentJSON;
@@ -61,17 +56,27 @@ public class UserRequests {
         response.put("error", "");
 
         if (StringUtils.isValid(nick) && StringUtils.isValid(pass)) {
-            if (UserUtils.userExists(nick)) {
-                EntityUser user = UserCache.getUser(nick);
-                if (UserUtils.checkPassword(user, pass)) {
-                    user.updateToken();
-                    response.put("token", user.getToken().getToken());
-                    response.put("error", "ok");
+            try (Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                if (UserUtils.userExists(s, nick)) {
+                    EntityUser user = UserCache.getUser(s, nick);
+                    if (UserUtils.checkPassword(user, pass)) {
+                        user.updateToken();
+                        response.put("token", user.getToken().getToken());
+                        response.put("error", "ok");
+                        ok = true;
+                    } else {
+                        response.put("error", "passError");
+                    }
                 } else {
-                    response.put("error", "passError");
+                    response.put("error", "userNotExists");
                 }
-            } else {
-                response.put("error", "userNotExists");
+                if (ok) {
+                    t.commit();
+                } else {
+                    t.rollback();
+                }
             }
         } else {
             response.put("error", "invalidArgs");
@@ -98,8 +103,8 @@ public class UserRequests {
     @Path("/{nick}/signup")
     @POST
     public JSONObject signup(@PathParam("nick") String nick, @FormParam("mail") String mail,
-                         @FormParam("pass0") String pass0, @FormParam("pass1") String pass1,
-                         @FormParam("user") String user, @FormParam("birth") long birth, @FormParam("bio") String bio) {
+                             @FormParam("pass0") String pass0, @FormParam("pass1") String pass1,
+                             @FormParam("user") String user, @FormParam("birth") long birth, @FormParam("bio") String bio) {
         JSONObject response = new JSONObject();
         response.put("token", "");
         response.put("error", "");
@@ -111,17 +116,27 @@ public class UserRequests {
                 Date birth_date = new Date(birth);
                 if (!StringUtils.isValid(bio)) bio = "";
                 if (pass0.equals(pass1)) {
-                    if (!UserUtils.userExists(nick)) {
-                        String country = Geolocalizer.getCountryISOCode(getIP());
-                        EntityUser userData = UserUtils.addUser(nick, mail, pass0, user, bio, birth_date, country);
-                        if (userData != null) {
-                            response.put("token", userData.getToken().getToken());
-                            response.put("error", "ok");
+                    try (Session s = HibernateUtils.getSession()) {
+                        Transaction t = s.beginTransaction();
+                        boolean ok = false;
+                        if (!UserUtils.userExists(s, nick)) {
+                            String country = Geolocalizer.getCountryISOCode(getIP());
+                            EntityUser userData = UserUtils.addUser(s, nick, mail, pass0, user, bio, birth_date, country);
+                            if (userData != null) {
+                                response.put("token", userData.getToken().getToken());
+                                response.put("error", "ok");
+                                ok = true;
+                            } else {
+                                response.put("error", "unknownError");
+                            }
                         } else {
-                            response.put("error", "unknownError");
+                            response.put("error", "userExists");
                         }
-                    } else {
-                        response.put("error", "userExists");
+                        if (ok) {
+                            t.commit();
+                        } else {
+                            t.rollback();
+                        }
                     }
                 } else {
                     response.put("error", "notEqualPass");
@@ -154,26 +169,36 @@ public class UserRequests {
     @Path("/{nick}/login")
     @DELETE
     public JSONObject deleteLogin(@PathParam("nick") String nick,
-                              @DefaultValue("") @FormParam("token") String token) {
+                                  @DefaultValue("") @FormParam("token") String token) {
         JSONObject obj = new JSONObject();
 
         if (StringUtils.isValid(nick) && StringUtils.isValid(token)) {
-            EntityUser user = UserCache.getUser(nick);
-            if (user != null) {
-                if (user.getToken() != null && user.getToken().isValid(token)) {
-                    int code = user.deleteToken();
-                    if (code == 0) {
-                        obj.put("error", "ok");
-                    } else if (code == -2) {
-                        obj.put("error", "closedSession");
+            try (Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntityUser user = UserCache.getUser(s, nick);
+                if (user != null) {
+                    if (user.getToken() != null && user.getToken().isValid(token)) {
+                        int code = user.deleteToken(s);
+                        if (code == 0) {
+                            obj.put("error", "ok");
+                            ok = true;
+                        } else if (code == -2) {
+                            obj.put("error", "closedSession");
+                        } else {
+                            obj.put("error", "unknownError");
+                        }
                     } else {
-                        obj.put("error", "unknownError");
+                        obj.put("error", "invalidToken");
                     }
                 } else {
-                    obj.put("error", "invalidToken");
+                    obj.put("error", "unknownUser");
                 }
-            } else {
-                obj.put("error", "unknownUser");
+                if (ok) {
+                    t.commit();
+                } else {
+                    t.rollback();
+                }
             }
         } else {
             obj.put("error", "invalidArgs");
@@ -200,24 +225,34 @@ public class UserRequests {
     ) {
         JSONObject obj = new JSONObject();
         JSONObject userJSON = new JSONObject(defaultUserJSON, JSONObject.getNames(defaultUserJSON));
-
-        EntityUser user = UserCache.getUser(nick);
-        if (user != null) {
-            userJSON.put("id", user.getId());
-            userJSON.put("nick", user.getNick());
-            userJSON.put("user", user.getUsername());
-            userJSON.put("bio", user.getBio());
-            userJSON.put("verified", user.isVerified());
-            if (user.getToken().isValid(token)) {
-                userJSON.put("mail_visible", true);
-                userJSON.put("mail", user.getMail());
-                userJSON.put("country", user.getCountry());
-                userJSON.put("birth_date", user.getBirthDate());
-                userJSON.put("register_date", user.getRegisterDate());
+        try (Session s = HibernateUtils.getSession()) {
+            Transaction t = s.beginTransaction();
+            boolean ok = false;
+            EntityUser user = UserCache.getUser(s, nick);
+            if (user != null) {
+                userJSON.put("id", user.getId());
+                userJSON.put("nick", user.getNick());
+                userJSON.put("user", user.getUsername());
+                userJSON.put("bio", user.getBio());
+                userJSON.put("verified", user.isVerified());
+                if (user.getToken().isValid(token)) {
+                    userJSON.put("mail_visible", true);
+                    userJSON.put("mail", user.getMail());
+                    userJSON.put("country", user.getCountry());
+                    userJSON.put("birth_date", user.getBirthDate());
+                    userJSON.put("register_date", user.getRegisterDate());
+                }
+                obj.put("error", false);
+                ok = true;
+            } else {
+                obj.put("error", true);
             }
-            obj.put("error", false);
-        } else {
-            obj.put("error", true);
+
+            if (ok) {
+                t.commit();
+            } else {
+                t.rollback();
+            }
         }
 
         obj.put("profile", userJSON);
@@ -228,43 +263,55 @@ public class UserRequests {
     @Path("/{nick}/verify")
     @POST
     public JSONObject verifyAccount(@PathParam("nick") String nick,
-                                @FormParam("self") String adminUser,
-                                @DefaultValue("") @FormParam("token") String token,
-                                @FormParam("verify") boolean verify) {
+                                    @FormParam("self") String adminUser,
+                                    @DefaultValue("") @FormParam("token") String token,
+                                    @FormParam("verify") boolean verify) {
         JSONObject obj = new JSONObject();
 
         if (StringUtils.isValid(nick) && StringUtils.isValid(adminUser) && StringUtils.isValid(token)) {
-            EntityUser user = UserCache.getUser(nick);
-            EntityUser admin = UserCache.getUser(adminUser);
-            if (user != null && admin != null) {
-                EntityToken adminToken = admin.getToken();
-                if (adminToken != null) {
-                    if (adminToken.isValid(token)) {
-                        if (admin.isAdmin()) {
-                            if (verify) {
-                                user.verifyAccount();
-                                obj.put("error", "ok");
-                            } else {
-                                int code = user.unverifyAccount();
-                                if (code == 0) {
+            try (Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntityUser user = UserCache.getUser(s, nick);
+                EntityUser admin = UserCache.getUser(s, adminUser);
+                if (user != null && admin != null) {
+                    EntityToken adminToken = admin.getToken();
+                    if (adminToken != null) {
+                        if (adminToken.isValid(token)) {
+                            if (admin.isAdmin()) {
+                                if (verify) {
+                                    user.verifyAccount();
                                     obj.put("error", "ok");
-                                } else if (code == -1) {
-                                    obj.put("error", "unknownError");
-                                } else if (code == -2) {
-                                    obj.put("error", "cannotUnverify");
+                                    ok = true;
+                                } else {
+                                    int code = user.unverifyAccount();
+                                    if (code == 0) {
+                                        obj.put("error", "ok");
+                                        ok = true;
+                                    } else if (code == -1) {
+                                        obj.put("error", "unknownError");
+                                    } else if (code == -2) {
+                                        obj.put("error", "cannotUnverify");
+                                    }
                                 }
+                            } else {
+                                obj.put("error", "noPermission");
                             }
                         } else {
-                            obj.put("error", "noPermission");
+                            obj.put("error", "invalidToken");
                         }
                     } else {
-                        obj.put("error", "invalidToken");
+                        obj.put("error", "closedSession");
                     }
                 } else {
-                    obj.put("error", "closedSession");
+                    obj.put("error", "unknownUser");
                 }
-            } else {
-                obj.put("error", "unknownUser");
+
+                if (ok) {
+                    t.commit();
+                } else {
+                    t.rollback();
+                }
             }
         } else {
             obj.put("error", "invalidArgs");
@@ -294,38 +341,49 @@ public class UserRequests {
                 }
 
                 if (updateObject != null) {
-                    EntityUser user = UserCache.getUser(nick);
-                    if (user != null) {
-                        if (user.getToken() != null) {
-                            if (user.getToken().isValid(token)) {
-                                JSONObject updateResult = new JSONObject();
-                                boolean dirty = false;
-                                for (String key : updateObject.keySet()) {
-                                    Object data = updateObject.get(key);
-                                    int code = user.updateUser(key, data);
-                                    if (code == 0) {
-                                        dirty = true;
-                                        updateResult.put(key, "ok");
-                                    } else if (code == -1) {
-                                        updateResult.put(key, "invalidValue");
-                                    } else if (code == -2) {
-                                        updateResult.put(key, "passError");
+                    try (Session s = HibernateUtils.getSession()) {
+                        Transaction t = s.beginTransaction();
+                        boolean ok = false;
+                        EntityUser user = UserCache.getUser(s, nick);
+                        if (user != null) {
+                            if (user.getToken() != null) {
+                                if (user.getToken().isValid(token)) {
+                                    JSONObject updateResult = new JSONObject();
+                                    boolean dirty = false;
+                                    for (String key : updateObject.keySet()) {
+                                        Object data = updateObject.get(key);
+                                        int code = user.updateUser(key, data);
+                                        if (code == 0) {
+                                            dirty = true;
+                                            updateResult.put(key, "ok");
+                                            ok = true;
+                                        } else if (code == -1) {
+                                            updateResult.put(key, "invalidValue");
+                                        } else if (code == -2) {
+                                            updateResult.put(key, "passError");
+                                        }
                                     }
-                                }
 
-                                if(dirty){
-                                    HibernateUtils.addEntityToDB(user);
-                                }
+                                    if (dirty) {
+                                        HibernateUtils.addEntityToDB(s, user);
+                                    }
 
-                                result.put("error", updateResult);
+                                    result.put("error", updateResult);
+                                } else {
+                                    result.put("error", "invalidToken");
+                                }
                             } else {
-                                result.put("error", "invalidToken");
+                                result.put("error", "closedSession");
                             }
                         } else {
-                            result.put("error", "closedSession");
+                            result.put("error", "unknownUser");
                         }
-                    } else {
-                        result.put("error", "unknownUser");
+
+                        if (ok) {
+                            t.commit();
+                        } else {
+                            t.rollback();
+                        }
                     }
                 }
             } else {
@@ -347,19 +405,30 @@ public class UserRequests {
         JSONObject obj = new JSONObject();
 
         if (StringUtils.isValid(token)) {
-            EntityUser user = UserCache.getUser(nick);
-            if (user != null) {
-                if (user.getToken() != null && user.getToken().isValid(token)) {
-                    if (UserCache.deleteUser(user)) {
-                        obj.put("error", "ok");
+            try (Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntityUser user = UserCache.getUser(s, nick);
+                if (user != null) {
+                    if (user.getToken() != null && user.getToken().isValid(token)) {
+                        if (UserCache.deleteUser(s, user)) {
+                            obj.put("error", "ok");
+                            ok = true;
+                        } else {
+                            obj.put("error", "unknownError");
+                        }
                     } else {
-                        obj.put("error", "unknownError");
+                        obj.put("error", "invalidToken");
                     }
                 } else {
-                    obj.put("error", "invalidToken");
+                    obj.put("error", "unknownUser");
                 }
-            } else {
-                obj.put("error", "unknownUser");
+
+                if (ok) {
+                    t.commit();
+                } else {
+                    t.rollback();
+                }
             }
         } else {
             obj.put("error", "invalidArgs");
@@ -373,14 +442,25 @@ public class UserRequests {
     public JSONObject getUserSongs(@PathParam("user") String user) {
         JSONObject obj = new JSONObject();
         if (StringUtils.isValid(user)) {
-            EntityUser myuser = UserCache.getUser(user);
-            if (myuser != null) {
-                JSONArray userSongs = myuser.getUserSongs();
-                obj.put("songs", userSongs);
-                obj.put("size", userSongs.length());
-                obj.put("error", "ok");
-            } else {
-                obj.put("error", "unknownUser");
+            try (Session s = HibernateUtils.getSession()) {
+                boolean ok = false;
+                Transaction t = s.beginTransaction();
+                EntityUser myuser = UserCache.getUser(s, user);
+                if (myuser != null) {
+                    JSONArray userSongs = myuser.getUserSongs();
+                    obj.put("songs", userSongs);
+                    obj.put("size", userSongs.length());
+                    obj.put("error", "ok");
+                    ok = true;
+                } else {
+                    obj.put("error", "unknownUser");
+                }
+
+                if (ok) {
+                    t.commit();
+                } else {
+                    t.rollback();
+                }
             }
         } else {
             obj.put("error", "invalidArgs");
@@ -393,14 +473,25 @@ public class UserRequests {
     public JSONObject getUserAlbums(@PathParam("user") String user) {
         JSONObject obj = new JSONObject();
         if (StringUtils.isValid(user)) {
-            EntityUser myuser = UserCache.getUser(user);
-            if (myuser != null) {
-                JSONArray userAlbums = myuser.getUserAlbums();
-                obj.put("albums", userAlbums);
-                obj.put("size", userAlbums.length());
-                obj.put("error", "ok");
-            } else {
-                obj.put("error", "unknownUser");
+            try (Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntityUser myuser = UserCache.getUser(s, user);
+                if (myuser != null) {
+                    JSONArray userAlbums = myuser.getUserAlbums();
+                    obj.put("albums", userAlbums);
+                    obj.put("size", userAlbums.length());
+                    obj.put("error", "ok");
+                    ok = true;
+                } else {
+                    obj.put("error", "unknownUser");
+                }
+
+                if (ok) {
+                    t.commit();
+                } else {
+                    t.rollback();
+                }
             }
         } else {
             obj.put("error", "invalidArgs");
@@ -413,15 +504,26 @@ public class UserRequests {
     public JSONObject getLastListenedSongs(@PathParam("nick") String nick, @QueryParam("n") @DefaultValue("1") int amount) {
         JSONObject obj = new JSONObject();
         if (StringUtils.isValid(nick)) {
-            if(amount > 0) {
-                EntityUser user = UserCache.getUser(nick);
-                if (user != null) {
-                    JSONArray songs = SongUtils.getLastListenedSongs(user, amount);
-                    obj.put("songs", songs);
-                    obj.put("size", songs.length());
-                    obj.put("error", "ok");
-                } else {
-                    obj.put("error", "unknownUser");
+            if (amount > 0) {
+                try (Session s = HibernateUtils.getSession()) {
+                    Transaction t = s.beginTransaction();
+                    boolean ok = false;
+                    EntityUser user = UserCache.getUser(s, nick);
+                    if (user != null) {
+                        JSONArray songs = SongUtils.getLastListenedSongs(s, user, amount);
+                        obj.put("songs", songs);
+                        obj.put("size", songs.length());
+                        obj.put("error", "ok");
+                        ok = true;
+                    } else {
+                        obj.put("error", "unknownUser");
+                    }
+
+                    if (ok) {
+                        t.commit();
+                    } else {
+                        t.rollback();
+                    }
                 }
             } else {
                 obj.put("error", "invalidAmount");

@@ -136,9 +136,8 @@ public class EntityUser extends EntityBase {
 
         userValues.setVerified(false);
         if(userValues.cleanUp()){
-            EntityUserValues values = userValues;
             userValues = null;
-            return values.deleteEntity();
+            return 0;
         }
         return 0;
     }
@@ -156,11 +155,8 @@ public class EntityUser extends EntityBase {
 
         userValues.setAdmin(false);
         if(userValues.cleanUp()){
-            int code = userValues.deleteEntity();
-            if(code == 0) {
-                userValues = null;
-            }
-            return code;
+            userValues = null;
+            return 0;
         }
         return 0;
     }
@@ -210,25 +206,11 @@ public class EntityUser extends EntityBase {
         return code;
     }
 
-    public int deleteToken(){
+    public int deleteToken(Session s){
         if(this.token != null) {
-            token.removeUser();
-            EntityToken token = this.token;
+            s.delete(token);
             this.token = null;
-            int code = 0;
-            try(Session s = HibernateUtils.getSession()) {
-                Transaction t = s.beginTransaction();
-                try {
-                    s.delete(token);
-                    t.commit();
-                } catch (Exception e) {
-                    t.rollback();
-                    e.printStackTrace();
-                    code = -1;
-                }
-            }
-
-            return code;
+            return 0;
         }
         return -2;
     }
@@ -289,7 +271,6 @@ public class EntityUser extends EntityBase {
         return songs;
     }*/
 
-    @Transactional
     public JSONArray getUserSongs() {
         JSONArray songs = new JSONArray();
         if(this.albums != null) {
@@ -303,48 +284,17 @@ public class EntityUser extends EntityBase {
         return songs;
     }
 
-    @Transactional
-    public boolean isSongLiked(EntitySong song){
-        boolean b;
-        try(Session s = HibernateUtils.getSession()) {
-            Transaction t = s.beginTransaction();
-            b = this.songsLiked.contains(song);
-            t.commit();
-        }
-        return b;
-    }
-
-    public boolean likeSong(EntitySong song){ return this.songsLiked.add(song); }
-
-    public boolean unlikeSong(EntitySong song){ return this.songsLiked.remove(song); }
-
-    @Transactional
     public boolean isSongFaved(EntitySong song){
-        boolean b;
-        try(Session s = HibernateUtils.getSession()) {
-            Transaction t = s.beginTransaction();
-            b = this.songsFaved.contains(song);
-            t.commit();
-        }
-        return b;
+        return this.songsFaved.contains(song);
     }
 
     public boolean favSong(EntitySong song){ return this.songsFaved.add(song); }
 
     public boolean unfavSong(EntitySong song){ return this.songsFaved.remove(song);}
 
-    @Transactional
     public boolean listenSong(EntitySong song){
-        boolean b;
-        try(Session s = HibernateUtils.getSession()) {
-            //song.getListeners().add(this);
-            Transaction t = s.beginTransaction();
-            EntityUserSongData entity = new EntityUserSongData(this, song);
-            b = this.songsListened.add(entity);
-            s.saveOrUpdate(entity);
-            t.commit();
-        }
-        return b;
+        EntityUserSongData entity = new EntityUserSongData(this, song);
+        return this.songsListened.add(entity);
     }
 
     public boolean addAlbum(EntityAlbum entityAlbum) {
@@ -383,8 +333,8 @@ public class EntityUser extends EntityBase {
         return user;
     }
 
-    private void addFollowee(EntityUser usr){
-        this.followers.add(new EntityUserFollowers(usr, this));
+    private void addFollowee(EntityUser usr, EntityUserFollowers data){
+        this.followers.add(data);
     }
 
     private void removeFollowee(EntityUserFollowers usr){
@@ -394,8 +344,7 @@ public class EntityUser extends EntityBase {
     public boolean followUser(EntityUser other){
         if(!getFollowers().contains(other)){
             EntityUserFollowers obj = new EntityUserFollowers(this, other);
-            UserFollowersCache.addFollower(obj);
-            other.addFollowee(this);
+            other.addFollowee(this, obj);
             this.followees.add(obj);
 
             return true;
@@ -404,12 +353,11 @@ public class EntityUser extends EntityBase {
         return false;
     }
 
-    public boolean unFollowUser(EntityUser other){
+    public boolean unFollowUser(Session s, EntityUser other){
         if(getFollowers().contains(other)){
-            EntityUserFollowers obj = UserFollowersCache.getFollower(other, this);
+            EntityUserFollowers obj = UserFollowersCache.getFollower(s, other.getId(), getId());
             other.removeFollowee(obj);
             this.followees.remove(obj);
-            UserFollowersCache.addFollower(obj);
             return true;
         }
 

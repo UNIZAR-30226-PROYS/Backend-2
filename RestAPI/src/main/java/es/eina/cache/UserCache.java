@@ -21,43 +21,19 @@ public class UserCache {
 
     private static final Logger LOG = LoggerFactory.getLogger(UserCache.class);
 
-    public static boolean addUser(EntityUser user) {
-        return HibernateUtils.addEntityToDB(user);
+    public static boolean addUser(Session s, EntityUser user) {
+        return HibernateUtils.addEntityToDB(s, user);
     }
 
-    public static EntityUser getUser(long userID) {
-        return HibernateUtils.getEntity(EntityUser.class, userID);
+    public static EntityUser getUser(Session s, long userID) {
+        return HibernateUtils.getEntity(s, EntityUser.class, userID);
     }
 
-    public static EntityUser getUser(String nick) {
-        return HibernateUtils.getEntityByAttribute(EntityUser.class, "nick", nick);
+    public static boolean deleteUser(Session s, EntityUser user) {
+        return HibernateUtils.deleteFromDB(s, user);
     }
 
-    public static boolean deleteUser(EntityUser ent) {
-        boolean b = false;
-        try(Session session = HibernateUtils.getSession()) {
-            Transaction tr = session.beginTransaction();
-            try {
-                EntityUser user = session.get(EntityUser.class, ent.getId());
-                session.delete(user);
-                tr.commit();
-                b = true;
-            } catch (Exception e) {
-                if (tr != null && tr.isActive()) {
-                    tr.rollback();
-                }
-                e.printStackTrace();
-                LOG.debug("Cannot delete Entity from DB", e);
-            }
-        }
-
-        return b;
-        //return HibernateUtils.deleteFromDB(user);
-    }
-
-    public static EntityUser getUserByNick(Session s, String nick) {
-        return s.byNaturalId(EntityUser.class)
-                .using("nick", nick)
-                .load();
+    public static EntityUser getUser(Session s, String nick) {
+        return HibernateUtils.getEntityByAttribute(s, EntityUser.class, "nick", nick);
     }
 }

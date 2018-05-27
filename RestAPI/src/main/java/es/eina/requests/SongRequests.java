@@ -28,16 +28,21 @@ public class SongRequests {
         JSONObject songJSON = new JSONObject(defaultSongJSON, JSONObject.getNames(defaultSongJSON));
 
         if(id > 0){
-            EntitySong song = SongCache.getSong(id);
-            if(song != null){
-                songJSON.put("id", song.getId());
-                songJSON.put("user_id", song.getUserId());
-                songJSON.put("title", song.getTitle());
-                songJSON.put("country", song.getCountry());
-                songJSON.put("upload_time", song.getUploadTime());
-                obj.put("error", "ok");
-            }else{
-                obj.put("error", "unknownSong");
+            try(Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                EntitySong song = SongCache.getSong(s, id);
+                if (song != null) {
+                    songJSON.put("id", song.getId());
+                    songJSON.put("user_id", song.getUserId());
+                    songJSON.put("title", song.getTitle());
+                    songJSON.put("country", song.getCountry());
+                    songJSON.put("upload_time", song.getUploadTime());
+                    obj.put("error", "ok");
+                    t.commit();
+                } else {
+                    obj.put("error", "unknownSong");
+                    t.rollback();
+                }
             }
         }else{
             obj.put("error", "invalidArgs");
@@ -58,12 +63,18 @@ public class SongRequests {
     @GET
     public static String getLikes(@PathParam("id") long id){
         JSONObject result = new JSONObject();
-        EntitySong song = SongCache.getSong(id);
-        if(song != null) {
-            result.put("likes", SQLUtils.getRowCountSQL("song_likes", "song_id = " + id));
-            result.put("error", "ok");
-        }else{
-            result.put("error", "unknownSong");
+
+        try(Session s = HibernateUtils.getSession()) {
+            Transaction t = s.beginTransaction();
+            EntitySong song = SongCache.getSong(s, id);
+            if (song != null) {
+                result.put("likes", SQLUtils.getRowCountSQL(s, "song_likes", "song_id = " + id));
+                result.put("error", "ok");
+                t.commit();
+            } else {
+                result.put("error", "unknownSong");
+                t.rollback();
+            }
         }
 
         return result.toString();
@@ -83,24 +94,35 @@ public class SongRequests {
                                  @PathParam("songId") long songId) {
         JSONObject result = new JSONObject();
         if (StringUtils.isValid(nick) && StringUtils.isValid(userToken)) {
-            EntityUser user = UserCache.getUser(nick);
-            if (user != null) {
-                if (user.getToken() != null && user.getToken().isValid(userToken)) {
-                    EntitySong song = SongCache.getSong(songId);
-                    if (song != null) {
-                        if (user.listenSong(song)) {
-                            result.put("error", "ok");
+            try(Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntityUser user = UserCache.getUser(s, nick);
+                if (user != null) {
+                    if (user.getToken() != null && user.getToken().isValid(userToken)) {
+                        EntitySong song = SongCache.getSong(s, songId);
+                        if (song != null) {
+                            if (user.listenSong(song)) {
+                                result.put("error", "ok");
+                                ok = true;
+                            } else {
+                                result.put("error", "unknownError");
+                            }
                         } else {
-                            result.put("error", "unknownError");
+                            result.put("error", "unknownSong");
                         }
                     } else {
-                        result.put("error", "unknownSong");
+                        result.put("error", "invalidToken");
                     }
                 } else {
-                    result.put("error", "invalidToken");
+                    result.put("error", "unknownUser");
                 }
-            } else {
-                result.put("error", "unknownUser");
+
+                if(ok) {
+                    t.commit();
+                }else{
+                    t.rollback();
+                }
             }
         } else {
             result.put("error", "invalidArgs");
@@ -126,14 +148,16 @@ public class SongRequests {
         if (StringUtils.isValid(nick) && StringUtils.isValid(token)) {
             try(Session s = HibernateUtils.getSession()) {
                 Transaction t = s.beginTransaction();
-                EntityUser user = UserCache.getUserByNick(s, nick);
+                boolean ok = false;
+                EntityUser user = UserCache.getUser(s, nick);
                 if (user != null) {
                     if (user.getToken() != null && user.getToken().isValid(token)) {
-                        EntitySong song = s.get(EntitySong.class, songID);
+                        EntitySong song = SongCache.getSong(s, songID);
                         if (song != null) {
                             if (!song.isSongFaved(user) && !user.isSongFaved(song)) {
                                 if (song.favSong(user) && user.favSong(song)) {
                                     result.put("error", "ok");
+                                    ok = true;
                                 } else {
                                     result.put("error", "unknownError");
                                 }
@@ -149,7 +173,11 @@ public class SongRequests {
                 } else {
                     result.put("error", "unknownUser");
                 }
-                t.commit();
+                if(ok) {
+                    t.commit();
+                }else{
+                    t.rollback();
+                }
             }
         } else {
             result.put("error", "invalidArgs");
@@ -172,28 +200,84 @@ public class SongRequests {
                                    @FormParam("songId") Long songID) {
         JSONObject result = new JSONObject();
         if (StringUtils.isValid(nick) && StringUtils.isValid(token)) {
-            EntityUser user = UserCache.getUser(nick);
-            if (user != null) {
-                if (user.getToken() != null && user.getToken().isValid(token)) {
-                    EntitySong song = SongCache.getSong(songID);
-                    if (song != null) {
-                        if (song.isSongFaved(user) && user.isSongFaved(song)) {
-                            if (song.unfavSong(user) && user.unfavSong(song)) {
-                                result.put("error", "ok");
+            try(Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntityUser user = UserCache.getUser(s, nick);
+                if (user != null) {
+                    if (user.getToken() != null && user.getToken().isValid(token)) {
+                        EntitySong song = SongCache.getSong(s, songID);
+                        if (song != null) {
+                            if (song.isSongFaved(user) && user.isSongFaved(song)) {
+                                if (song.unfavSong(user) && user.unfavSong(song)) {
+                                    result.put("error", "ok");
+                                    ok = true;
+                                } else {
+                                    result.put("error", "unknownError");
+                                }
                             } else {
-                                result.put("error", "unknownError");
+                                result.put("error", "noFav");
                             }
                         } else {
-                            result.put("error", "noFav");
+                            result.put("error", "unknownSong");
                         }
                     } else {
-                        result.put("error", "unknownSong");
+                        result.put("error", "invalidToken");
                     }
                 } else {
-                    result.put("error", "invalidToken");
+                    result.put("error", "unknownUser");
                 }
-            } else {
-                result.put("error", "unknownUser");
+
+                if(ok) {
+                    t.commit();
+                }else{
+                    t.rollback();
+                }
+            }
+        } else {
+            result.put("error", "invalidArgs");
+        }
+
+        return result;
+    }
+
+    /**
+     * Remove a song from user's fav list.
+     *
+     * @param nick   : User's nick.
+     * @param songID : Song's ID.
+     * @return A JSON with response.
+     */
+    @Path("user/{nick}/faved/{songId}")
+    @GET
+    public JSONObject hasFaved(@PathParam("nick") String nick, @PathParam("songId") Long songID) {
+        JSONObject result = new JSONObject();
+        if (StringUtils.isValid(nick)) {
+            try(Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntityUser user = UserCache.getUser(s, nick);
+                if (user != null) {
+                        EntitySong song = SongCache.getSong(s, songID);
+                        if (song != null) {
+                            if (song.isSongFaved(user)) {
+                                result.put("error", "ok");
+                                ok = true;
+                            } else {
+                                result.put("error", "noFav");
+                            }
+                        } else {
+                            result.put("error", "unknownSong");
+                        }
+                } else {
+                    result.put("error", "unknownUser");
+                }
+
+                if(ok) {
+                    t.commit();
+                }else{
+                    t.rollback();
+                }
             }
         } else {
             result.put("error", "invalidArgs");

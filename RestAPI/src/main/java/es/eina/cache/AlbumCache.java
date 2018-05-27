@@ -11,38 +11,16 @@ import org.slf4j.LoggerFactory;
 
 public class AlbumCache {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AlbumCache.class);
-
-    public static boolean addAlbum(EntityAlbum album) {
-        return HibernateUtils.addEntityToDB(album);
+    public static boolean addAlbum(Session s, EntityAlbum album) {
+        return HibernateUtils.addEntityToDB(s, album);
     }
 
-    public static EntityAlbum getAlbum(long albumID) {
-        return HibernateUtils.getEntity(EntityAlbum.class, albumID);
+    public static EntityAlbum getAlbum(Session s, long albumID) {
+        return HibernateUtils.getEntity(s, EntityAlbum.class, albumID);
     }
 
-    public static boolean deleteAlbum(EntityAlbum ent) {
-        boolean b = false;
-        try(Session session = HibernateUtils.getSession()) {
-            Transaction tr = session.beginTransaction();
-            try {
-                EntityAlbum album = session.get(EntityAlbum.class, ent.getAlbumId());
-                if(album != null) {
-                    session.delete(album);
-                }
-                tr.commit();
-                b = true;
-            } catch (Exception e) {
-                if (tr != null && tr.isActive()) {
-                    tr.rollback();
-                }
-                e.printStackTrace();
-                LOG.debug("Cannot delete Album from DB", e);
-            }
-        }
-
-        return b;
-        //return HibernateUtils.deleteFromDB(album);
+    public static boolean deleteAlbum(Session session, EntityAlbum ent) {
+        return HibernateUtils.deleteFromDB(session, ent);
     }
 
 }

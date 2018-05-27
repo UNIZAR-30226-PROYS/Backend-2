@@ -21,8 +21,8 @@ public class UserUtils {
 	 * @param user : Username to search
 	 * @return True if the user exists, false otherwise.
 	 */
-	public static boolean userExists(String user) {
-		return SQLUtils.getRowCount("user", "nick = '"+user+"'") > 0;
+	public static boolean userExists(Session s, String user) {
+		return SQLUtils.getRowCount(s, "user", "nick = '"+user+"'") > 0;
 	}
 
     /**
@@ -33,13 +33,13 @@ public class UserUtils {
      * @return Null if the user couldn't be added, the actual user if it could be added.
      */
     @Transactional
-    public static @Nullable EntityUser addUser(String nick, String mail, String pass, String user, String bio, Date birth, String country) {
+    public static @Nullable EntityUser addUser(Session s, String nick, String mail, String pass, String user, String bio, Date birth, String country) {
         //(nick, username, mail, pass, birth_date, bio, country, register_date)
         EntityUser entityUser = new EntityUser(nick, user, mail,
                     Crypter.hashPassword(pass, false), birth, bio, country);
-        boolean b = UserCache.addUser(entityUser);
+        boolean b = UserCache.addUser(s, entityUser);
         entityUser.updateToken();
-        boolean b2 = HibernateUtils.addEntityToDB(entityUser.getToken());
+        boolean b2 = HibernateUtils.addEntityToDB(s, entityUser.getToken());
 
         return b && b2 ? entityUser : null;
 
