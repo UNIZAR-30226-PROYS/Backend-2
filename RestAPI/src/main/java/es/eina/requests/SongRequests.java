@@ -6,10 +6,12 @@ import es.eina.geolocalization.Geolocalizer;
 import es.eina.sql.SQLUtils;
 import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntityUser;
+import es.eina.sql.utils.HibernateUtils;
 import es.eina.utils.StringUtils;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.json.JSONObject;
 
-import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
@@ -76,7 +78,6 @@ public class SongRequests {
      * @return The result of this query as specified in API.
      */
     @Path("{songId}/listen")
-    @Transactional
     @POST
     public JSONObject listenSong(@FormParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
                                  @PathParam("songId") long songId) {
@@ -123,28 +124,32 @@ public class SongRequests {
                                  @FormParam("songId") Long songID) {
         JSONObject result = new JSONObject();
         if (StringUtils.isValid(nick) && StringUtils.isValid(token)) {
-            EntityUser user = UserCache.getUser(nick);
-            if (user != null) {
-                if (user.getToken() != null && user.getToken().isValid(token)) {
-                    EntitySong song = SongCache.getSong(songID);
-                    if (song != null) {
-                        if (!song.isSongFaved(user) && !user.isSongFaved(song)) {
-                            if (song.favSong(user) && user.favSong(song)) {
-                                result.put("error", "ok");
+            try(Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                EntityUser user = UserCache.getUserByNick(s, nick);
+                if (user != null) {
+                    if (user.getToken() != null && user.getToken().isValid(token)) {
+                        EntitySong song = s.get(EntitySong.class, songID);
+                        if (song != null) {
+                            if (!song.isSongFaved(user) && !user.isSongFaved(song)) {
+                                if (song.favSong(user) && user.favSong(song)) {
+                                    result.put("error", "ok");
+                                } else {
+                                    result.put("error", "unknownError");
+                                }
                             } else {
-                                result.put("error", "unknownError");
+                                result.put("error", "alreadyFav");
                             }
                         } else {
-                            result.put("error", "alreadyFav");
+                            result.put("error", "unknownSong");
                         }
                     } else {
-                        result.put("error", "unknownSong");
+                        result.put("error", "invalidToken");
                     }
                 } else {
-                    result.put("error", "invalidToken");
+                    result.put("error", "unknownUser");
                 }
-            } else {
-                result.put("error", "unknownUser");
+                t.commit();
             }
         } else {
             result.put("error", "invalidArgs");
