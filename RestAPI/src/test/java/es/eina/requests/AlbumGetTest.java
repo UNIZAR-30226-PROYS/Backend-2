@@ -12,10 +12,14 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.*;
 import org.skyscreamer.jsonassert.JSONAssert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Date;
 
 public class AlbumGetTest extends TestBase {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AlbumGetTest.class);
 
     private EntityUser user;
     private EntityAlbum album;
@@ -34,10 +38,12 @@ public class AlbumGetTest extends TestBase {
     public void setupTest() {
         user = UserUtils.addUser("test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
         album = AlbumUtils.createAlbum(user, "Random Album", 1900);
+        LOG.info("START TEST!!");
     }
 
     @After
     public void endTest() {
+        LOG.info("END TEST!!");
         AlbumCache.deleteAlbum(album);
         UserCache.deleteUser(user);
     }
