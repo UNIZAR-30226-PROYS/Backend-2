@@ -165,7 +165,7 @@ public class AlbumRequests {
                                 if (songId > 0) {
                                     EntitySong song = SongCache.getSong(songId);
                                     if (song != null) {
-                                        if(album.getUserId() == user.getId() && album.getUserId() == song.getUserId()) {
+                                        if(album.getUserId() == user.getId() && (song.getUserId() < 0 || album.getUserId() == song.getUserId())) {
                                             if (song.setAlbum(album)) {
                                                 obj.put("error", "ok");
                                             } else {
