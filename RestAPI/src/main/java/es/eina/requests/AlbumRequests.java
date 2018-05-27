@@ -20,9 +20,6 @@ import javax.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 public class AlbumRequests {
 
-    private static final JSONObject defaultAlbumJSON;
-
-
     /**
      * Create a new album.
      *
@@ -39,7 +36,7 @@ public class AlbumRequests {
 						 @FormParam("title") String title, @FormParam("year") int year){
 
         JSONObject obj = new JSONObject();
-        JSONObject albumJSON = new JSONObject(defaultAlbumJSON, JSONObject.getNames(defaultAlbumJSON));
+        JSONObject albumJSON = EntityAlbum.defaultAlbumJSON;
 
 		if(StringUtils.isValid(nick) && StringUtils.isValid(userToken) && StringUtils.isValid(title, 1, 255)){
 			EntityUser user = UserCache.getUser(nick);
@@ -48,12 +45,7 @@ public class AlbumRequests {
 							if(year > 1900) {
 								EntityAlbum album = AlbumUtils.createAlbum(user, title, year);
 								if(album != null && AlbumCache.addAlbum(album)){
-									albumJSON.put("id", album.getAlbumId());
-									albumJSON.put("user_id", album.getUserId());
-									albumJSON.put("title", album.getTitle());
-									albumJSON.put("publish_year", album.getPublishYear());
-									albumJSON.put("update_time", album.getUpdateTime());
-									albumJSON.put("songs", album.getSongsAsArray());
+									albumJSON = album.toJSON();
 									obj.put("error", "ok");
 								}else {
 									obj.put("error", "unknownError");
@@ -118,6 +110,34 @@ public class AlbumRequests {
 		return obj;
 
     }
+
+	/**
+	 * Get an album.
+	 *
+	 * @return The result of this request.
+	 */
+	@Path("{id}")
+	@POST
+	public JSONObject get(@PathParam("id") long id){
+
+		JSONObject obj = new JSONObject();
+		JSONObject albumJSON = EntityAlbum.defaultAlbumJSON;
+		if(id > 0){
+			EntityAlbum album = AlbumCache.getAlbum(id);
+			if(album != null){
+				albumJSON = album.toJSON();
+				obj.put("error", "ok");
+			}else{
+				obj.put("error", "unknownAlbum");
+			}
+		}else{
+			obj.put("error", "invalidArgs");
+		}
+
+		obj.put("album", albumJSON);
+
+		return obj;
+	}
 
 	/**
 	 * Add song to album.
@@ -195,17 +215,17 @@ public class AlbumRequests {
 	@Path("/{nick}/{albumID}/delete")
 	@POST
 	public JSONObject removeSongFromAlbum(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
-						 @PathParam("albumID") long albumId, @FormParam("songId") long songId){
-		JSONObject obj = new JSONObject();
+						 @PathParam("albumID") long albumId, @FormParam("songId") long songId) {
+        JSONObject obj = new JSONObject();
 
-		if(StringUtils.isValid(nick) && StringUtils.isValid(userToken)){
-			EntityUser user = UserCache.getUser(nick);
-			if(user != null){
-				if (user.getToken() != null && user.getToken().isValid(userToken)) {
-				    if(albumId > 0) {
+        if (StringUtils.isValid(nick) && StringUtils.isValid(userToken)) {
+            EntityUser user = UserCache.getUser(nick);
+            if (user != null) {
+                if (user.getToken() != null && user.getToken().isValid(userToken)) {
+                    if (albumId > 0) {
                         EntityAlbum album = AlbumCache.getAlbum(albumId);
                         if (album != null) {
-                            if(album.getUserId() == user.getId()) {
+                            if (album.getUserId() == user.getId()) {
                                 if (songId > 0) {
                                     EntitySong song = SongCache.getSong(songId);
                                     if (song != null) {
@@ -220,7 +240,7 @@ public class AlbumRequests {
                                 } else {
                                     obj.put("error", "invalidSong");
                                 }
-                            }else{
+                            } else {
                                 obj.put("error", "notAuthor");
                             }
                         } else {
@@ -229,28 +249,18 @@ public class AlbumRequests {
                     } else {
                         obj.put("error", "invalidAlbum");
                     }
-				} else {
-					obj.put("error", "invalidToken");
-				}
-			}else{
-				obj.put("error", "unknownUser");
-			}
-		}else{
-			obj.put("error", "invalidArgs");
-		}
+                } else {
+                    obj.put("error", "invalidToken");
+                }
+            } else {
+                obj.put("error", "unknownUser");
+            }
+        } else {
+            obj.put("error", "invalidArgs");
+        }
 
-		return obj;
+        return obj;
 
-	}
-
-    static {
-    	defaultAlbumJSON = new JSONObject();
-    	defaultAlbumJSON.put("id", -1L);
-    	defaultAlbumJSON.put("user_id", -1L);
-    	defaultAlbumJSON.put("title", "");
-    	defaultAlbumJSON.put("publish_year", -1);
-    	defaultAlbumJSON.put("update_time", -1L);
-    	defaultAlbumJSON.put("image", "");
     }
 
 }

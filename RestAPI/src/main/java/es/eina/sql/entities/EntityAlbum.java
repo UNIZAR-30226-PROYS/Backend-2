@@ -4,6 +4,7 @@ import es.eina.sql.utils.HibernateUtils;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import javax.persistence.*;
 import javax.transaction.Transactional;
@@ -12,6 +13,8 @@ import java.util.*;
 @Entity(name="album")
 @Table(name="albums")
 public class EntityAlbum extends EntityBase {
+
+    public static final JSONObject defaultAlbumJSON;
 
     @Id
     @GeneratedValue
@@ -48,7 +51,7 @@ public class EntityAlbum extends EntityBase {
     public EntityAlbum(){}
 
     public EntityAlbum(EntityUser user, String title, int year) {
-
+        this.user = user;
         this.userId = user.getId();
         this.title = title;
         this.publishYear = year;
@@ -98,5 +101,27 @@ public class EntityAlbum extends EntityBase {
 
     public boolean addSong(EntitySong entitySong) {
         return this.songs.add(entitySong);
+    }
+
+    public JSONObject toJSON(){
+        JSONObject albumJSON = new JSONObject(defaultAlbumJSON, JSONObject.getNames(defaultAlbumJSON));
+        albumJSON.put("id", id);
+        albumJSON.put("user_id", user.getId());
+        albumJSON.put("title", title);
+        albumJSON.put("publish_year", publishYear);
+        albumJSON.put("update_time", updateTime);
+        albumJSON.put("songs", getSongsAsArray());
+
+        return albumJSON;
+    }
+
+    static {
+        defaultAlbumJSON = new JSONObject();
+        defaultAlbumJSON.put("id", -1L);
+        defaultAlbumJSON.put("user_id", -1L);
+        defaultAlbumJSON.put("title", "");
+        defaultAlbumJSON.put("publish_year", -1);
+        defaultAlbumJSON.put("update_time", -1L);
+        defaultAlbumJSON.put("image", "");
     }
 }
