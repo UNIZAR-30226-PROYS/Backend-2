@@ -324,4 +324,14 @@ public class EntityUser extends EntityBase {
     public boolean addAlbum(EntityAlbum entityAlbum) {
         return this.albums.add(entityAlbum);
     }
+
+    public JSONArray getUserAlbums() {
+        JSONArray albums = new JSONArray();
+        if(this.albums != null) {
+            for (EntityAlbum album : this.albums) {
+                albums.put(album.getAlbumId());
+            }
+        }
+        return albums;
+    }
 }

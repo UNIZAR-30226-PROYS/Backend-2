@@ -1,8 +1,10 @@
 package es.eina.requests;
 
+import es.eina.cache.AlbumCache;
 import es.eina.cache.SongCache;
 import es.eina.cache.UserCache;
 import es.eina.geolocalization.Geolocalizer;
+import es.eina.sql.entities.EntityAlbum;
 import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntityToken;
 import es.eina.sql.entities.EntityUser;
@@ -375,6 +377,26 @@ public class UserRequests {
                 JSONArray userSongs = myuser.getUserSongs();
                 obj.put("songs", userSongs);
                 obj.put("size", userSongs.length());
+                obj.put("error", "ok");
+            } else {
+                obj.put("error", "unknownUser");
+            }
+        } else {
+            obj.put("error", "invalidArgs");
+        }
+        return obj;
+    }
+
+    @Path("/{user}/songs")
+    @GET
+    public JSONObject getUserAlbums(@PathParam("user") String user) {
+        JSONObject obj = new JSONObject();
+        if (StringUtils.isValid(user)) {
+            EntityUser myuser = UserCache.getUser(user);
+            if (myuser != null) {
+                JSONArray userAlbums = myuser.getUserAlbums();
+                obj.put("songs", userAlbums);
+                obj.put("size", userAlbums.length());
                 obj.put("error", "ok");
             } else {
                 obj.put("error", "unknownUser");
