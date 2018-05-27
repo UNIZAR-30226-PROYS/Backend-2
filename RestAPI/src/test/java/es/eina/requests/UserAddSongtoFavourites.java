@@ -2,6 +2,8 @@ package es.eina.requests;
 
 import es.eina.TestBase;
 import es.eina.cache.AlbumCache;
+import es.eina.cache.SongCache;
+import es.eina.cache.UserCache;
 import es.eina.sql.SQLUtils;
 import es.eina.sql.entities.EntityAlbum;
 import es.eina.sql.entities.EntitySong;
@@ -40,9 +42,9 @@ public class UserAddSongtoFavourites extends TestBase {
 
     @After
     public void endTest(){
-        HibernateUtils.deleteFromDB(user);
-        HibernateUtils.deleteFromDB(song);
+        SongCache.deleteSong(song);
         AlbumCache.deleteAlbum(album);
+        UserCache.deleteUser(user);
     }
 
     @Test
