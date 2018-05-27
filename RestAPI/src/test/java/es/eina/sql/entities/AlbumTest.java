@@ -48,4 +48,10 @@ public class AlbumTest extends TestBase {
         Assert.assertTrue(!UserUtils.userExists("random_user"));
     }
 
+    @Test
+    public void testDeleteAlbum(){
+        EntityAlbum album = new EntityAlbum(user, "RandomTitle", 1970);
+        Assert.assertTrue(AlbumCache.addAlbum(album));
+    }
+
 }
