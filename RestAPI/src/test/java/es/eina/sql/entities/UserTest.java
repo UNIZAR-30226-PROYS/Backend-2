@@ -1,6 +1,7 @@
 package es.eina.sql.entities;
 
 import es.eina.TestBase;
+import es.eina.cache.UserCache;
 import es.eina.crypt.Crypter;
 import es.eina.sql.utils.HibernateUtils;
 import es.eina.utils.UserUtils;
@@ -26,31 +27,14 @@ public class UserTest extends TestBase {
         EntityUser user = new EntityUser("random_user", "Usuario 1", "a@a.com",
                 Crypter.hashPassword("123456", false), new Date(0),
                 "Empty bio", "O1");
-        Session s = HibernateUtils.getSession();
-        Transaction t = s.beginTransaction();
-        try {
-            s.saveOrUpdate(user);
-            t.commit();
-        }catch(Exception e){
-            e.printStackTrace();
-            t.rollback();
-            Assert.assertFalse(true);
-        }
+        Assert.assertTrue(UserCache.addUser(user));
 
         Assert.assertTrue(UserUtils.userExists("random_user"));
         Assert.assertTrue(!UserUtils.userExists("invalid_user"));
         Assert.assertTrue(UserUtils.checkPassword(user, "123456"));
 
-        s = HibernateUtils.getSession();
-        t = s.beginTransaction();
-        try {
-            s.delete(user);
-            t.commit();
-        }catch(Exception e){
-            e.printStackTrace();
-            t.rollback();
-            Assert.assertFalse(true);
-        }
+        Assert.assertTrue(UserCache.deleteUser(user));
+        Assert.assertTrue(!UserUtils.userExists("random_user"));
     }
 
 }
