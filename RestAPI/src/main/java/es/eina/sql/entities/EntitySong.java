@@ -1,6 +1,7 @@
 package es.eina.sql.entities;
 
 import es.eina.sql.utils.HibernateUtils;
+import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.annotations.Cascade;
@@ -106,10 +107,8 @@ public class EntitySong extends EntityBase {
 
     public long getLikes(){ return this.likes;}
 
-    @Transactional
     public boolean isSongFaved(EntityUser user){
-        boolean b = this.usersFavers.contains(user);
-        return b;
+        return this.usersFavers.contains(user);
     }
 
     public boolean favSong(EntityUser user){ return this.usersFavers.add(user); }
@@ -133,9 +132,9 @@ public class EntitySong extends EntityBase {
                 b = true;
             } else if (album == null) {
                 this.album.removeSong(this);
+                s.delete(this.album);
                 this.album = null;
                 s.saveOrUpdate(this);
-                s.saveOrUpdate(album);
                 b = true;
             }
             t.commit();
