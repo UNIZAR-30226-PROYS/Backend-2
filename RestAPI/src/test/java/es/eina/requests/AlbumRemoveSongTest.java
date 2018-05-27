@@ -33,16 +33,20 @@ public class AlbumRemoveSongTest extends TestBase {
 
     @Before
     public void setupTest() {
-        user = UserUtils.addUser("test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
-        album = AlbumUtils.createAlbum(user, "Random Album", 1900);
-        song = SongUtils.addSong(album, "Random Song", "O1");
+        openSession();
+        user = UserUtils.addUser(s, "test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        album = AlbumUtils.createAlbum(s, user, "Random Album", 1900);
+        song = SongUtils.addSong(s, album, "Random Song", "O1");
+        closeSession();
     }
 
     @After
     public void endTest() {
-        HibernateUtils.deleteFromDB(album);
-        HibernateUtils.deleteFromDB(song);
-        HibernateUtils.deleteFromDB(user);
+        openSession();
+        HibernateUtils.deleteFromDB(s, album);
+        HibernateUtils.deleteFromDB(s, song);
+        HibernateUtils.deleteFromDB(s, user);
+        closeSession();
     }
 
     @Test
@@ -95,11 +99,15 @@ public class AlbumRemoveSongTest extends TestBase {
 
     @Test
     public void testErrorsNotAuthor() {
-        EntityUser second = UserUtils.addUser("second-user", "a@a.es", "1234", "SecUser", "", new Date(0), "O1");
+        openSession();
+        EntityUser second = UserUtils.addUser(s, "second-user", "a@a.es", "1234", "SecUser", "", new Date(0), "O1");
+        closeSession();
         Assert.assertNotNull(second);
         JSONObject obj = new AlbumRequests().removeSongFromAlbum(second.getNick(), second.getToken().getToken(), album.getAlbumId(), song.getId());
         Assert.assertEquals("notAuthor", obj.getString("error"));
-        UserCache.deleteUser(second);
+        openSession();
+        UserCache.deleteUser(s, second);
+        closeSession();
     }
 
     @Test
@@ -107,7 +115,9 @@ public class AlbumRemoveSongTest extends TestBase {
 
         JSONObject obj = new AlbumRequests().removeSongFromAlbum(user.getNick(), user.getToken().getToken(), album.getAlbumId(), song.getId());
 
-        Assert.assertEquals(0, SQLUtils.getRowCount("song", "id = " + song.getId() + " and album_id = " + album.getAlbumId()));
+        openSession();
+        Assert.assertEquals(0, SQLUtils.getRowCount(s, "song", "id = " + song.getId() + " and album_id = " + album.getAlbumId()));
+        closeSession();
         Assert.assertEquals("ok", obj.getString("error"));
     }
 

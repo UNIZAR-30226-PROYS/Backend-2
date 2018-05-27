@@ -28,12 +28,16 @@ public class AlbumCreateTest extends TestBase {
 
     @Before
     public void setupTest() {
-        user = UserUtils.addUser("test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        openSession();
+        user = UserUtils.addUser(s, "test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        closeSession();
     }
 
     @After
     public void endTest() {
-        HibernateUtils.deleteFromDB(user);
+        openSession();
+        HibernateUtils.deleteFromDB(s, user);
+        closeSession();
     }
 
     @Test
@@ -78,10 +82,12 @@ public class AlbumCreateTest extends TestBase {
 
         JSONObject obj = new AlbumRequests().create(user.getNick(), user.getToken().getToken(), "RandomTitle", 2010);
 
-        Assert.assertEquals(1, SQLUtils.getRowCount("album", "user_id = " + user.getId()));
+        openSession();
+        Assert.assertEquals(1, SQLUtils.getRowCount(s, "album", "user_id = " + user.getId()));
         Assert.assertEquals("ok", obj.getString("error"));
-        EntityAlbum album = AlbumCache.getAlbum(obj.getJSONObject("album").getInt("id"));
+        EntityAlbum album = AlbumCache.getAlbum(s, obj.getJSONObject("album").getInt("id"));
 
-        AlbumCache.deleteAlbum(album);
+        AlbumCache.deleteAlbum(s, album);
+        closeSession();
     }
 }

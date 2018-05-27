@@ -28,12 +28,16 @@ public class UserGetTest extends TestBase {
 
     @Before
     public void setupTest(){
-        user = UserUtils.addUser("test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        openSession();
+        user = UserUtils.addUser(s,"test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        closeSession();
     }
 
     @After
     public void endTest(){
-        Assert.assertTrue(UserCache.deleteUser(user));
+        openSession();
+        Assert.assertTrue(UserCache.deleteUser(s, user));
+        closeSession();
     }
 
     @Test

@@ -4,7 +4,6 @@ import es.eina.TestBase;
 import es.eina.cache.UserCache;
 import es.eina.sql.SQLUtils;
 import es.eina.sql.entities.EntityUser;
-import es.eina.sql.utils.HibernateUtils;
 import es.eina.utils.UserUtils;
 import org.json.JSONObject;
 import org.junit.*;
@@ -28,12 +27,16 @@ public class UserDeleteLoginTest extends TestBase {
 
     @Before
     public void setupTest() {
-        user = UserUtils.addUser("test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        openSession();
+        user = UserUtils.addUser(s, "test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        closeSession();
     }
 
     @After
     public void endTest() {
-        UserCache.deleteUser(user);
+        openSession();
+        UserCache.deleteUser(s, UserCache.getUser(s, user.getNick()));
+        closeSession();
     }
 
     @Test
@@ -66,7 +69,9 @@ public class UserDeleteLoginTest extends TestBase {
         JSONObject obj = new UserRequests().deleteLogin(user.getNick(), user.getToken().getToken());
         Assert.assertEquals("ok", obj.getString("error"));
 
-        Assert.assertEquals(0, SQLUtils.getRowCount("token", "user_id = " + user.getId()));
+        openSession();
+        Assert.assertEquals(0, SQLUtils.getRowCount(s, "token", "user_id = " + user.getId()));
+        closeSession();
 
         obj = new UserRequests().deleteLogin(user.getNick(), "token");
         Assert.assertEquals("invalidToken", obj.getString("error"));
@@ -77,7 +82,9 @@ public class UserDeleteLoginTest extends TestBase {
         JSONObject obj = new UserRequests().deleteLogin(user.getNick(), user.getToken().getToken());
         Assert.assertEquals("ok", obj.getString("error"));
 
-        Assert.assertEquals(0, SQLUtils.getRowCount("token", "user_id = " + user.getId()));
+        openSession();
+        Assert.assertEquals(0, SQLUtils.getRowCount(s, "token", "user_id = " + user.getId()));
+        closeSession();
     }
 
 }

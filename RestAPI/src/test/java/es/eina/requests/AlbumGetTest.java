@@ -36,16 +36,20 @@ public class AlbumGetTest extends TestBase {
 
     @Before
     public void setupTest() {
-        user = UserUtils.addUser("test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
-        album = AlbumUtils.createAlbum(user, "Random Album", 1900);
+        openSession();
+        user = UserUtils.addUser(s, "test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        album = AlbumUtils.createAlbum(s, user, "Random Album", 1900);
+        closeSession();
         LOG.info("START TEST!!");
     }
 
     @After
     public void endTest() {
         LOG.info("END TEST!!");
-        AlbumCache.deleteAlbum(album);
-        UserCache.deleteUser(user);
+        openSession();
+        AlbumCache.deleteAlbum(s, album);
+        UserCache.deleteUser(s, user);
+        closeSession();
     }
 
     @Test

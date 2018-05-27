@@ -33,18 +33,19 @@ public class UserRemoveSongFromFavourites extends TestBase {
 
     @Before
     public void setupTest(){
-        user = UserUtils.addUser("test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
-        album = AlbumUtils.createAlbum(user, "Album", 1970);
-        song = SongUtils.addSong(album, "Song 1", "ES");
-
-        Assert.assertNotNull(user);
-        Assert.assertNotNull(song);
+        openSession();
+        user = UserUtils.addUser(s,"test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        album = AlbumUtils.createAlbum(s, user, "Album", 1970);
+        song = SongUtils.addSong(s, album, "Song 1", "ES");
+        closeSession();
     }
 
     @After
     public void endTest(){
-        UserCache.deleteUser(user);
-        AlbumCache.deleteAlbum(album);
+        openSession();
+        UserCache.deleteUser(s, user);
+        AlbumCache.deleteAlbum(s, album);
+        closeSession();
     }
 
     @Test
@@ -85,7 +86,9 @@ public class UserRemoveSongFromFavourites extends TestBase {
     public void testErrorsNoFav(){
         JSONObject obj = new SongRequests().unfavSong(user.getNick(), user.getToken().getToken(), song.getId());
 
-        Assert.assertEquals(1, SQLUtils.getRowCountSQL("user_faved_songs", "user_id = " + user.getId() + " and song_id = " + song.getId()));
+        openSession();
+        Assert.assertEquals(0, SQLUtils.getRowCountSQL(s, "user_faved_songs", "user_id = " + user.getId() + " and song_id = " + song.getId()));
+        closeSession();
         Assert.assertEquals("noFav", obj.getString("error"));
     }
 
@@ -93,10 +96,15 @@ public class UserRemoveSongFromFavourites extends TestBase {
     public void testOK(){
 
         new SongRequests().favSong(user.getNick(), user.getToken().getToken(), song.getId());
+        openSession();
+        Assert.assertEquals(1, SQLUtils.getRowCountSQL(s,"user_faved_songs", "user_id = " + user.getId() + " and song_id = " + song.getId()));
+        closeSession();
 
         JSONObject obj = new SongRequests().unfavSong(user.getNick(), user.getToken().getToken(), song.getId());
 
-        Assert.assertEquals(1, SQLUtils.getRowCountSQL("user_faved_songs", "user_id = " + user.getId() + " and song_id = " + song.getId()));
+        openSession();
+        Assert.assertEquals(0, SQLUtils.getRowCountSQL(s,"user_faved_songs", "user_id = " + user.getId() + " and song_id = " + song.getId()));
+        closeSession();
         Assert.assertEquals("ok", obj.getString("error"));
     }
 }

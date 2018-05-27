@@ -34,16 +34,20 @@ public class SongGetTest extends TestBase {
 
     @Before
     public void setupTest() {
-        user = UserUtils.addUser("test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
-        album = AlbumUtils.createAlbum(user, "Title", 1970);
-        song = SongUtils.addSong(album, "Random Song", "O1");
+        openSession();
+        user = UserUtils.addUser(s,"test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        album = AlbumUtils.createAlbum(s, user, "Title", 1970);
+        song = SongUtils.addSong(s, album, "Random Song", "O1");
+        closeSession();
     }
 
     @After
     public void endTest() {
-        HibernateUtils.deleteFromDB(song);
-        HibernateUtils.deleteFromDB(user);
-        AlbumCache.deleteAlbum(album);
+        openSession();
+        HibernateUtils.deleteFromDB(s, song);
+        HibernateUtils.deleteFromDB(s, user);
+        AlbumCache.deleteAlbum(s, album);
+        closeSession();
     }
 
     @Test

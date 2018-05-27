@@ -75,12 +75,16 @@ public class UserRegisterTest extends TestBase {
 
     @Test
     public void testErrorsExistingUser() {
-        EntityUser user = UserUtils.addUser("user1", "a@a.es", "123456", "Usernmae", "bio", new Date(0), "O1");
+        openSession();
+        EntityUser user = UserUtils.addUser(s, "user1", "a@a.es", "123456", "Usernmae", "bio", new Date(0), "O1");
+        closeSession();
         Assert.assertNotNull(user);
         JSONObject obj = new UserRequests().signup(user.getNick(), MAIL, PASS, PASS, USER, BIRTH, BIO);
         Assert.assertEquals("userExists", obj.getString("error"));
 
-        UserCache.deleteUser(user);
+        openSession();
+        UserCache.deleteUser(s, user);
+        closeSession();
     }
 
     @Test

@@ -35,24 +35,28 @@ public class UserGetSongs extends TestBase {
 
     @Before
     public void setupTest() {
-        user = UserUtils.addUser("test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
-        user2 = UserUtils.addUser("test2-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
-        album = AlbumUtils.createAlbum(user, "Album1", 1970);
-        album2 = AlbumUtils.createAlbum(user2, "Album2", 1970);
-        song1 = SongUtils.addSong(album, "Song1", "O1");
-        song2 = SongUtils.addSong(album2, "Song2", "O1");
-        song3 = SongUtils.addSong(album, "Song3", "O1");
+        openSession();
+        user = UserUtils.addUser(s,"test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        user2 = UserUtils.addUser(s,"test2-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        album = AlbumUtils.createAlbum(s,user, "Album1", 1970);
+        album2 = AlbumUtils.createAlbum(s, user2, "Album2", 1970);
+        song1 = SongUtils.addSong(s, album, "Song1", "O1");
+        song2 = SongUtils.addSong(s, album2, "Song2", "O1");
+        song3 = SongUtils.addSong(s, album, "Song3", "O1");
+        closeSession();
     }
 
     @After
     public void endTest() {
-        SongCache.deleteSong(song1);
-        SongCache.deleteSong(song2);
-        SongCache.deleteSong(song3);
-        AlbumCache.deleteAlbum(album);
-        AlbumCache.deleteAlbum(album2);
-        UserCache.deleteUser(user);
-        UserCache.deleteUser(user2);
+        openSession();
+        SongCache.deleteSong(s, song1);
+        SongCache.deleteSong(s, song2);
+        SongCache.deleteSong(s, song3);
+        AlbumCache.deleteAlbum(s, album);
+        AlbumCache.deleteAlbum(s, album2);
+        UserCache.deleteUser(s, user);
+        UserCache.deleteUser(s, user2);
+        closeSession();
     }
 
     public boolean contains(JSONArray array, Long id){
@@ -60,6 +64,7 @@ public class UserGetSongs extends TestBase {
         int i = 0;
         while(!x && i < array.length()){
             x = array.get(i).equals(id);
+            i++;
         }
 
         return x;

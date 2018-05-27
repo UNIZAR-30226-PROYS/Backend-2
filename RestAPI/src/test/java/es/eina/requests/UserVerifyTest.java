@@ -26,19 +26,23 @@ public class UserVerifyTest extends TestBase {
 
     @Before
     public void setupTest() {
-        user = UserUtils.addUser("test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
-        verify = UserUtils.addUser("second-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        openSession();
+        user = UserUtils.addUser(s,"test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        verify = UserUtils.addUser(s,"second-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
         user.makeAdmin();
     }
 
     @After
     public void endTest() {
-        UserCache.deleteUser(user);
-        UserCache.deleteUser(verify);
+        openSession();
+        UserCache.deleteUser(s, UserCache.getUser(s, user.getId()));
+        UserCache.deleteUser(s, UserCache.getUser(s, verify.getId()));
+        closeSession();
     }
 
     @Test
     public void testVerifyInvalidArgs() {
+        closeSession();
         JSONObject obj = new UserRequests().verifyAccount("", user.getNick(), user.getToken().getToken(), true);
         Assert.assertEquals("invalidArgs", obj.getString("error"));
         obj = new UserRequests().verifyAccount(null, user.getNick(), user.getToken().getToken(), true);
@@ -57,6 +61,7 @@ public class UserVerifyTest extends TestBase {
 
     @Test
     public void testUnknownUser() {
+        closeSession();
         JSONObject obj = new UserRequests().verifyAccount("invalid", user.getNick(), user.getToken().getToken(), true);
         Assert.assertEquals("unknownUser", obj.getString("error"));
 
@@ -66,13 +71,15 @@ public class UserVerifyTest extends TestBase {
 
     @Test
     public void testClosedSession() {
-        user.deleteToken();
+        user.deleteToken(s);
+        closeSession();
         JSONObject obj = new UserRequests().verifyAccount(user.getNick(), user.getNick(), "token", true);
         Assert.assertEquals("closedSession", obj.getString("error"));
     }
 
     @Test
     public void testInvalidToken() {
+        closeSession();
         JSONObject obj = new UserRequests().verifyAccount(user.getNick(), user.getNick(), "invalid" + user.getToken().getToken(), true);
         Assert.assertEquals("invalidToken", obj.getString("error"));
     }
@@ -80,46 +87,62 @@ public class UserVerifyTest extends TestBase {
     @Test
     public void testNoPermission() {
         user.demoteAdmin();
+        closeSession();
+
         JSONObject obj = new UserRequests().verifyAccount(user.getNick(), user.getNick(), user.getToken().getToken(), true);
         Assert.assertEquals("noPermission", obj.getString("error"));
     }
 
     @Test
     public void testVerifyOK() {
+        closeSession();
         JSONObject obj = new UserRequests().verifyAccount(verify.getNick(), user.getNick(), user.getToken().getToken(), true);
 
-        Assert.assertEquals(1, SQLUtils.getRowCountSQL("user_values", "user_id = " + user.getId() + " and verified = '1'"));
+        openSession();
+        Assert.assertEquals(1, SQLUtils.getRowCountSQL(s,"user_values", "user_id = " + verify.getId() + " and verified = '1'"));
+        closeSession();
         Assert.assertEquals("ok", obj.getString("error"));
     }
 
     @Test
     public void testUnVerifyOK() {
         verify.verifyAccount();
+        closeSession();
         JSONObject obj = new UserRequests().verifyAccount(verify.getNick(), user.getNick(), user.getToken().getToken(), false);
 
-        Assert.assertEquals(0, SQLUtils.getRowCountSQL("user_values", "user_id = " + verify.getId() + " and verified = '1'"));
+        openSession();
+        Assert.assertEquals(0, SQLUtils.getRowCountSQL(s,"user_values", "user_id = " + verify.getId() + " and verified = '1'"));
+        closeSession();
         Assert.assertEquals("ok", obj.getString("error"));
     }
 
     @Test
     public void testUnVerifyError() {
         verify.verifyAccount();
+        closeSession();
         JSONObject obj = new UserRequests().verifyAccount(verify.getNick(), user.getNick(), user.getToken().getToken(), false);
 
-        Assert.assertEquals(0, SQLUtils.getRowCountSQL("user_values", "user_id = " + user.getId() + " and verified = '1'"));
+        openSession();
+        Assert.assertEquals(0, SQLUtils.getRowCountSQL(s,"user_values", "user_id = " + user.getId() + " and verified = '1'"));
+        closeSession();
         Assert.assertEquals("ok", obj.getString("error"));
 
         obj = new UserRequests().verifyAccount(verify.getNick(), user.getNick(), user.getToken().getToken(), false);
 
-        Assert.assertEquals(0, SQLUtils.getRowCountSQL("user_values", "user_id = " + user.getId() + " and verified = '1'"));
+        openSession();
+        Assert.assertEquals(0, SQLUtils.getRowCountSQL(s,"user_values", "user_id = " + user.getId() + " and verified = '1'"));
+        closeSession();
         Assert.assertEquals("cannotUnverify", obj.getString("error"));
     }
 
     @Test
     public void testUnVerifyError2() {
+        closeSession();
         JSONObject obj = new UserRequests().verifyAccount(verify.getNick(), user.getNick(), user.getToken().getToken(), false);
 
-        Assert.assertEquals(0, SQLUtils.getRowCountSQL("user_values", "user_id = " + user.getId() + " and verified = '1'"));
+        openSession();
+        Assert.assertEquals(0, SQLUtils.getRowCountSQL(s,"user_values", "user_id = " + user.getId() + " and verified = '1'"));
+        closeSession();
         Assert.assertEquals("cannotUnverify", obj.getString("error"));
     }
 

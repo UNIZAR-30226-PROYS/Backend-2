@@ -26,12 +26,16 @@ public class UserDeleteTest extends TestBase {
 
     @Before
     public void setupTest() {
-        user = UserUtils.addUser("test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        openSession();
+        user = UserUtils.addUser(s, "test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        closeSession();
     }
 
     @After
     public void endTest() {
-        UserCache.deleteUser(user);
+        openSession();
+        UserCache.deleteUser(s, UserCache.getUser(s, user.getNick()));
+        closeSession();
     }
 
     @Test
@@ -58,7 +62,9 @@ public class UserDeleteTest extends TestBase {
     public void testOK() {
         JSONObject obj = new UserRequests().deleteUserData(user.getNick(), user.getToken().getToken());
         Assert.assertEquals("ok", obj.getString("error"));
-        Assert.assertEquals(0, SQLUtils.getRowCountSQL("users", "id = " + user.getId()));
+        openSession();
+        Assert.assertEquals(0, SQLUtils.getRowCountSQL(s,"users", "id = " + user.getId()));
+        closeSession();
     }
 
 }

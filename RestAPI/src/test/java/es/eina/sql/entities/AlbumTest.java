@@ -27,31 +27,33 @@ public class AlbumTest extends TestBase {
 
     @Before
     public void setupTest() {
-        user = UserUtils.addUser("test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        openSession();
+        user = UserUtils.addUser(s, "test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        closeSession();
     }
 
     @After
     public void endTest() {
-        UserCache.deleteUser(user);
+        openSession();
+        UserCache.deleteUser(s, UserCache.getUser(s, user.getId()));
+        closeSession();
     }
 
     @Test
     public void testCreateAlbum(){
+        openSession();
         EntityAlbum album = new EntityAlbum(user, "RandomTitle", 1970);
-        Assert.assertTrue(AlbumCache.addAlbum(album));
-
-        Assert.assertTrue(UserUtils.userExists("random_user"));
-        Assert.assertTrue(!UserUtils.userExists("invalid_user"));
-        Assert.assertTrue(UserUtils.checkPassword(user, "123456"));
-
-        Assert.assertTrue(UserCache.deleteUser(user));
-        Assert.assertTrue(!UserUtils.userExists("random_user"));
+        Assert.assertTrue(AlbumCache.addAlbum(s, album));
+        AlbumCache.deleteAlbum(s, album);
+        closeSession();
     }
 
     @Test
     public void testDeleteAlbum(){
+        openSession();
         EntityAlbum album = new EntityAlbum(user, "RandomTitle", 1970);
-        Assert.assertTrue(AlbumCache.addAlbum(album));
+        Assert.assertTrue(AlbumCache.addAlbum(s, album));
+        closeSession();
     }
 
 }

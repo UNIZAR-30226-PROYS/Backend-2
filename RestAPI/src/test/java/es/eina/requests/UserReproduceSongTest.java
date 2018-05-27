@@ -33,15 +33,19 @@ public class UserReproduceSongTest extends TestBase {
 
     @Before
     public void setupTest(){
-        user = UserUtils.addUser("test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
-        album = AlbumUtils.createAlbum(user, "Title", 1970);
-        song = SongUtils.addSong(album, "Song 1", "ES");
+        openSession();
+        user = UserUtils.addUser(s, "test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        album = AlbumUtils.createAlbum(s,user, "Title", 1970);
+        song = SongUtils.addSong(s,album, "Song 1", "ES");
+        closeSession();
     }
 
     @After
     public void endTest(){
-        UserCache.deleteUser(user);
-        AlbumCache.deleteAlbum(album);
+        openSession();
+        AlbumCache.deleteAlbum(s, AlbumCache.getAlbum(s, album.getAlbumId()));
+        UserCache.deleteUser(s, UserCache.getUser(s, user.getId()));
+        closeSession();
     }
 
     @Test
@@ -83,7 +87,9 @@ public class UserReproduceSongTest extends TestBase {
 
         JSONObject obj = new SongRequests().listenSong(user.getNick(), user.getToken().getToken(), song.getId());
 
-        Assert.assertEquals(1, SQLUtils.getRowCountSQL("user_listened_songs", "user_id = " + user.getId() + " and song_id = " + song.getId()));
+        openSession();
+        Assert.assertEquals(1, SQLUtils.getRowCountSQL(s,"user_listened_songs", "user_id = " + user.getId() + " and song_id = " + song.getId()));
+        closeSession();
         Assert.assertEquals("ok", obj.getString("error"));
     }
 }

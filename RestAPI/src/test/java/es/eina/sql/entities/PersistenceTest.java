@@ -45,17 +45,25 @@ public class PersistenceTest extends TestBase {
         System.out.println(">>>>>>>>>>>><<<<<<<<<<<<<<<<");
         LoggerFactory.getLogger(PersistenceTest.class).debug("Init Persistance Test");
         System.out.println(">>>>>>>>>>>><<<<<<<<<<<<<<<<");
-        user = UserUtils.addUser("test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        openSession();
+        user = UserUtils.addUser(s, "test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        closeSession();
 
         Assert.assertNotNull(user);
-        Assert.assertEquals(1, SQLUtils.getRowCountSQL("users", "nick = '" + user.getNick() + "'"));
-        Assert.assertEquals(1, SQLUtils.getRowCountSQL("sessions", "user_id = '" + user.getId() + "'"));
+
+        openSession();
+        Assert.assertEquals(1, SQLUtils.getRowCountSQL(s,"users", "nick = '" + user.getNick() + "'"));
+        Assert.assertEquals(1, SQLUtils.getRowCountSQL(s, "sessions", "user_id = '" + user.getId() + "'"));
 
         String nick = user.getNick();
         long id = user.getId();
-        UserCache.deleteUser(user);
-        Assert.assertEquals(0, SQLUtils.getRowCountSQL("users", "nick = '" + nick + "'"));
-        Assert.assertEquals(0, SQLUtils.getRowCountSQL("sessions", "user_id = '" + id + "'"));
+        UserCache.deleteUser(s, user);
+        closeSession();
+
+        openSession();
+        Assert.assertEquals(0, SQLUtils.getRowCountSQL(s, "users", "nick = '" + nick + "'"));
+        Assert.assertEquals(0, SQLUtils.getRowCountSQL(s, "sessions", "user_id = '" + id + "'"));
+        closeSession();
     }
 
 }

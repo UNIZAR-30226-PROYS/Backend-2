@@ -33,28 +33,32 @@ public class UserGetLastListenedSongsTest extends TestBase {
 
     @Before
     public void setupTest() {
-        user = UserUtils.addUser("test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
-        user2 = UserUtils.addUser("test-user2", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
-        album = AlbumUtils.createAlbum(user, "Random Album", 1900);
-        album2 = AlbumUtils.createAlbum(user2, "Random Album", 1900);
-        song = SongUtils.addSong(album, "Song1", "ES");
-        song2 = SongUtils.addSong(album, "Song2", "ES");
-        song3 = SongUtils.addSong(album, "Song3", "ES");
+        openSession();
+        user = UserUtils.addUser(s, "test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        user2 = UserUtils.addUser(s, "test-user2", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        album = AlbumUtils.createAlbum(s, user, "Random Album", 1900);
+        album2 = AlbumUtils.createAlbum(s, user2, "Random Album", 1900);
+        song = SongUtils.addSong(s, album, "Song1", "ES");
+        song2 = SongUtils.addSong(s, album, "Song2", "ES");
+        song3 = SongUtils.addSong(s, album, "Song3", "ES");
     }
 
     @After
     public void endTest() {
-        SongCache.deleteSong(song);
-        SongCache.deleteSong(song2);
-        SongCache.deleteSong(song3);
-        AlbumCache.deleteAlbum(album);
-        AlbumCache.deleteAlbum(album2);
-        UserCache.deleteUser(user);
-        UserCache.deleteUser(user2);
+        openSession();
+        SongCache.deleteSong(s, SongCache.getSong(s, song.getId()));
+        SongCache.deleteSong(s, SongCache.getSong(s, song2.getId()));
+        SongCache.deleteSong(s, SongCache.getSong(s, song3.getId()));
+        AlbumCache.deleteAlbum(s, AlbumCache.getAlbum(s, album.getAlbumId()));
+        AlbumCache.deleteAlbum(s, AlbumCache.getAlbum(s, album2.getAlbumId()));
+        UserCache.deleteUser(s, UserCache.getUser(s, user.getId()));
+        UserCache.deleteUser(s, UserCache.getUser(s, user2.getId()));
+        closeSession();
     }
 
     @Test
     public void testInvalidArgs(){
+        closeSession();
         JSONObject obj = new UserRequests().getLastListenedSongs("", 1);
         Assert.assertEquals("invalidArgs", obj.getString("error"));
         obj = new UserRequests().getLastListenedSongs(null, 1);
@@ -63,22 +67,28 @@ public class UserGetLastListenedSongsTest extends TestBase {
 
     @Test
     public void testInvalidAmount(){
+        closeSession();
         JSONObject obj = new UserRequests().getLastListenedSongs(user.getNick(), 0);
         Assert.assertEquals("invalidAmount", obj.getString("error"));
     }
 
     @Test
     public void testUnknownUser(){
+        closeSession();
         JSONObject obj = new UserRequests().getLastListenedSongs("invalid-user", 1);
         Assert.assertEquals("unknownUser", obj.getString("error"));
     }
 
     @Test
-    public void testOK(){
+    public void testOK() throws InterruptedException {
         user.listenSong(song3);
+        Thread.sleep(1);
         user.listenSong(song);
+        Thread.sleep(1);
         user.listenSong(song2);
+        Thread.sleep(1);
         user.listenSong(song);
+        closeSession();
         JSONObject obj = new UserRequests().getLastListenedSongs(user.getNick(), 1);
         Assert.assertEquals("ok", obj.getString("error"));
         Assert.assertEquals(1, obj.getInt("size"));

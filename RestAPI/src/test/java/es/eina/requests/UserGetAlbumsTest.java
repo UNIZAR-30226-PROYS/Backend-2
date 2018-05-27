@@ -31,20 +31,24 @@ public class UserGetAlbumsTest extends TestBase {
 
     @Before
     public void setupTest() {
-        user = UserUtils.addUser("test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
-        user2 = UserUtils.addUser("test-user2", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
-        album = AlbumUtils.createAlbum(user, "Random Album", 1900);
-        album2 = AlbumUtils.createAlbum(user2, "Random Album", 1900);
-        album3 = AlbumUtils.createAlbum(user, "Random Album", 1900);
+        openSession();
+        user = UserUtils.addUser(s, "test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        user2 = UserUtils.addUser(s, "test-user2", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        album = AlbumUtils.createAlbum(s, user, "Random Album", 1900);
+        album2 = AlbumUtils.createAlbum(s, user2, "Random Album", 1900);
+        album3 = AlbumUtils.createAlbum(s, user, "Random Album", 1900);
+        closeSession();
     }
 
     @After
     public void endTest() {
-        AlbumCache.deleteAlbum(album);
-        AlbumCache.deleteAlbum(album2);
-        AlbumCache.deleteAlbum(album3);
-        UserCache.deleteUser(user);
-        UserCache.deleteUser(user2);
+        openSession();
+        AlbumCache.deleteAlbum(s, album);
+        AlbumCache.deleteAlbum(s, album2);
+        AlbumCache.deleteAlbum(s, album3);
+        UserCache.deleteUser(s, user);
+        UserCache.deleteUser(s, user2);
+        closeSession();
     }
 
     @Test
@@ -67,9 +71,11 @@ public class UserGetAlbumsTest extends TestBase {
         Assert.assertEquals("ok", obj.getString("error"));
         Assert.assertEquals(2, obj.getInt("size"));
 
-        Assert.assertEquals(1, SQLUtils.getRowCountSQL("albums", "user_id = " + user.getId() + " and id = " + album.getAlbumId()));
-        Assert.assertEquals(0, SQLUtils.getRowCountSQL("albums", "user_id = " + user.getId() + " and id = " + album2.getAlbumId()));
-        Assert.assertEquals(1, SQLUtils.getRowCountSQL("albums", "user_id = " + user.getId() + " and id = " + album3.getAlbumId()));
+        openSession();
+        Assert.assertEquals(1, SQLUtils.getRowCountSQL(s, "albums", "user_id = " + user.getId() + " and id = " + album.getAlbumId()));
+        Assert.assertEquals(0, SQLUtils.getRowCountSQL(s,"albums", "user_id = " + user.getId() + " and id = " + album2.getAlbumId()));
+        Assert.assertEquals(1, SQLUtils.getRowCountSQL(s, "albums", "user_id = " + user.getId() + " and id = " + album3.getAlbumId()));
+        closeSession();
     }
 
 

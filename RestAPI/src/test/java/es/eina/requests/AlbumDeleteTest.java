@@ -2,6 +2,7 @@ package es.eina.requests;
 
 import es.eina.TestBase;
 import es.eina.cache.AlbumCache;
+import es.eina.cache.UserCache;
 import es.eina.sql.SQLUtils;
 import es.eina.sql.entities.EntityAlbum;
 import es.eina.sql.entities.EntityUser;
@@ -30,14 +31,17 @@ public class AlbumDeleteTest extends TestBase {
 
     @Before
     public void setupTest() {
-        user = UserUtils.addUser("test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
-        album = AlbumUtils.createAlbum(user, "Random Album", 1900);
+        openSession();
+        user = UserUtils.addUser(s, "test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        album = AlbumUtils.createAlbum(s, user, "Random Album", 1900);
+        closeSession();
     }
 
     @After
     public void endTest() {
-        HibernateUtils.deleteFromDB(album);
-        HibernateUtils.deleteFromDB(user);
+        openSession();
+        HibernateUtils.deleteFromDB(s, UserCache.getUser(s, user.getNick()));
+        closeSession();
     }
 
     @Test
@@ -81,7 +85,9 @@ public class AlbumDeleteTest extends TestBase {
 
         JSONObject obj = new AlbumRequests().delete(user.getNick(), user.getToken().getToken(), album.getAlbumId());
 
-        Assert.assertEquals(0, SQLUtils.getRowCount("album", "user_id = " + user.getId()));
+        openSession();
+        Assert.assertEquals(0, SQLUtils.getRowCount(s, "album", "user_id = " + user.getId()));
+        closeSession();
         Assert.assertEquals("ok", obj.getString("error"));
     }
 }
