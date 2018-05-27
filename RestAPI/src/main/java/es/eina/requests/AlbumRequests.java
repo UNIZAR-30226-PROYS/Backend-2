@@ -117,7 +117,7 @@ public class AlbumRequests {
 	 * @return The result of this request.
 	 */
 	@Path("{id}")
-	@POST
+	@GET
 	public JSONObject get(@PathParam("id") long id){
 
 		JSONObject obj = new JSONObject();
