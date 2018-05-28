@@ -1,15 +1,17 @@
 package es.eina.requests;
 
 import es.eina.RestApp;
+import es.eina.cache.AlbumCache;
 import es.eina.cache.PopularSongCache;
 import es.eina.cache.SongCache;
 import es.eina.cache.UserCache;
-import es.eina.geolocalization.Geolocalizer;
 import es.eina.search.IndexSongs;
 import es.eina.sql.SQLUtils;
+import es.eina.sql.entities.EntityAlbum;
 import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntityUser;
 import es.eina.sql.utils.HibernateUtils;
+import es.eina.utils.SongUtils;
 import es.eina.utils.StringUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
@@ -31,24 +33,134 @@ public class SongRequests {
     private static final long SONG_SEARCH_MAX_TIME = Long.MAX_VALUE;
     public static final int MAX_POPULAR_SONGS = 50;
 
-    private static final JSONObject defaultSongJSON;
+    /**
+     * Create a new album.
+     *
+     * @param nick      : ID from user author of album.
+     * @param userToken : User's token.
+     * @param title     : Given name for the new album.
+     * @return The result of this request.
+     */
+    @Path("{nick}/create")
+    @POST
+    public String create(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
+                         @FormParam("title") String title, @DefaultValue("-1") @FormParam("title") long albumID,
+                         @FormParam("year") String country) {
+
+        JSONObject obj = new JSONObject();
+        JSONObject songJSON = new JSONObject(EntitySong.defaultSongJSON);
+
+        if (StringUtils.isValid(nick) && StringUtils.isValid(userToken) &&
+                StringUtils.isValid(title, 1, 255)) {
+            try (Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntityUser user = UserCache.getUser(s, nick);
+                if (user != null) {
+                    if (user.getToken() != null && user.getToken().isValid(userToken)) {
+                        EntityAlbum album = AlbumCache.getAlbum(s, albumID);
+                        if (albumID == -1 || album != null) {
+                            EntitySong song = SongUtils.addSong(s, album, title, country);
+                            if (song != null) {
+                                songJSON = song.toJSON();
+                                ok = true;
+                                obj.put("error", "ok");
+                            } else {
+                                obj.put("error", "unknownError");
+                            }
+                        } else {
+                            obj.put("error", "invalidYear");
+                        }
+                    } else {
+                        obj.put("error", "invalidToken");
+                    }
+                } else {
+                    obj.put("error", "unknownUser");
+                }
+                if (ok) {
+                    t.commit();
+                } else {
+                    t.rollback();
+                }
+            }
+        } else {
+            obj.put("error", "invalidArgs");
+        }
+
+        obj.put("album", songJSON);
+
+        return obj.toString();
+    }
+
+    /**
+     * Delete an album.
+     *
+     * @param nick      : ID from user author of album.
+     * @param userToken : User's token.
+     * @param songId    : ID of the song.
+     * @return The result of this request.
+     */
+    @Path("/{songID}/delete")
+    @POST
+    public String delete(@FormParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
+                         @PathParam("songID") long songId) {
+        JSONObject obj = new JSONObject();
+
+        if (StringUtils.isValid(nick) && StringUtils.isValid(userToken)) {
+            try (Session s = HibernateUtils.getSession()) {
+                boolean ok = false;
+                Transaction t = s.beginTransaction();
+                EntityUser user = UserCache.getUser(s, nick);
+                if (user != null) {
+                    if (user.getToken() != null && user.getToken().isValid(userToken)) {
+                        if (songId > 0) {
+                            EntitySong song = SongCache.getSong(s, songId);
+                            if (song != null) {
+                                if (SongCache.deleteSong(s, song)) {
+                                    obj.put("error", "ok");
+                                    ok = true;
+                                } else {
+                                    obj.put("error", "unknownAlbum");
+                                }
+                            } else {
+                                obj.put("error", "unknownAlbum");
+                            }
+                        } else {
+                            obj.put("error", "invalidAlbum");
+                        }
+                    } else {
+                        obj.put("error", "invalidToken");
+                    }
+                } else {
+                    obj.put("error", "unknownUser");
+                }
+
+                if (ok) {
+                    t.commit();
+                } else {
+                    t.rollback();
+                }
+            }
+        } else {
+            obj.put("error", "invalidArgs");
+        }
+
+        return obj.toString();
+
+    }
 
     @Path("/{id}/")
     @GET
     public String getSong(@PathParam("id") long id) {
         JSONObject obj = new JSONObject();
-        JSONObject songJSON = new JSONObject(defaultSongJSON, JSONObject.getNames(defaultSongJSON));
+        JSONObject songJSON = new JSONObject(EntitySong.defaultSongJSON);
 
         if (id > 0) {
             try (Session s = HibernateUtils.getSession()) {
                 Transaction t = s.beginTransaction();
                 EntitySong song = SongCache.getSong(s, id);
                 if (song != null) {
-                    songJSON.put("id", song.getId());
-                    songJSON.put("user_id", song.getUserId());
-                    songJSON.put("title", song.getTitle());
-                    songJSON.put("country", song.getCountry());
-                    songJSON.put("upload_time", song.getUploadTime());
+                    songJSON = song.toJSON();
                     obj.put("error", "ok");
                     t.commit();
                 } else {
@@ -69,12 +181,12 @@ public class SongRequests {
     @GET
     public String getSongRecommendation(@PathParam("id") long id, @QueryParam("n") @DefaultValue("16") int amount) {
         if (id > 0) {
-            try(Session s = HibernateUtils.getSession()) {
+            try (Session s = HibernateUtils.getSession()) {
                 Transaction t = s.beginTransaction();
-                JSONObject obj =  RestApp.getInstance().getRecommender().recommend(SongCache.getSong(s, id), amount);
-                if("ok".equals(obj.get("error"))){
+                JSONObject obj = RestApp.getInstance().getRecommender().recommend(SongCache.getSong(s, id), amount);
+                if ("ok".equals(obj.get("error"))) {
                     t.commit();
-                }else{
+                } else {
                     t.rollback();
                 }
                 return obj.toString();
@@ -123,15 +235,15 @@ public class SongRequests {
                 Document doc = index.getDocument(score.doc);
                 float luceneScore = score.score;
 
-                JSONObject product = new JSONObject(defaultSongJSON, JSONObject.getNames(defaultSongJSON));
-                product.put("id", doc.get(IndexSongs.ID_INDEX_COLUMN));
-                product.put("title", doc.get(IndexSongs.TITLE_INDEX_COLUMN));
-                product.put("user_id", doc.get(IndexSongs.AUTHOR_ID_INDEX_COLUMN));
-                product.put("country", doc.get(IndexSongs.COUNTRY_INDEX_COLUMN));
-                product.put("upload_time", doc.get(IndexSongs.UPLOAD_TIME_INDEX_COLUMN));
-                product.put("score", luceneScore);
+                JSONObject song = new JSONObject(EntitySong.defaultSongJSON);
+                song.put("id", doc.get(IndexSongs.ID_INDEX_COLUMN));
+                song.put("title", doc.get(IndexSongs.TITLE_INDEX_COLUMN));
+                song.put("user_id", doc.get(IndexSongs.AUTHOR_ID_INDEX_COLUMN));
+                song.put("country", doc.get(IndexSongs.COUNTRY_INDEX_COLUMN));
+                song.put("upload_time", doc.get(IndexSongs.UPLOAD_TIME_INDEX_COLUMN));
+                song.put("score", luceneScore);
 
-                songs.put(product);
+                songs.put(song);
             }
             obj.put("number", result.size());
         } else {
@@ -148,12 +260,12 @@ public class SongRequests {
     public String getPopularSongs(@QueryParam("n") @DefaultValue("" + MAX_POPULAR_SONGS) int amount) {
         amount = Math.max(0, Math.min(MAX_POPULAR_SONGS, amount));
         JSONObject obj;
-        try(Session s = HibernateUtils.getSession()) {
+        try (Session s = HibernateUtils.getSession()) {
             Transaction t = s.beginTransaction();
             obj = PopularSongCache.getPopularSongs(s, amount);
-            if("ok".equals(obj.getString("error"))){
+            if ("ok".equals(obj.getString("error"))) {
                 t.commit();
-            }else{
+            } else {
                 t.rollback();
             }
         }
@@ -165,12 +277,12 @@ public class SongRequests {
     public String getPopularSongs(@PathParam("country") String country, @QueryParam("n") @DefaultValue("" + MAX_POPULAR_SONGS) int amount) {
         amount = Math.max(0, Math.min(MAX_POPULAR_SONGS, amount));
         JSONObject obj;
-        try(Session s = HibernateUtils.getSession()) {
+        try (Session s = HibernateUtils.getSession()) {
             Transaction t = s.beginTransaction();
             obj = PopularSongCache.getPopularSongs(s, amount, country);
-            if("ok".equals(obj.getString("error"))){
+            if ("ok".equals(obj.getString("error"))) {
                 t.commit();
-            }else{
+            } else {
                 t.rollback();
             }
         }
@@ -183,12 +295,12 @@ public class SongRequests {
         amount = Math.max(1, Math.min(MAX_POPULAR_SONGS, amount));
 
         JSONObject obj = new JSONObject();
-        try(Session s = HibernateUtils.getSession()) {
+        try (Session s = HibernateUtils.getSession()) {
             Transaction t = s.beginTransaction();
             EntityUser user = UserCache.getUser(s, id);
             if (user != null) {
                 obj = PopularSongCache.getPopularSongs(s, amount);
-            }else{
+            } else {
                 obj.put("error", "unknownUser");
             }
             if ("ok".equals(obj.getString("error"))) {
@@ -470,15 +582,6 @@ public class SongRequests {
         }
 
         return result.toString();
-    }
-
-    static {
-        defaultSongJSON = new JSONObject();
-        defaultSongJSON.put("id", -1L);
-        defaultSongJSON.put("user_id", -1L);
-        defaultSongJSON.put("title", "");
-        defaultSongJSON.put("country", Geolocalizer.DEFAULT_COUNTRY);
-        defaultSongJSON.put("upload_time", -1L);
     }
 
 }

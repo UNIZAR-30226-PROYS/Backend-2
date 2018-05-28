@@ -1,46 +1,34 @@
 package es.eina.sql.entities;
 
-import es.eina.sql.utils.HibernateUtils;
-import org.hibernate.Hibernate;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
+import es.eina.geolocalization.Geolocalizer;
 import org.hibernate.annotations.Cascade;
+import org.json.JSONObject;
 
 import javax.persistence.*;
-import javax.transaction.Transactional;
-import java.util.*;
 import java.util.HashSet;
 import java.util.Set;
 
-@Entity(name="song")
-@Table(name="songs")
+@Entity(name = "song")
+@Table(name = "songs")
 public class EntitySong extends EntityBase {
+
+    public static final JSONObject defaultSongJSON;
 
     @Id
     @GeneratedValue
-    @Column(name = "id",nullable = false)
+    @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "title",nullable = false)
+    @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "country", length = 3,nullable = false)
+    @Column(name = "country", length = 3, nullable = false)
     private String country;
 
-    @Column(name = "upload_time",nullable = false)
+    @Column(name = "upload_time", nullable = false)
     private long uploadTime;
 
-    @Column(name = "times_listened", nullable = false)
-    private long listened;
-
-    @Column(name = "lyrics")
-    private String lyrics;  //ruta a la letra de cancion
-
-    @Deprecated
-    @Column(name = "likes")
-    private long likes;
-
-    @ManyToOne(cascade=CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "album_id")
     private EntityAlbum album;
 
@@ -54,14 +42,15 @@ public class EntitySong extends EntityBase {
     @Cascade(org.hibernate.annotations.CascadeType.ALL)
     private Set<EntityUserSongData> usersListeners = new HashSet<>();
 
-    @ManyToMany (mappedBy = "song_list")
+    @ManyToMany(mappedBy = "song_list")
     private Set<EntitySongList> lists = new HashSet<>();
 
 
     /**
      * DO NOT use this method as it can only be used by Hibernate
      */
-    public EntitySong(){}
+    public EntitySong() {
+    }
 
     public EntitySong(EntityAlbum album, String title, String country) {
         this.album = album;
@@ -90,35 +79,39 @@ public class EntitySong extends EntityBase {
         return uploadTime;
     }
 
-    public boolean isSongFaved(EntityUser user){
+    public boolean isSongFaved(EntityUser user) {
         return this.usersFavers.contains(user);
     }
 
-    public boolean favSong(EntityUser user){ return this.usersFavers.add(user); }
+    public boolean favSong(EntityUser user) {
+        return this.usersFavers.add(user);
+    }
 
-    public boolean unfavSong(EntityUser user){ return this.usersFavers.remove(user); }
+    public boolean unfavSong(EntityUser user) {
+        return this.usersFavers.remove(user);
+    }
 
-    public Set<EntityUserSongData> getListeners(){
+    public Set<EntityUserSongData> getListeners() {
         return this.usersListeners;
     }
 
-    public boolean setAlbum(EntityAlbum album){
+    public boolean setAlbum(EntityAlbum album) {
         boolean b = false;
-            if (this.album == null) {
-                this.album = album;
-                album.updateAlbum();
-                b = true;
-            } else if (album == null) {
-                this.album.removeSong(this);
-                this.album = null;
-                b = true;
-            }
+        if (this.album == null) {
+            this.album = album;
+            album.updateAlbum();
+            b = true;
+        } else if (album == null) {
+            this.album.removeSong(this);
+            this.album = null;
+            b = true;
+        }
 
         return b;
     }
 
-    public boolean removeFromAlbum(){
-        if(this.album != null) {
+    public boolean removeFromAlbum() {
+        if (this.album != null) {
             album.updateAlbum();
             this.album = null;
             return true;
@@ -127,4 +120,29 @@ public class EntitySong extends EntityBase {
         return false;
     }
 
+    public EntityAlbum getAlbum() {
+        return album;
+    }
+
+    public JSONObject toJSON() {
+        JSONObject songJSON = new JSONObject(defaultSongJSON, JSONObject.getNames(defaultSongJSON));
+
+        songJSON.put("id", getId());
+        songJSON.put("user_id", getUserId());
+        songJSON.put("album_id", album != null ? album.getAlbumId() : null);
+        songJSON.put("title", getTitle());
+        songJSON.put("country", getCountry());
+        songJSON.put("upload_time", getUploadTime());
+
+        return songJSON;
+    }
+
+    static {
+        defaultSongJSON = new JSONObject();
+        defaultSongJSON.put("id", -1L);
+        defaultSongJSON.put("user_id", -1L);
+        defaultSongJSON.put("title", "");
+        defaultSongJSON.put("country", Geolocalizer.DEFAULT_COUNTRY);
+        defaultSongJSON.put("upload_time", -1L);
+    }
 }
