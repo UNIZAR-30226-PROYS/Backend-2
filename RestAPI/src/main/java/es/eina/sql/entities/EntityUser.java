@@ -4,7 +4,6 @@ import es.eina.RestApp;
 import es.eina.cache.AlbumCache;
 import es.eina.cache.UserFollowersCache;
 import es.eina.crypt.Crypter;
-import es.eina.sql.utils.HibernateUtils;
 import es.eina.utils.StringUtils;
 import es.eina.utils.UserUtils;
 import org.hibernate.Session;

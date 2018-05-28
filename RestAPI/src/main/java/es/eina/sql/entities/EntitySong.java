@@ -9,6 +9,8 @@ import org.hibernate.annotations.Cascade;
 import javax.persistence.*;
 import javax.transaction.Transactional;
 import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity(name="song")
 @Table(name="songs")
@@ -51,6 +53,9 @@ public class EntitySong extends EntityBase {
     @OneToMany(mappedBy = "song", cascade = CascadeType.ALL)
     @Cascade(org.hibernate.annotations.CascadeType.ALL)
     private Set<EntityUserSongData> usersListeners = new HashSet<>();
+
+    @ManyToMany (mappedBy = "song_list")
+    private Set<EntitySongList> lists = new HashSet<>();
 
 
     /**

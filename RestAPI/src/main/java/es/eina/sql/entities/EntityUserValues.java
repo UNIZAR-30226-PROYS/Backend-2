@@ -61,4 +61,9 @@ public class EntityUserValues extends EntityBase{
     void removeEntity(){
         this.user = null;
     }
+
+    @Override
+    public long getId() {
+        return userId;
+    }
 }

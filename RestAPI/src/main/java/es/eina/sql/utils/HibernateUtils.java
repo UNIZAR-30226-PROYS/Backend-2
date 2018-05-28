@@ -2,6 +2,8 @@ package es.eina.sql.utils;
 
 import es.eina.sql.entities.*;
 import org.hibernate.Session;
+import es.eina.RestApp;
+import es.eina.sql.entities.*;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -91,6 +93,7 @@ public class HibernateUtils {
                 sources.addAnnotatedClass(EntityToken.class);
                 sources.addAnnotatedClass(EntityUserValues.class);
                 sources.addAnnotatedClass(EntitySong.class);
+                sources.addAnnotatedClass(EntitySongList.class);
                 sources.addAnnotatedClass(EntityAlbum.class);
                 sources.addAnnotatedClass(EntityUserSongData.class);
                 sources.addAnnotatedClass(EntityUserFollowers.class);
