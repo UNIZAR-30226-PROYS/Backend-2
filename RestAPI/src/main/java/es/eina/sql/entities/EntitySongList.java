@@ -14,9 +14,6 @@ public class EntitySongList extends EntityBase{
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "author_id",nullable = false)
-    private Long userId;
-
     @Column(name = "title", nullable = false)
     private String title;
 
@@ -25,7 +22,7 @@ public class EntitySongList extends EntityBase{
 
 
     @ManyToOne
-    @JoinColumn(name = "author_id", insertable=false, updatable=false)
+    @JoinColumn(name = "author_id")
     private EntityUser author;
 
     @ManyToMany
@@ -39,15 +36,12 @@ public class EntitySongList extends EntityBase{
     /**
      * DO NOT use this method as it can only be used by Hibernate
      */
-    public EntitySongList(){update();}
+    public EntitySongList(){}
 
     public EntitySongList(String title, EntityUser user) {
-        this.userId = user.getId();
         this.title = title;
         this.author = user;
         this.creationTime = System.currentTimeMillis();
-
-        update();
     }
 
     public long getId() {

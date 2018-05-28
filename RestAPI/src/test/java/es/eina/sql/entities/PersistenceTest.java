@@ -32,7 +32,7 @@ public class PersistenceTest extends TestBase {
 
     @Before
     public void setupTest() {
-        //user = UserUtils.addUser("test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        //user = UserUtils.addList("test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
     }
 
     @After

@@ -1,10 +1,15 @@
 package es.eina.requests;
 
+import es.eina.cache.SongCache;
 import es.eina.cache.SongListCache;
 import es.eina.cache.UserCache;
+import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntitySongList;
 import es.eina.sql.entities.EntityUser;
+import es.eina.sql.utils.HibernateUtils;
 import es.eina.utils.StringUtils;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
@@ -42,20 +47,31 @@ public class UserSongListRequests {
                          @FormParam("title") String title) {
         JSONObject result = new JSONObject();
         if(StringUtils.isValid(nick) && StringUtils.isValid(userToken) && StringUtils.isValid(title)){
-            EntityUser user = UserCache.getUser(nick);
-            if(user != null){
-                if (user.getToken() != null && user.getToken().isValid(userToken)) {
-                    EntitySongList newSong= new EntitySongList(title, user);
-                    if(SongListCache.saveEntity(newSong)){
-                        result.put("error","ok");
-                    }else{
-                        result.put("error","unexpectedError");
+            try(Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntityUser user = UserCache.getUser(s, nick);
+                if (user != null) {
+                    if (user.getToken() != null && user.getToken().isValid(userToken)) {
+                        EntitySongList newSong = new EntitySongList(title, user);
+                        if (SongListCache.addSongList(s, newSong)) {
+                            result.put("error", "ok");
+                            ok = true;
+                        } else {
+                            result.put("error", "unexpectedError");
+                        }
+                    } else {
+                        result.put("error", "invalidToken");
                     }
                 } else {
-                    result.put("error", "invalidToken");
+                    result.put("error", "unknownUser");
                 }
-            }else{
-                result.put("error", "unknownUser");
+
+                if(ok){
+                    t.commit();
+                }else{
+                    t.rollback();
+                }
             }
         }else{
             result.put("error", "invalidArgs");
@@ -78,19 +94,27 @@ public class UserSongListRequests {
     public String getLists(@PathParam("nick") String nick) {
         JSONObject result = new JSONObject();
         if(StringUtils.isValid(nick)){
-            EntityUser user = UserCache.getUser(nick);
-            if(user != null){
-                List<EntitySongList> songlists = SongListCache.getSongLists(nick);
-                result.put("size", songlists.size());
-                for (EntitySongList song: songlists
-                     ) {
-                    result.put(Objects.toString(song.getId()),song);
+            try(Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntityUser user = UserCache.getUser(s, nick);
+                if (user != null) {
+                    List<EntitySongList> songlists = SongListCache.getSongLists(s, nick);
+                    result.put("size", songlists.size());
+                    for (EntitySongList song : songlists) {
+                        result.put(Objects.toString(song.getId()), song);
+                    }
+                    result.put("error", "ok");
+                    ok = true;
+                } else {
+                    result.put("error", "unknownUser");
                 }
-                result.put("error", "ok");
-            }else{
-                result.put("error", "unknownUser");
+                if(ok){
+                    t.commit();
+                }else{
+                    t.rollback();
+                }
             }
-
         }else{
             result.put("error", "invalidArgs");
         }
@@ -116,16 +140,31 @@ public class UserSongListRequests {
                          @PathParam("listId") long listId) {
         JSONObject result = new JSONObject();
         if(StringUtils.isValid(nick) && StringUtils.isValid(userToken)){
-            EntityUser user = UserCache.getUser(nick);
-            if(user != null){
-                if (user.getToken() != null && user.getToken().isValid(userToken)) {
-                    SongListCache.deleteSongList(listId);
-                    result.put("error", "ok");
+            try(Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntityUser user = UserCache.getUser(s, nick);
+                if (user != null) {
+                    if (user.getToken() != null && user.getToken().isValid(userToken)) {
+                        EntitySongList songList = SongListCache.getSongList(s, listId);
+                        if(songList != null) {
+                            SongListCache.deleteSongList(s, songList);
+                            result.put("error", "ok");
+                            ok = true;
+                        }else{
+                            result.put("error", "unknownList");
+                        }
+                    } else {
+                        result.put("error", "invalidToken");
+                    }
                 } else {
-                    result.put("error", "invalidToken");
+                    result.put("error", "unknownUser");
                 }
-            }else{
-                result.put("error", "unknownUser");
+                if(ok){
+                    t.commit();
+                }else{
+                    t.rollback();
+                }
             }
         }else{
             result.put("error", "invalidArgs");
@@ -150,29 +189,44 @@ public class UserSongListRequests {
     @Path("{nick}/{listId}/add")
     @POST
     public String add(@FormParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
-                         @PathParam("listId") long listId, @FormParam("songId") List<Long> songsId) {
+                         @PathParam("listId") long listId, @FormParam("songId") Long songsId) {
         JSONObject result = new JSONObject();
         if(StringUtils.isValid(nick) && StringUtils.isValid(userToken)){
-            EntityUser user = UserCache.getUser(nick);
-            if(user != null){
-                if (user.getToken() != null && user.getToken().isValid(userToken)) {
-                    long authorId = UserCache.getId(nick);
-                    int error = SongListCache.addSongs(listId, songsId, authorId);
-                    switch (error) {
-                        case 0 : result.put("error", "ok");
-                            break;
-                        case 1: result.put("error", "invalidSongList");
-                            break;
-                        case 2: result.put("error", "invalidAuthor");
-                            break;
-                        default: result.put("error", "unexpectedError");
-                            break;
+            try(Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntityUser user = UserCache.getUser(s, nick);
+                if (user != null) {
+                    EntitySong song = SongCache.getSong(s, songsId);
+                    if (song != null) {
+                        if (user.getToken() != null && user.getToken().isValid(userToken)) {
+                            EntitySongList list = SongListCache.getSongList(s, listId);
+                            if(list.getAuthor().getId().equals(user.getId())) {
+                                if (list != null) {
+                                    list.addSong(song);
+                                    result.put("error", "ok");
+                                    ok = true;
+                                } else {
+                                    result.put("error", "unknownList");
+                                }
+                            } else {
+                                result.put("error", "notAuthor");
+                            }
+                        } else {
+                            result.put("error", "invalidToken");
+                        }
+                    } else {
+                        result.put("error", "unknownSong");
                     }
                 } else {
-                    result.put("error", "invalidToken");
+                    result.put("error", "unknownUser");
                 }
-            }else{
-                result.put("error", "unknownUser");
+
+                if(ok){
+                    t.commit();
+                }else{
+                    t.rollback();
+                }
             }
         }else{
             result.put("error", "invalidArgs");
@@ -197,29 +251,44 @@ public class UserSongListRequests {
     @Path("{nick}/{listId}/remove")
     @POST
     public String remove(@FormParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
-                      @PathParam("listId") long listId, @FormParam("songId") List<Long> songsId) {
+                      @PathParam("listId") long listId, @FormParam("songId") Long songsId) {
         JSONObject result = new JSONObject();
         if(StringUtils.isValid(nick) && StringUtils.isValid(userToken)){
-            EntityUser user = UserCache.getUser(nick);
-            if(user != null){
-                if (user.getToken() != null && user.getToken().isValid(userToken)) {
-                    long authorId = UserCache.getId(nick);
-                    int error = SongListCache.removeSongs(listId, songsId, authorId);
-                    switch (error) {
-                        case 0 : result.put("error", "ok");
-                            break;
-                        case 1: result.put("error", "invalidSongList");
-                            break;
-                        case 2: result.put("error", "invalidAuthor");
-                            break;
-                        default: result.put("error", "unexpectedError");
-                            break;
+            try(Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntityUser user = UserCache.getUser(s, nick);
+                if (user != null) {
+                    EntitySong song = SongCache.getSong(s, songsId);
+                    if (song != null) {
+                        if (user.getToken() != null && user.getToken().isValid(userToken)) {
+                            EntitySongList list = SongListCache.getSongList(s, listId);
+                            if (list != null) {
+                                if(user.getId().equals(list.getAuthor().getId())) {
+                                    list.removeSong(song);
+                                    ok = true;
+                                    result.put("error", "ok");
+                                }else{
+                                    result.put("error", "notAuthor");
+                                }
+                            }else{
+                                result.put("error", "unknownList");
+                            }
+                        }else{
+                            result.put("error", "invalidToken");
+                        }
+                    } else {
+                        result.put("error", "unknownSong");
                     }
                 } else {
-                    result.put("error", "invalidToken");
+                    result.put("error", "unknownUser");
                 }
-            }else{
-                result.put("error", "unknownUser");
+
+                if(ok){
+                    t.commit();
+                }else{
+                    t.rollback();
+                }
             }
         }else{
             result.put("error", "invalidArgs");
