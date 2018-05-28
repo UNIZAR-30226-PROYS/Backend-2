@@ -430,6 +430,38 @@ Types:
 | *"score"* | Double |
 
 
+#### GET /users/{nick}/songs
+This requests gets the songs a user with name {nick} has uploaded.
+
+Accepts the following parameters in an HTTP GET request:
+  - nick => User nick.
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "size": "{AMOUNT}",
+    "songs": "[{ARRAY_OF_INT}]",
+    "error": "{ERROR_CODE}"
+  }
+```
+
+If *"error"* is not "ok", the song will be empty, this means, all fields will be defined **but** its value is unspecified.
+
+Other {ERROR_CODE}s are:
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| invalidArgs | Empty or null user nick |
+| unknownUser | No user is registered with that id |
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"songs"* | JSONArray of Integer |
+| *"size"* | Integer |
+| *"error"* | String |
+
 ### **/songs**
 
 #### GET /songs/{id}
@@ -693,3 +725,190 @@ Types:
 | *"likes"* | Integer |
 | *"reproductions"* | Integer |
 >>>>>>> feature/popularSongs
+
+#### GET /songs/{id}/likes
+This requests gets the amount of likes a song has.
+
+Accepts the following parameters in an HTTP GET request:
+  - id => Song id.
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "likes" : "{LIKES}",
+    "error" : "{ERROR_CODE}"
+  }
+```
+
+If *"error"* is not "ok", no likes field will be added to the response.
+
+Other {ERROR_CODE}s are:
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| unknownSong | No song is registered with that id |
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"error"* | String |
+
+### **/albums**
+
+#### POST /albums/{nick}/create
+This requests creates a new album whose author is {nick}.
+
+Accepts the following parameters in an HTTP POST request:
+  - nick => Author of the album.
+  - token => Login token of the author
+  - title => Album title
+  - image => Album cover
+  - year => Album creation year
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "album": {
+      "update_time": "{UPDATE_TIME}",
+      "image": "{IMAGE}",
+      "publish_year": "{YEAR}",
+      "user_id": "{AUTHOR}",
+      "songs": ["{SONG_ID}"],
+      "id": "{ID}",
+      "title": "{TITLE}"
+    },
+    "error" : "{ERROR_CODE}"
+  }
+```
+
+If *"error"* is not "ok", the album will be empty, this means, all fields will be defined **but** its value is unspecified.
+
+Other {ERROR_CODE}s are:
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| invalidArgs | *nick*, *token* or *title* is empty or null. |
+| unknownError | An unknown error happened |
+| invalidYear | *Year* field is lower than 1900 |
+| invalidImage | *Image* field is empty |
+| invalidToken | Cannot authenticate *nick* with this *token* |
+| unknownUser | No user is registered in DB with name *nick* |
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"id"* | Long |
+| *"user_id"* | Long |
+| *"title"* | String |
+| *"image"* | String |
+| *"update_time"* | Long |
+| *"publish_year"* | Integer |
+| *"songs"* | SongIdArray |
+| *"error"* | String |
+
+#### POST /albums/{albumID}/delete
+This requests deletes an existing album whose id is {albumID}.
+
+Accepts the following parameters in an HTTP POST request:
+  - albumID => Album unique id
+  - nick => Author of the album.
+  - token => Login token of the author
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "error" : "{ERROR_CODE}"
+  }
+```
+
+Other {ERROR_CODE}s are:
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| invalidArgs | *nick* or *token* is empty or null. |
+| invalidAlbum | *albumID* is lower or equal to zero. |
+| invalidToken | Cannot authenticate *nick* with this *token*. |
+| unknownUser | No user is registered in DB with name *nick*. |
+| unknownAlbum | No album is registered in DB with id *albumID*. |
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"error"* | String |
+
+#### POST /albums/{nick}/{albumID}/add
+This requests adds an existing song to an existing album whose id is {albumID}.
+
+Accepts the following parameters in an HTTP POST request:
+  - albumID => Album unique id
+  - nick => Author of the album.
+  - token => Login token of the author
+  - songId => Song id ({nick} must also be the author of this song)
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "error" : "{ERROR_CODE}"
+  }
+```
+
+Other {ERROR_CODE}s are:
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| alreadyAdded | This song has already been added to an album |
+| notAuthor | This user is not the author of the album/song |
+| invalidSong | *songId* is lower or equal than zero. |
+| unknownSong | *songId* does not represent any song in the DB. |
+| invalidAlbum | *albumID* is lower or equal than zero. |
+| unknownAlbum | *albumID* does not represent any song in the DB. |
+| invalidToken | Cannot authenticate *nick* with this *token*. |
+| unknownUser | No user is registered in DB with name *nick*. |
+| invalidArgs | *nick* or *token* is empty or null. |
+
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"error"* | String |
+
+#### POST /albums/{nick}/{albumID}/delete
+This requests deletes an existing song from an existing album whose id is {albumID}.
+
+Accepts the following parameters in an HTTP POST request:
+  - albumID => Album unique id
+  - nick => Author of the album.
+  - token => Login token of the author
+  - songId => Song id ({nick} must also be the author of this song)
+
+RestAPI will answer with this JSON response:
+```json
+  {
+    "error" : "{ERROR_CODE}"
+  }
+```
+
+Other {ERROR_CODE}s are:
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| alreadyDeleted | This song has no album assigned |
+| notAuthor | This user is not the author of the album/song |
+| invalidSong | *songId* is lower or equal than zero. |
+| unknownSong | *songId* does not represent any song in the DB. |
+| invalidAlbum | *albumID* is lower or equal than zero. |
+| unknownAlbum | *albumID* does not represent any song in the DB. |
+| invalidToken | Cannot authenticate *nick* with this *token*. |
+| unknownUser | No user is registered in DB with name *nick*. |
+| invalidArgs | *nick* or *token* is empty or null. |
+
+
+Types:
+
+| Parameter | Type |
+| :---: |:---|
+| *"error"* | String |

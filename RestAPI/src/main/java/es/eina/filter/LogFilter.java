@@ -17,11 +17,11 @@ public class LogFilter implements ContainerRequestFilter {
         String ipAddress = containerRequest.getHeaderString("REMOTE_ADDR");
         MultivaluedMap<String, String> map = containerRequest.getHeaders();
         for (String k : map.keySet()) {
-            RestApp.getInstance().getLogger().info("Key: " + k + " - Value: " + map.get(k));
+            //RestApp.getInstance().getLogger().info("Key: " + k + " - Value: " + map.get(k));
         }
 
         //Log the IP address and current timestamp.
-        System.out.println("IP " + ipAddress + ", Time "
-                + new Date().toString());
+        //System.out.println("IP " + ipAddress + ", Time "
+        //        + new Date().toString());
     }
 }

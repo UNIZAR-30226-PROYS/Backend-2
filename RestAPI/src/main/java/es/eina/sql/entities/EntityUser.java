@@ -1,18 +1,25 @@
 package es.eina.sql.entities;
 
+import es.eina.RestApp;
+import es.eina.cache.AlbumCache;
+import es.eina.cache.UserFollowersCache;
 import es.eina.crypt.Crypter;
 import es.eina.sql.utils.HibernateUtils;
 import es.eina.utils.StringUtils;
 import es.eina.utils.UserUtils;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.NaturalId;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.persistence.*;
 import javax.persistence.Entity;
+import javax.transaction.Transactional;
 import java.sql.Date;
+import java.util.*;
 
 @Entity(name="user")
 @Table(name="users")
@@ -57,17 +64,53 @@ public class EntityUser extends EntityBase {
     @Column(name="instagram", nullable = false)
     private String instagram;
 
-    @OneToOne(mappedBy = "user")
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "user")
     private EntityToken token;
 
-    @OneToOne(mappedBy = "user")
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true)
     private EntityUserValues userValues;
+
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "user")
+    //@Cascade({org.hibernate.annotations.CascadeType.SAVE_UPDATE, org.hibernate.annotations.CascadeType.DELETE})
+    //@Cascade(org.hibernate.annotations.CascadeType.ALL)
+    private Set<EntityAlbum> albums = new HashSet<>();
+
+    @ManyToMany(cascade=CascadeType.ALL)
+    @JoinTable(
+        name = "user_liked_songs",
+        joinColumns = { @JoinColumn(name = "user_id")},
+        inverseJoinColumns = {@JoinColumn(name = "song_id")}
+    )
+    Set<EntitySong> songsLiked = new HashSet<>();
+
+    @ManyToMany(cascade=CascadeType.ALL)
+    @JoinTable(
+            name = "user_faved_songs",
+            joinColumns = { @JoinColumn(name = "user_id")},
+            inverseJoinColumns = {@JoinColumn(name = "song_id")}
+    )
+    Set<EntitySong> songsFaved = new HashSet<>();
+
+
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+    //@Cascade(org.hibernate.annotations.CascadeType.ALL)
+    Set<EntityUserSongData> songsListened = new HashSet<>();
+
+    //This user has this followers
+    @OneToMany(mappedBy = "followee", cascade=CascadeType.ALL, orphanRemoval = true)
+    //@Cascade(org.hibernate.annotations.CascadeType.ALL)
+    private Set<EntityUserFollowers> followers = new HashSet<>();
+
+    //This user follows this users
+    @OneToMany(mappedBy = "follower", cascade=CascadeType.ALL, orphanRemoval = true)
+    private Set<EntityUserFollowers> followees = new HashSet<>();
 
     /**
      * DO NOT use this method as it can only be used by Hibernate
      */
     public EntityUser(){
-        update();
+
     }
 
     public EntityUser(String nick, String username, String mail, String pass, Date birthDate, String bio, String country) {
@@ -79,8 +122,6 @@ public class EntityUser extends EntityBase {
         this.bio = bio;
         this.country = country;
         this.register_date = System.currentTimeMillis();
-
-        update();
     }
 
     public void updateToken(){
@@ -89,7 +130,6 @@ public class EntityUser extends EntityBase {
         }else{
             this.token = new EntityToken(this);
         }
-        update();
     }
 
     public void verifyAccount(){
@@ -98,7 +138,6 @@ public class EntityUser extends EntityBase {
         }
 
         userValues.setVerified(true);
-        update();
     }
 
     public int unverifyAccount(){
@@ -106,12 +145,27 @@ public class EntityUser extends EntityBase {
 
         userValues.setVerified(false);
         if(userValues.cleanUp()){
-            int code = userValues.deleteEntity();
-            if(code == 0) {
-                userValues = null;
-                update();
-            }
-            return code;
+            userValues = null;
+            return 0;
+        }
+        return 0;
+    }
+
+    public void makeAdmin(){
+        if(userValues == null){
+            userValues = new EntityUserValues(this);
+        }
+
+        userValues.setAdmin(true);
+    }
+
+    public int demoteAdmin(){
+        if(userValues == null) return -2;
+
+        userValues.setAdmin(false);
+        if(userValues.cleanUp()){
+            userValues = null;
+            return 0;
         }
         return 0;
     }
@@ -150,7 +204,7 @@ public class EntityUser extends EntityBase {
             }
         }else if("birth_date".equals(key)){
             if(value instanceof Number){
-                this.birthDate = new Date((Long) value);
+                this.birthDate = new Date(((Number) value).longValue());
                 code = 0;
             }
         }else if("pass".equals(key)){
@@ -173,19 +227,14 @@ public class EntityUser extends EntityBase {
             }
         }
 
-        if(code == 0) update();
         return code;
     }
 
-    public int deleteToken(){
+    public int deleteToken(Session s){
         if(this.token != null) {
-            int code = token.deleteEntity();
-
-            if(code == 0) {
-                this.token = null;
-                update();
-            }
-            return code;
+            s.delete(token);
+            this.token = null;
+            return 0;
         }
         return -2;
     }
@@ -252,5 +301,110 @@ public class EntityUser extends EntityBase {
 
     public String getInstagram() {
         return instagram;
+    }
+
+    /*public Set<EntitySong> getSongs() {
+        return songs;
+    }*/
+
+    public JSONArray getUserSongs() {
+        JSONArray songs = new JSONArray();
+        if(this.albums != null) {
+            for (EntityAlbum album : this.albums) {
+                JSONArray albumSongs = album.getSongsAsArray();
+                for (int i = 0; i < albumSongs.length(); i++) {
+                    songs.put(albumSongs.get(i));
+                }
+            }
+        }
+        return songs;
+    }
+
+    public boolean isSongFaved(EntitySong song){
+        return this.songsFaved.contains(song);
+    }
+
+    public boolean favSong(EntitySong song){ return this.songsFaved.add(song); }
+
+    public boolean unfavSong(EntitySong song){ return this.songsFaved.remove(song);}
+
+    public boolean listenSong(EntitySong song){
+        EntityUserSongData entity = new EntityUserSongData(this, song);
+        return this.songsListened.add(entity);
+    }
+
+    public boolean addAlbum(EntityAlbum entityAlbum) {
+        return this.albums.add(entityAlbum);
+    }
+
+    public JSONArray getUserAlbums() {
+        JSONArray albums = new JSONArray();
+        if(this.albums != null) {
+            for (EntityAlbum album : this.albums) {
+                albums.put(album.getAlbumId());
+            }
+        }
+        return albums;
+    }
+
+    /**
+     * Returns a list of users who are following this user
+     */
+    public Set<EntityUser> getFollowers(){
+        Set<EntityUser> user = new HashSet<>();
+        for(EntityUserFollowers followee : followers){
+            user.add(followee.getFollower());
+        }
+        return user;
+    }
+
+    /**
+     * Returns a list of users this user follows
+     */
+    public Set<EntityUser> getFollowees(){
+        Set<EntityUser> user = new HashSet<>();
+        for(EntityUserFollowers followers : followees){
+            user.add(followers.getFollowee());
+        }
+        return user;
+    }
+
+    private void addFollowee(EntityUser usr, EntityUserFollowers data){
+        this.followers.add(data);
+    }
+
+    private void removeFollowee(EntityUserFollowers usr){
+        this.followers.remove(usr);
+    }
+
+    public boolean followUser(EntityUser other){
+        if(!getFollowers().contains(other)){
+            EntityUserFollowers obj = new EntityUserFollowers(this, other);
+            other.addFollowee(this, obj);
+            this.followees.add(obj);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean unFollowUser(Session s, EntityUser other){
+        if(getFollowers().contains(other)){
+            EntityUserFollowers obj = UserFollowersCache.getFollower(s, other.getId(), getId());
+            other.removeFollowee(obj);
+            this.followees.remove(obj);
+            return true;
+        }
+
+        return false;
+    }
+
+    public JSONArray getFavedSongs() {
+        JSONArray array = new JSONArray();
+        for (EntitySong song: songsFaved) {
+            array.put(song.getId());
+        }
+        return array;
     }
 }

@@ -1,0 +1,78 @@
+# For a quick start check out our HTTP Requests collection (Tools|HTTP Client|Open HTTP Requests Collection).
+#
+# Following HTTP Request Live Templates are available:
+# * 'gtrp' and 'gtr' create a GET request with or without query parameters;
+# * 'ptr' and 'ptrp' create a POST request with a simple or parameter-like body;
+# * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
+
+
+
+#invalidArgs
+POST http://localhost:8080/songs/2/listen
+Content-Type: application/x-www-form-urlencoded
+Accept: */*
+Cache-Control: no-cache
+
+token=g2xoxjg2kbu2sdwa
+
+###
+
+#invalidArgs
+POST http://localhost:8080/songs/2/listen
+Content-Type: application/x-www-form-urlencoded
+Accept: */*
+Cache-Control: no-cache
+
+nick=test-user
+
+###
+
+#unknownUser
+POST http://localhost:8080/songs/2/listen
+Content-Type: application/x-www-form-urlencoded
+Accept: */*
+Cache-Control: no-cache
+
+nick=invalid-user&token=g2xoxjg2kbu2sdwa
+
+###
+
+#invalidToken
+POST http://localhost:8080/songs/2/listen
+Content-Type: application/x-www-form-urlencoded
+Accept: */*
+Cache-Control: no-cache
+
+nick=test-user&token=invalid-g2xoxjg2kbu2sdwa
+
+###
+
+#unknownSong
+POST http://localhost:8080/songs/-1/listen
+Content-Type: application/x-www-form-urlencoded
+Accept: */*
+Cache-Control: no-cache
+
+nick=test-user&token=g2xoxjg2kbu2sdwa
+
+###
+
+#unknownSong
+POST http://localhost:8080/songs/10000/listen
+Content-Type: application/x-www-form-urlencoded
+Accept: */*
+Cache-Control: no-cache
+
+nick=test-user&token=g2xoxjg2kbu2sdwa
+
+###
+
+#ok
+POST http://localhost:8080/songs/2/listen
+Content-Type: application/x-www-form-urlencoded
+Accept: */*
+Cache-Control: no-cache
+
+nick=test-user&token=g2xoxjg2kbu2sdwa
+
+###

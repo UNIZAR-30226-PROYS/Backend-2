@@ -1,0 +1,68 @@
+# For a quick start check out our HTTP Requests collection (Tools|HTTP Client|Open HTTP Requests Collection).
+#
+# Following HTTP Request Live Templates are available:
+# * 'gtrp' and 'gtr' create a GET request with or without query parameters;
+# * 'ptr' and 'ptrp' create a POST request with a simple or parameter-like body;
+# * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
+
+POST http://localhost:8080/albums/test-user/create
+Content-Type: application/x-www-form-urlencoded
+
+token=g2xoxjg2kbu2sdwa&title=NewAlbum&image=random.png&year=1950
+
+###
+
+# invalidArgs
+POST http://localhost:8080/albums/12/delete
+Content-Type: application/x-www-form-urlencoded
+
+token=g2xoxjg2kbu2sdwa
+
+###
+
+#invalidArgs
+POST http://localhost:8080/albums/12/delete
+Content-Type: application/x-www-form-urlencoded
+
+nick=test-user
+
+###
+
+#unknownUser
+POST http://localhost:8080/albums/12/delete
+Content-Type: application/x-www-form-urlencoded
+
+nick=invalid-user&token=g2xoxjg2kbu2sdwa
+
+###
+
+#invalidToken
+POST http://localhost:8080/albums/12/delete
+Content-Type: application/x-www-form-urlencoded
+
+nick=test-user&token=invalid-g2xoxjg2kbu2sdwa
+
+###
+
+#invalidAlbum
+POST http://localhost:8080/albums/-1/delete
+Content-Type: application/x-www-form-urlencoded
+
+nick=test-user&token=g2xoxjg2kbu2sdwa
+
+###
+
+#unknownAlbum
+POST http://localhost:8080/albums/10000/delete
+Content-Type: application/x-www-form-urlencoded
+
+nick=test-user&token=g2xoxjg2kbu2sdwa
+
+###
+
+POST http://localhost:8080/albums/12/delete
+Content-Type: application/x-www-form-urlencoded
+
+nick=test-user&token=g2xoxjg2kbu2sdwa
+
+###
