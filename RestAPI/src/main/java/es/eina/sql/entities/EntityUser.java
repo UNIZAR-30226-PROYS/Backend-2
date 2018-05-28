@@ -56,13 +56,13 @@ public class EntityUser extends EntityBase {
     private long register_date;
 
     @Column(name="twitter", nullable = false)
-    private String twitter;
+    private String twitter = "";
 
     @Column(name="facebook", nullable = false)
-    private String facebook;
+    private String facebook = "";
 
     @Column(name="instagram", nullable = false)
-    private String instagram;
+    private String instagram = "";
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "user")
     private EntityToken token;

@@ -108,6 +108,7 @@ public abstract class Index {
             try {
                 writer.deleteAll();
                 writer.close();
+                writer = null;
             } catch (IOException e) {
                 System.out.println("Cannot close previous indexWriter");
                 e.printStackTrace();
@@ -209,5 +210,9 @@ public abstract class Index {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void close(){
+        closeIndexWriter();
     }
 }

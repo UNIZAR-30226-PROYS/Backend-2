@@ -47,4 +47,9 @@ public class RestApp {
     public static IndexUsers getUsersIndex() {
         return usersIndex;
     }
+
+    public void close(){
+        songsIndex.close();
+        usersIndex.close();
+    }
 }

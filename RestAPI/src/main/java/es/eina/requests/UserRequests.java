@@ -646,7 +646,7 @@ public class UserRequests {
      */
     @Path("/search")
     @GET
-    public String searchProducts(
+    public String searchUsers(
             @DefaultValue("" + USER_SEARCH_NUMBER) @QueryParam("n") int number,
             @DefaultValue("") @QueryParam("query") String keywords,
             @DefaultValue("") @QueryParam("country") String country,

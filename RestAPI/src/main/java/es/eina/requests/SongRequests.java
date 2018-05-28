@@ -96,7 +96,7 @@ public class SongRequests {
      */
     @Path("/search")
     @GET
-    public String searchProducts(
+    public String searchSongs(
             @DefaultValue("" + SONG_SEARCH_NUMBER) @QueryParam("n") int number,
             @DefaultValue("") @QueryParam("query") String keywords,
             @DefaultValue("") @QueryParam("country") String country,

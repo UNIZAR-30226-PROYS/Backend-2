@@ -75,6 +75,7 @@ public class Recommender extends TaskBase {
                 instance.setValue(authorAttr, song.getUserId());
 
                 instances.add(instance);
+                RestApp.getInstance().getLogger().severe("Add song "+song.getId()+".");
             }
         }
 

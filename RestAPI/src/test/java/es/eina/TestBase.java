@@ -26,7 +26,8 @@ public class TestBase {
     }
 
     protected static void openDB(){
-        InputStream f = HibernateUtilsTest.class.getResourceAsStream("/database-test.properties");
+        InputStream f = TestBase.class.getResourceAsStream("/database-test.properties");
+        System.out.println(TestBase.class.getResource("/"));
         //InputStream f = HibernateUtilsTest.class.getResourceAsStream("/database-test.properties");
         Assert.assertNotNull(f);
         SessionFactory session = HibernateUtils.configureDatabase(f);
