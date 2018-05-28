@@ -15,6 +15,11 @@ import com.google.api.client.json.jackson.JacksonFactory;
 import com.google.api.services.plus.Plus;
 import com.google.api.services.plus.model.PeopleFeed;
 import com.google.gson.Gson;
+import es.eina.cache.UserCache;
+import es.eina.geolocalization.Geolocalizer;
+import es.eina.sql.entities.EntityUser;
+import es.eina.utils.UserUtils;
+import org.json.JSONObject;
 
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,11 +30,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import java.io.*;
+import java.sql.Date;
 
 @Path("/oauth/")
 @Produces(MediaType.APPLICATION_JSON)
 public class OAuth {
 
+    @Context
+    private HttpServletRequest request;
     /*
      * Default HTTP transport to use to make HTTP requests.
      */
@@ -81,77 +89,68 @@ public class OAuth {
      */
     @GET
     @Path("/login")
-    public void login(@Context HttpServletRequest request,
-                          @Context HttpServletResponse response) throws IOException {
+    public String login(@FormParam("token") String authCode) throws IOException {
+        JSONObject response = new JSONObject();
         // Only connect a user that is not already connected.
-        String tokenData = "4/AADZQSzZ6qIBUlOiL-sFWwCmS55f_YOOXY1rkP_a5luzm4oWFE1_vR7GKRow2ey3BJEI0CTlJ3rr-Jg7IeUN2vo";
-        if (tokenData != null) {
-            response.setStatus(HttpServletResponse.SC_OK);
-            response.getWriter().print(GSON.toJson("Current user is already connected."));
-            return;
+        if (authCode == null) {
+            response.put("error","ErrorArgs");
+            return response.toString();
         }
-        // Ensure that this is no request forgery going on, and that the user
-        // sending us this connect request is the user that was supposed to.
-        if (!request.getParameter("state").equals(request.getSession().getAttribute("state"))) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().print(GSON.toJson("Invalid state parameter."));
-            return;
-        }
-        // Normally the state would be a one-time use token, however in our
-        // simple case, we want a user to be able to connect and disconnect
-        // without reloading the page.  Thus, for demonstration, we don't
-        // implement this best practice.
-        //request.getSession().removeAttribute("state");
-        ByteArrayOutputStream resultStream = new ByteArrayOutputStream();
-        getContent(request.getInputStream(), resultStream);
-        String code = new String(resultStream.toByteArray(), "UTF-8");
+        String CLIENT_SECRET_FILE = "client_secrets.json";
+        String REDIRECT_URI = "";
+        // Exchange auth code for access token
+        GoogleClientSecrets clientSecrets =
+                GoogleClientSecrets.load(
+                        com.google.api.client.json.jackson2.JacksonFactory.getDefaultInstance(), new FileReader(CLIENT_SECRET_FILE));
+        GoogleTokenResponse tokenResponse =
+                new GoogleAuthorizationCodeTokenRequest(
+                        new NetHttpTransport(),
+                        com.google.api.client.json.jackson2.JacksonFactory.getDefaultInstance(),
+                        "https://www.googleapis.com/oauth2/v4/token",
+                        clientSecrets.getDetails().getClientId(),
+                        clientSecrets.getDetails().getClientSecret(),
+                        authCode,
+                        REDIRECT_URI)  // Specify the same redirect URI that you use with your web
+                        // app. If you don't have a web version of your app, you can
+                        // specify an empty string.
+                        .execute();
 
+        String accessToken = tokenResponse.getAccessToken();
+        // Get profile info from ID token
+        GoogleIdToken idToken = null;
         try {
-            // Upgrade the authorization code into an access and refresh token.
-            GoogleTokenResponse tokenResponse =
-                    new GoogleAuthorizationCodeTokenRequest(TRANSPORT, JSON_FACTORY,
-                            CLIENT_ID, CLIENT_SECRET, code, "postmessage").execute();
-
-            // You can read the Google user ID in the ID token.
-            // This sample does not use the user ID.
-            GoogleIdToken idToken = tokenResponse.parseIdToken();
-            String gplusId = idToken.getPayload().getSubject();
-
-            // Store the token in the session for later use.
-            request.getSession().setAttribute("token", tokenResponse.toString());
-            response.setStatus(HttpServletResponse.SC_OK);
-            response.getWriter().print(GSON.toJson("Successfully connected user."));
-        } catch (TokenResponseException e) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().print(GSON.toJson("Failed to upgrade the authorization code."));
+            idToken = tokenResponse.parseIdToken();
         } catch (IOException e) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().print(GSON.toJson("Failed to read token data from Google. " +
-                    e.getMessage()));
+            e.printStackTrace();
         }
+        GoogleIdToken.Payload payload = idToken.getPayload();
+        String userId = payload.getSubject();  // Use this value as a key to identify a user.
+        String email = payload.getEmail();
+        boolean emailVerified = Boolean.valueOf(payload.getEmailVerified());
+        String name = (String) payload.get("name");
+        String pictureUrl = (String) payload.get("picture");
+        String locale = (String) payload.get("locale");
+        String familyName = (String) payload.get("family_name");
+        String givenName = (String) payload.get("given_name");
+
+        EntityUser user = UserCache.getUser(email);
+        if (user != null) {
+            String country = Geolocalizer.getInstance().getCountryCode(request.getRemoteAddr());
+            EntityUser userData = UserUtils.addUser(email, email, accessToken, userId, "", new Date(0), country);
+            if (userData != null) {
+                response.put("token", userData.getToken().getToken());
+                response.put("error", "ok");
+            } else {
+                response.put("error", "unknownError");
+            }
+        }
+        return response.toString();
     }
 
-    /*
-     * Read the content of an InputStream.
-     *
-     * @param inputStream the InputStream to be read.
-     * @return the content of the InputStream as a ByteArrayOutputStream.
-     * @throws IOException
-     */
-    static void getContent(InputStream inputStream, ByteArrayOutputStream outputStream)
-            throws IOException {
-        // Read the response into a buffered stream
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        int readChar;
-        while ((readChar = reader.read()) != -1) {
-            outputStream.write(readChar);
-        }
-        reader.close();
-    }
     /**
      * Upgrade given auth code to token, and store it in the session.
      * POST body of request should be the authorization code.
-     * Example URI: /login?code=
+     * Example URI: /login?token=
      */
     @GET
     @Path("/logout")
