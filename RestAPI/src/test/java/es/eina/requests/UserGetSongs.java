@@ -63,7 +63,7 @@ public class UserGetSongs extends TestBase {
         boolean x = false;
         int i = 0;
         while(!x && i < array.length()){
-            x = array.get(i).equals(id);
+            x = array.getLong(i) == id;
             i++;
         }
 

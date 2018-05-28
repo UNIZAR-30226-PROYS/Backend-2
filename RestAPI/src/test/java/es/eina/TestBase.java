@@ -5,6 +5,7 @@ import es.eina.sql.utils.HibernateUtilsTest;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
 
@@ -40,5 +41,15 @@ public class TestBase {
 
     protected JSONObject performTest(String test){
         return new JSONObject(test);
+    }
+
+    protected boolean contains(JSONArray songs, Long id) {
+        boolean has = false;
+        int i = 0;
+        while(!has && i < songs.length()){
+            has = songs.getLong(i) == id;
+            i++;
+        }
+        return has;
     }
 }

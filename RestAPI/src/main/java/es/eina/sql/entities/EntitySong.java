@@ -42,7 +42,7 @@ public class EntitySong extends EntityBase {
     @Cascade(org.hibernate.annotations.CascadeType.ALL)
     private Set<EntityUserSongData> usersListeners = new HashSet<>();
 
-    @ManyToMany(mappedBy = "song_list")
+    @ManyToMany(mappedBy = "songs")
     private Set<EntitySongList> lists = new HashSet<>();
 
 

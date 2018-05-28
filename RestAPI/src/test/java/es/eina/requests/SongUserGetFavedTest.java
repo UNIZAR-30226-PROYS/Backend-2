@@ -103,14 +103,4 @@ public class SongUserGetFavedTest extends TestBase {
         Assert.assertTrue(contains(songs, song5.getId()));
     }
 
-    private boolean contains(JSONArray songs, Long id) {
-        boolean has = false;
-        int i = 0;
-        while(!has && i < songs.length()){
-            has = songs.get(i).equals(id);
-            i++;
-        }
-        return has;
-    }
-
 }

@@ -279,6 +279,62 @@ public class UserRequests {
         return obj.toString();
     }
 
+    /**
+     * Perform a search for a user.
+     * <p>
+     * URI: /users/{user}
+     * </p>
+     *
+     * @param id  : ID of a user to search
+     * @param token : Token string of this user.
+     * @return The result of this search as specified in API.
+     */
+    @Path("/{id}/id")
+    @GET
+    public String getUserData(
+            @PathParam("id") int id,
+            @DefaultValue("") @QueryParam("token") String token
+    ) {
+        JSONObject obj = new JSONObject();
+        JSONObject userJSON = new JSONObject(defaultUserJSON, JSONObject.getNames(defaultUserJSON));
+        try (Session s = HibernateUtils.getSession()) {
+            Transaction t = s.beginTransaction();
+            boolean ok = false;
+            EntityUser user = UserCache.getUser(s, id);
+            if (user != null) {
+                userJSON.put("id", user.getId());
+                userJSON.put("nick", user.getNick());
+                userJSON.put("user", user.getUsername());
+                userJSON.put("bio", user.getBio());
+                userJSON.put("verified", user.isVerified());
+                userJSON.put("facebook", user.getFacebook());
+                userJSON.put("twitter", user.getTwitter());
+                userJSON.put("instagram", user.getInstagram());
+                if (user.getToken().isValid(token)) {
+                    userJSON.put("mail_visible", true);
+                    userJSON.put("mail", user.getMail());
+                    userJSON.put("country", user.getCountry());
+                    userJSON.put("birth_date", user.getBirthDate());
+                    userJSON.put("register_date", user.getRegisterDate());
+                }
+                obj.put("error", false);
+                ok = true;
+            } else {
+                obj.put("error", true);
+            }
+
+            if (ok) {
+                t.commit();
+            } else {
+                t.rollback();
+            }
+        }
+
+        obj.put("profile", userJSON);
+
+        return obj.toString();
+    }
+
     @Path("/{nick}/verify")
     @POST
     public String verifyAccount(@PathParam("nick") String nick,
