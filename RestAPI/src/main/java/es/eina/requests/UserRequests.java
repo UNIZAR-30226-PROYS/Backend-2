@@ -5,10 +5,7 @@ import es.eina.cache.FeedCache;
 import es.eina.cache.PopularSongCache;
 import es.eina.cache.UserCache;
 import es.eina.geolocalization.Geolocalizer;
-import es.eina.search.IndexSongs;
 import es.eina.search.IndexUsers;
-import es.eina.sql.MySQLConnection;
-import es.eina.sql.MySQLQueries;
 import es.eina.sql.entities.EntityToken;
 import es.eina.sql.entities.EntityUser;
 import es.eina.sql.utils.HibernateUtils;
@@ -30,8 +27,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.sql.Date;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 @Path("/users/")
@@ -40,7 +35,7 @@ public class UserRequests {
 
     private static final int DEFAULT_FEED_FOLLOW_NUMBER = 15;
     private static final int DEFAULT_FEED_REPRODUCTION_NUMBER = 15;
-    private static final int DEFAULT_FEED_SONGS_NUMBER= 15;
+    private static final int DEFAULT_FEED_SONGS_NUMBER = 15;
     private static final int USER_SEARCH_NUMBER = 10;
     private static final long USER_SEARCH_MIN_TIME = 0;
     private static final long USER_SEARCH_MAX_TIME = Long.MAX_VALUE;
@@ -57,6 +52,7 @@ public class UserRequests {
     private static final JSONObject defaultCommentJSON;
 
     private static final EmailValidator mailValidator = EmailValidator.getInstance();
+
     /**
      * Try login a user in the system.
      * <p>
@@ -123,8 +119,8 @@ public class UserRequests {
     @Path("/{nick}/signup")
     @POST
     public String signup(@PathParam("nick") String nick, @FormParam("mail") String mail,
-                             @FormParam("pass0") String pass0, @FormParam("pass1") String pass1,
-                             @FormParam("user") String user, @FormParam("birth") long birth, @FormParam("bio") String bio) {
+                         @FormParam("pass0") String pass0, @FormParam("pass1") String pass1,
+                         @FormParam("user") String user, @FormParam("birth") long birth, @FormParam("bio") String bio) {
         JSONObject response = new JSONObject();
         response.put("token", "");
         response.put("error", "");
@@ -189,7 +185,7 @@ public class UserRequests {
     @Path("/{nick}/login")
     @DELETE
     public String deleteLogin(@PathParam("nick") String nick,
-                                  @DefaultValue("") @FormParam("token") String token) {
+                              @DefaultValue("") @FormParam("token") String token) {
         JSONObject obj = new JSONObject();
 
         if (StringUtils.isValid(nick) && StringUtils.isValid(token)) {
@@ -286,9 +282,9 @@ public class UserRequests {
     @Path("/{nick}/verify")
     @POST
     public String verifyAccount(@PathParam("nick") String nick,
-                                    @FormParam("self") String adminUser,
-                                    @DefaultValue("") @FormParam("token") String token,
-                                    @FormParam("verify") boolean verify) {
+                                @FormParam("self") String adminUser,
+                                @DefaultValue("") @FormParam("token") String token,
+                                @FormParam("verify") boolean verify) {
         JSONObject obj = new JSONObject();
 
         if (StringUtils.isValid(nick) && StringUtils.isValid(adminUser) && StringUtils.isValid(token)) {
@@ -347,29 +343,34 @@ public class UserRequests {
     @GET
     public String popular_songs(@PathParam("nick") String nick,
                                 @DefaultValue("") @FormParam("token") String token,
-                                @DefaultValue("" + SongRequests.MAX_POPULAR_SONGS) @QueryParam("n") int amount){
+                                @DefaultValue("" + SongRequests.MAX_POPULAR_SONGS) @QueryParam("n") int amount) {
         JSONObject obj = new JSONObject();
 
-        if(StringUtils.isValid(nick) && StringUtils.isValid(token)){
-            EntityUser user = UserCache.getUser(nick);
-            if(user != null){
-                EntityToken userToken = user.getToken();
-                if(userToken != null){
-                    if(userToken.isValid(token)){
-                        amount = Math.max(0, Math.min(SongRequests.MAX_POPULAR_SONGS, amount));
-                        obj = PopularSongCache.getPopularSongs(amount, user.getCountry());
-                        obj.put("error", "ok");
-                        return obj.toString();
-                    }else{
-                        obj.put("error", "invalidToken");
+        if (StringUtils.isValid(nick) && StringUtils.isValid(token)) {
+            try (Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                EntityUser user = UserCache.getUser(s, nick);
+                if (user != null) {
+                    EntityToken userToken = user.getToken();
+                    if (userToken != null) {
+                        if (userToken.isValid(token)) {
+                            amount = Math.max(0, Math.min(SongRequests.MAX_POPULAR_SONGS, amount));
+                            obj = PopularSongCache.getPopularSongs(s, amount, user.getCountry());
+                            obj.put("error", "ok");
+                            t.commit();
+                            return obj.toString();
+                        } else {
+                            obj.put("error", "invalidToken");
+                        }
+                    } else {
+                        obj.put("error", "closedSession");
                     }
-                }else{
-                    obj.put("error", "closedSession");
+                } else {
+                    obj.put("error", "unknownUser");
                 }
-            }else{
-                obj.put("error", "unknownUser");
+                t.rollback();
             }
-        }else{
+        } else {
             obj.put("error", "invalidArgs");
         }
 
@@ -499,10 +500,10 @@ public class UserRequests {
      * URI: /users/{user}/comments[?n={amount}]
      * </p>
      *
-     * @param nick   : Username of a user to search
+     * @param nick    : Username of a user to search
      * @param nFollow : Maximum amount of user follows to return.
-     * @param nRepr : Maximum amount of user reproductions to return.
-     * @param nSongs : Maximum amount of user songs to return.
+     * @param nRepr   : Maximum amount of user reproductions to return.
+     * @param nSongs  : Maximum amount of user songs to return.
      * @return The result of this search as specified in API.
      */
     @Path("/{nick}/feed")
@@ -516,12 +517,17 @@ public class UserRequests {
         JSONObject obj = new JSONObject();
 
         if (nFollow > 0 && nRepr > 0 && nSongs > 0) {
-            EntityUser user = UserCache.getUser(nick);
-            if (user != null) {
-                obj = FeedCache.getFeed(user, nFollow, nRepr, nSongs);
-                obj.put("error", "ok");
-            } else {
-                obj.put("error", "unknownUser");
+            try (Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                EntityUser user = UserCache.getUser(s, nick);
+                if (user != null) {
+                    obj = FeedCache.getFeed(s, user, nFollow, nRepr, nSongs);
+                    obj.put("error", "ok");
+                    t.commit();
+                } else {
+                    obj.put("error", "unknownUser");
+                    t.rollback();
+                }
             }
         } else {
             obj.put("error", "invalidArgs");
@@ -630,10 +636,11 @@ public class UserRequests {
 
     /**
      * Perform a search of products in the database.<br>
-     *     <p>
-     *         URI: /songs/search/?query=[&n={number}][&country={country}][&genre={genre}][&min_time={min_time}][&max_time={max_time}]
-     *     </p>
-     * @param number : Number of results to return
+     * <p>
+     * URI: /songs/search/?query=[&n={number}][&country={country}][&genre={genre}][&min_time={min_time}][&max_time={max_time}]
+     * </p>
+     *
+     * @param number   : Number of results to return
      * @param keywords : Keywords to search
      * @return The result of this search as specified in API.
      */
@@ -647,7 +654,7 @@ public class UserRequests {
             @DefaultValue("" + USER_SEARCH_MAX_TIME) @QueryParam("max_birth_time") long maxBirthTime,
             @DefaultValue("" + USER_SEARCH_MIN_TIME) @QueryParam("min_reg_time") long minRegTime,
             @DefaultValue("" + USER_SEARCH_MAX_TIME) @QueryParam("max_reg_time") long maxRegTime
-    ){
+    ) {
         minBirthTime = Math.max(USER_SEARCH_MIN_TIME, minBirthTime);
         minRegTime = Math.max(USER_SEARCH_MIN_TIME, minRegTime);
 
@@ -665,7 +672,7 @@ public class UserRequests {
         index.setSearchParams(country, minRegTime, maxRegTime, minBirthTime, maxBirthTime);
         List<ScoreDoc> result = index.search(keywords, number);
 
-        if(result != null) {
+        if (result != null) {
             for (ScoreDoc score : result) {
                 Document doc = index.getDocument(score.doc);
                 float luceneScore = score.score;
@@ -683,7 +690,7 @@ public class UserRequests {
                 users.put(user);
             }
             obj.put("number", result.size());
-        }else{
+        } else {
             obj.put("number", 0);
         }
 

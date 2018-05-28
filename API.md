@@ -380,16 +380,17 @@ Accepts the following parameters in an HTTP GET request:
 ```json
   [
     {
-    "number": "{AMOUNT}",
-    "users": "{ARRAY_OF_USERS}",
-    "params": {
-      "query": "{QUERY}",
-      "min_birth_time": "{MIN_BIRTH_TIME}",
-      "max_birth_time": "{MAX_BIRTH_TIME}",
-      "min_reg_time": "{MIN_REG_TIME}",
-      "max_reg_time":"{MAX_REG_TIME}"
+        "number": "{AMOUNT}",
+        "users": "{ARRAY_OF_USERS}",
+        "params": {
+          "query": "{QUERY}",
+          "min_birth_time": "{MIN_BIRTH_TIME}",
+          "max_birth_time": "{MAX_BIRTH_TIME}",
+          "min_reg_time": "{MIN_REG_TIME}",
+          "max_reg_time":"{MAX_REG_TIME}"
     }
-  }
+    }
+  ]
 ```
 where *{ARRAY_OF_SONGS}* is
 ```json
@@ -478,7 +479,7 @@ RestAPI will answer with this JSON response:
       "user_id": "{AUTHOR}",
       "title": "{TITLE}",
       "country": "{COUNTRY}",
-      "upload_time" : "{UPLOAD_TIME}",
+      "upload_time" : "{UPLOAD_TIME}"
     },
     "error" : "{ERROR_CODE}"
   }

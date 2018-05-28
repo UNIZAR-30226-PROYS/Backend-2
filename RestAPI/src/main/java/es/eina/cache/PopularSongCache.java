@@ -1,7 +1,6 @@
 package es.eina.cache;
 
 import es.eina.geolocalization.Geolocalizer;
-import es.eina.sql.utils.HibernateUtils;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.json.JSONArray;
@@ -27,14 +26,14 @@ public class PopularSongCache {
             "  LIMIT ";
     private static final String FULL_QUERY = SQL_QUERY_BEFORE + SQL_QUERY_AFTER;
 
-    private static JSONObject parseResult(Query q){
+    private static JSONObject parseResult(Query q) {
         JSONObject obj = new JSONObject();
         List data = q.getResultList();
         JSONArray array = new JSONArray();
-        for (Object rawCols: data) {
+        for (Object rawCols : data) {
             Object[] cols = (Object[]) rawCols;
             JSONObject song = new JSONObject();
-            for (EnumPopularSongValues key: EnumPopularSongValues.values()) {
+            for (EnumPopularSongValues key : EnumPopularSongValues.values()) {
                 song.put(key.getColumn(), cols[key.getId()]);
             }
             array.put(song);
@@ -45,22 +44,18 @@ public class PopularSongCache {
         return obj;
     }
 
-    public static JSONObject getPopularSongs(int amount){
-        try(Session s = HibernateUtils.getSessionFactory().openSession()){
-            Query q = s.createSQLQuery(FULL_QUERY + amount + ";");
-            //query.setResultTransformer(Transformers.aliasToBean(LogEntry.class))
-            return parseResult(q);
-        }
+    public static JSONObject getPopularSongs(Session s, int amount) {
+        Query q = s.createSQLQuery(FULL_QUERY + amount + ";");
+        //query.setResultTransformer(Transformers.aliasToBean(LogEntry.class))
+        return parseResult(q);
     }
 
-    public static JSONObject getPopularSongs(int amount, String country){
-        if(country == null || country.length() != 2) country = Geolocalizer.DEFAULT_COUNTRY;
+    public static JSONObject getPopularSongs(Session s, int amount, String country) {
+        if (country == null || country.length() != 2) country = Geolocalizer.DEFAULT_COUNTRY;
 
-        try(Session s = HibernateUtils.getSessionFactory().openSession()){
-            Query q = s.createSQLQuery(SQL_QUERY_BEFORE + " WHERE s.country = '"+country+"' " + SQL_QUERY_AFTER + amount + ";");
-            //query.setResultTransformer(Transformers.aliasToBean(LogEntry.class))
-            return parseResult(q);
-        }
+        Query q = s.createSQLQuery(SQL_QUERY_BEFORE + " WHERE s.country = '" + country + "' " + SQL_QUERY_AFTER + amount + ";");
+        //query.setResultTransformer(Transformers.aliasToBean(LogEntry.class))
+        return parseResult(q);
     }
 
     private enum EnumPopularSongValues {
@@ -75,7 +70,7 @@ public class PopularSongCache {
         private int id;
         private String column;
 
-        EnumPopularSongValues(int id, String column){
+        EnumPopularSongValues(int id, String column) {
             this.id = id;
             this.column = column;
         }

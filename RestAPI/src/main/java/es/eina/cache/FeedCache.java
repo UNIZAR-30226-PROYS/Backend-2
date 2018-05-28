@@ -3,6 +3,7 @@ package es.eina.cache;
 import es.eina.sql.entities.EntityUser;
 import es.eina.sql.utils.HibernateUtils;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -64,13 +65,11 @@ public class FeedCache {
         return parseResult(q);
     }
 
-    public static JSONObject getFeed(EntityUser user, int followAmount, int reprAmount, int songAmount){
+    public static JSONObject getFeed(Session s, EntityUser user, int followAmount, int reprAmount, int songAmount){
         JSONObject object = new JSONObject();
-        try(Session s = HibernateUtils.getSessionFactory().openSession()){
             object.put("follow", getFollowFeed(user, s, followAmount));
             object.put("repr", getReprFeed(user, s, reprAmount));
             object.put("songs", getUploadedSongFeed(user, s, songAmount));
-        }
 
         return object;
     }

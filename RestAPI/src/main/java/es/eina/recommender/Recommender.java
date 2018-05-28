@@ -50,7 +50,7 @@ public class Recommender extends TaskBase {
         Instances instances = new Instances("name", attributeList, 10);
         int amount = 0;
         List<Long> tempSongIds = new ArrayList<>();
-        try(Session s = HibernateUtils.getSessionFactory().openSession()) {
+        try(Session s = HibernateUtils.getSession()) {
             Query<EntitySong> q = s.createQuery("FROM song", EntitySong.class);
 
             List<EntitySong> list = q.getResultList();

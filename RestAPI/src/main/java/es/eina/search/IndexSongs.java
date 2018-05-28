@@ -35,7 +35,7 @@ public class IndexSongs extends Index {
         }
 
         List<EntitySong> songs;
-        try(Session s = HibernateUtils.getSessionFactory().openSession()){
+        try(Session s = HibernateUtils.getSession()){
             songs = s.createQuery("from song", EntitySong.class).list();
         }
 

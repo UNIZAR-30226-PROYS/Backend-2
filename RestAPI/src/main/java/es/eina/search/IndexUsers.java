@@ -38,7 +38,7 @@ public class IndexUsers extends Index {
         }
 
         List<EntityUser> users;
-        try(Session s = HibernateUtils.getSessionFactory().openSession()){
+        try(Session s = HibernateUtils.getSession()){
             users = s.createQuery("from user", EntityUser.class).list();
         }
 

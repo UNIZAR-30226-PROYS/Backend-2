@@ -1,9 +1,6 @@
 package es.eina.utils;
 
-import org.hibernate.type.DateType;
-
 import java.sql.Date;
-import java.time.LocalDate;
 import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.time.format.ResolverStyle;
@@ -17,10 +14,11 @@ public class StringUtils {
 
     /**
      * Check {s} is valid.
-     *      Any string is valid if:
-     *          - Is not null
-     *          - Is not empty
-     *          - Has between @param minChars and @param maxChars characters (both inclusive).
+     * Any string is valid if:
+     * - Is not null
+     * - Is not empty
+     * - Has between @param minChars and @param maxChars characters (both inclusive).
+     *
      * @return True if {s} is valid, false otherwise
      */
     public static boolean isValid(String s, int minChars, int maxChars) {
