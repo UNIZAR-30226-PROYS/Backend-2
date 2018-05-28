@@ -231,8 +231,11 @@ public class EntityUser extends EntityBase {
 
     public int deleteToken(Session s){
         if(this.token != null) {
-            s.delete(token);
-            this.token = null;
+            token.removeSession();
+            if(token.shouldRemoveToken()) {
+                s.delete(token);
+                this.token = null;
+            }
             return 0;
         }
         return -2;

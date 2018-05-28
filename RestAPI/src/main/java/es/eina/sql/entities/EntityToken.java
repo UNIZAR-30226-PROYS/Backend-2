@@ -21,6 +21,9 @@ public class EntityToken extends EntityBase{
     @Column(name = "time", nullable = false)
     private long time;
 
+    @Column(name = "amount", nullable = false)
+    private long amount;
+
     @Id
     @OneToOne(cascade=CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "user_id")
@@ -52,7 +55,8 @@ public class EntityToken extends EntityBase{
 
     void updateToken() {
         if(time < System.currentTimeMillis()) {
-            this.token = randomTokenGenerator.nextString();
+            //this.token = randomTokenGenerator.nextString();
+            this.amount++;
             this.time = System.currentTimeMillis() + TOKEN_VALID_TIME;
         }
     }
@@ -63,5 +67,13 @@ public class EntityToken extends EntityBase{
 
     void removeUser(){
         this.user = null;
+    }
+
+    public void removeSession() {
+        this.amount--;
+    }
+
+    public boolean shouldRemoveToken(){
+        return amount <= 0;
     }
 }
