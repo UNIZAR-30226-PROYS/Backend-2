@@ -72,21 +72,21 @@ public class UserGetSongs extends TestBase {
 
     @Test
     public void testErrorsInvalidArgs() {
-        JSONObject obj = new UserRequests().getUserSongs("");
+        JSONObject obj = performTest(new UserRequests().getUserSongs(""));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new UserRequests().getUserSongs(null);
+        obj = performTest(new UserRequests().getUserSongs(null));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
     }
 
     @Test
     public void testErrorsUnknownUser() {
-        JSONObject obj = new UserRequests().getUserSongs("invalid-user");
+        JSONObject obj = performTest(new UserRequests().getUserSongs("invalid-user"));
         Assert.assertEquals("unknownUser", obj.getString("error"));
     }
 
     @Test
     public void testOK() {
-        JSONObject obj = new UserRequests().getUserSongs(user.getNick());
+        JSONObject obj = performTest(new UserRequests().getUserSongs(user.getNick()));
         Assert.assertEquals("ok", obj.getString("error"));
         Assert.assertEquals(2, obj.getInt("size"));
         JSONArray array = obj.getJSONArray("songs");

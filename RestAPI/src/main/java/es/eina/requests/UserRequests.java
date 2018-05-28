@@ -49,7 +49,7 @@ public class UserRequests {
      */
     @Path("/{nick}/login")
     @POST
-    public JSONObject login(@PathParam("nick") String nick, @FormParam("pass") String pass) {
+    public String login(@PathParam("nick") String nick, @FormParam("pass") String pass) {
         JSONObject response = new JSONObject();
         response.put("user", nick);
         response.put("token", "");
@@ -83,7 +83,7 @@ public class UserRequests {
         }
 
 
-        return response;
+        return response.toString();
     }
 
     /**
@@ -102,7 +102,7 @@ public class UserRequests {
      */
     @Path("/{nick}/signup")
     @POST
-    public JSONObject signup(@PathParam("nick") String nick, @FormParam("mail") String mail,
+    public String signup(@PathParam("nick") String nick, @FormParam("mail") String mail,
                              @FormParam("pass0") String pass0, @FormParam("pass1") String pass1,
                              @FormParam("user") String user, @FormParam("birth") long birth, @FormParam("bio") String bio) {
         JSONObject response = new JSONObject();
@@ -149,7 +149,7 @@ public class UserRequests {
         }
 
 
-        return response;
+        return response.toString();
     }
 
     private String getIP() {
@@ -168,7 +168,7 @@ public class UserRequests {
      */
     @Path("/{nick}/login")
     @DELETE
-    public JSONObject deleteLogin(@PathParam("nick") String nick,
+    public String deleteLogin(@PathParam("nick") String nick,
                                   @DefaultValue("") @FormParam("token") String token) {
         JSONObject obj = new JSONObject();
 
@@ -204,7 +204,7 @@ public class UserRequests {
             obj.put("error", "invalidArgs");
         }
 
-        return obj;
+        return obj.toString();
     }
 
     /**
@@ -219,7 +219,7 @@ public class UserRequests {
      */
     @Path("/{nick}")
     @GET
-    public JSONObject getUserData(
+    public String getUserData(
             @PathParam("nick") String nick,
             @DefaultValue("") @QueryParam("token") String token
     ) {
@@ -257,12 +257,12 @@ public class UserRequests {
 
         obj.put("profile", userJSON);
 
-        return obj;
+        return obj.toString();
     }
 
     @Path("/{nick}/verify")
     @POST
-    public JSONObject verifyAccount(@PathParam("nick") String nick,
+    public String verifyAccount(@PathParam("nick") String nick,
                                     @FormParam("self") String adminUser,
                                     @DefaultValue("") @FormParam("token") String token,
                                     @FormParam("verify") boolean verify) {
@@ -317,13 +317,13 @@ public class UserRequests {
             obj.put("error", "invalidArgs");
         }
 
-        return obj;
+        return obj.toString();
     }
 
     @Path("/{nick}")
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
-    public JSONObject putUserData(
+    public String putUserData(
             @PathParam("nick") String nick,
             @DefaultValue("") @QueryParam("token") String token,
             String c
@@ -393,12 +393,12 @@ public class UserRequests {
             result.put("error", "invalidArgs");
         }
 
-        return result;
+        return result.toString();
     }
 
     @Path("/{nick}")
     @DELETE
-    public JSONObject deleteUserData(
+    public String deleteUserData(
             @PathParam("nick") String nick,
             @DefaultValue("") @FormParam("token") String token
     ) {
@@ -434,12 +434,12 @@ public class UserRequests {
             obj.put("error", "invalidArgs");
         }
 
-        return obj;
+        return obj.toString();
     }
 
     @Path("/{user}/songs")
     @GET
-    public JSONObject getUserSongs(@PathParam("user") String user) {
+    public String getUserSongs(@PathParam("user") String user) {
         JSONObject obj = new JSONObject();
         if (StringUtils.isValid(user)) {
             try (Session s = HibernateUtils.getSession()) {
@@ -465,12 +465,12 @@ public class UserRequests {
         } else {
             obj.put("error", "invalidArgs");
         }
-        return obj;
+        return obj.toString();
     }
 
     @Path("/{user}/albums")
     @GET
-    public JSONObject getUserAlbums(@PathParam("user") String user) {
+    public String getUserAlbums(@PathParam("user") String user) {
         JSONObject obj = new JSONObject();
         if (StringUtils.isValid(user)) {
             try (Session s = HibernateUtils.getSession()) {
@@ -496,12 +496,12 @@ public class UserRequests {
         } else {
             obj.put("error", "invalidArgs");
         }
-        return obj;
+        return obj.toString();
     }
 
     @Path("/{nick}/songs/lastListened")
     @GET
-    public JSONObject getLastListenedSongs(@PathParam("nick") String nick, @QueryParam("n") @DefaultValue("1") int amount) {
+    public String getLastListenedSongs(@PathParam("nick") String nick, @QueryParam("n") @DefaultValue("1") int amount) {
         JSONObject obj = new JSONObject();
         if (StringUtils.isValid(nick)) {
             if (amount > 0) {
@@ -531,7 +531,7 @@ public class UserRequests {
         } else {
             obj.put("error", "invalidArgs");
         }
-        return obj;
+        return obj.toString();
     }
 
 

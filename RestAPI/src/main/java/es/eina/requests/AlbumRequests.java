@@ -35,7 +35,7 @@ public class AlbumRequests {
      */
     @Path("{nick}/create")
     @POST
-    public JSONObject create(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
+    public String create(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
 						 @FormParam("title") String title, @FormParam("year") int year){
 
         JSONObject obj = new JSONObject();
@@ -78,7 +78,7 @@ public class AlbumRequests {
 
         obj.put("album", albumJSON);
 
-        return obj;
+        return obj.toString();
     }
 
     /**
@@ -92,7 +92,7 @@ public class AlbumRequests {
      */
     @Path("/{albumID}/delete")
     @POST
-    public JSONObject delete(@FormParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
+    public String delete(@FormParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
 						 @PathParam("albumID") long albumId){
     	JSONObject obj = new JSONObject();
 
@@ -135,7 +135,7 @@ public class AlbumRequests {
 			obj.put("error", "invalidArgs");
 		}
 
-		return obj;
+		return obj.toString();
 
     }
 
@@ -146,7 +146,7 @@ public class AlbumRequests {
 	 */
 	@Path("{id}")
 	@GET
-	public JSONObject get(@PathParam("id") long id){
+	public String get(@PathParam("id") long id){
 
 		JSONObject obj = new JSONObject();
 		JSONObject albumJSON = EntityAlbum.defaultAlbumJSON;
@@ -169,7 +169,7 @@ public class AlbumRequests {
 
 		obj.put("album", albumJSON);
 
-		return obj;
+		return obj.toString();
 	}
 
 	/**
@@ -184,7 +184,7 @@ public class AlbumRequests {
 	 */
 	@Path("/{nick}/{albumID}/add")
 	@POST
-	public JSONObject addSongToAlbum(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
+	public String addSongToAlbum(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
 						 @PathParam("albumID") long albumId, @FormParam("songId") long songId){
 		JSONObject obj = new JSONObject();
 
@@ -242,7 +242,7 @@ public class AlbumRequests {
 			obj.put("error", "invalidArgs");
 		}
 
-		return obj;
+		return obj.toString();
 
 	}
 
@@ -258,7 +258,7 @@ public class AlbumRequests {
 	 */
 	@Path("/{nick}/{albumID}/delete")
 	@POST
-	public JSONObject removeSongFromAlbum(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
+	public String removeSongFromAlbum(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
 						 @PathParam("albumID") long albumId, @FormParam("songId") long songId) {
         JSONObject obj = new JSONObject();
 
@@ -314,7 +314,7 @@ public class AlbumRequests {
             obj.put("error", "invalidArgs");
         }
 
-        return obj;
+        return obj.toString();
 
     }
 

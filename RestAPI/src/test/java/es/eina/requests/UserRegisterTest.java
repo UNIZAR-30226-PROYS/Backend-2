@@ -50,26 +50,26 @@ public class UserRegisterTest extends TestBase {
 
     @Test
     public void testErrorsInvalidArgs() {
-        JSONObject obj = new UserRequests().signup("", MAIL, PASS, PASS, USER, BIRTH, BIO);
+        JSONObject obj = performTest(new UserRequests().signup("", MAIL, PASS, PASS, USER, BIRTH, BIO));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new UserRequests().signup(null, MAIL, PASS, PASS, USER, BIRTH, BIO);
+        obj = performTest(new UserRequests().signup(null, MAIL, PASS, PASS, USER, BIRTH, BIO));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new UserRequests().signup("123456789012345678901234567890123", MAIL, PASS, PASS, USER, BIRTH, BIO);
-        Assert.assertEquals("invalidArgs", obj.getString("error"));
-
-        obj = new UserRequests().signup(NICK, "", PASS, PASS, USER, BIRTH, BIO);
-        Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new UserRequests().signup(NICK, null, PASS, PASS, USER, BIRTH, BIO);
+        obj = performTest(new UserRequests().signup("123456789012345678901234567890123", MAIL, PASS, PASS, USER, BIRTH, BIO));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
 
-        obj = new UserRequests().signup(NICK, MAIL, "", PASS, USER, BIRTH, BIO);
+        obj = performTest(new UserRequests().signup(NICK, "", PASS, PASS, USER, BIRTH, BIO));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new UserRequests().signup(NICK, MAIL, null, PASS, USER, BIRTH, BIO);
+        obj = performTest(new UserRequests().signup(NICK, null, PASS, PASS, USER, BIRTH, BIO));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
 
-        obj = new UserRequests().signup(NICK, MAIL, PASS, "", USER, BIRTH, BIO);
+        obj = performTest(new UserRequests().signup(NICK, MAIL, "", PASS, USER, BIRTH, BIO));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new UserRequests().signup(NICK, MAIL, PASS, null, USER, BIRTH, BIO);
+        obj = performTest(new UserRequests().signup(NICK, MAIL, null, PASS, USER, BIRTH, BIO));
+        Assert.assertEquals("invalidArgs", obj.getString("error"));
+
+        obj = performTest(new UserRequests().signup(NICK, MAIL, PASS, "", USER, BIRTH, BIO));
+        Assert.assertEquals("invalidArgs", obj.getString("error"));
+        obj = performTest(new UserRequests().signup(NICK, MAIL, PASS, null, USER, BIRTH, BIO));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
     }
 
@@ -79,7 +79,7 @@ public class UserRegisterTest extends TestBase {
         EntityUser user = UserUtils.addUser(s, "user1", "a@a.es", "123456", "Usernmae", "bio", new Date(0), "O1");
         closeSession();
         Assert.assertNotNull(user);
-        JSONObject obj = new UserRequests().signup(user.getNick(), MAIL, PASS, PASS, USER, BIRTH, BIO);
+        JSONObject obj = performTest(new UserRequests().signup(user.getNick(), MAIL, PASS, PASS, USER, BIRTH, BIO));
         Assert.assertEquals("userExists", obj.getString("error"));
 
         openSession();
@@ -89,19 +89,19 @@ public class UserRegisterTest extends TestBase {
 
     @Test
     public void testErrorsWrongMail() {
-        JSONObject obj = new UserRequests().signup(NICK, "invalidMail", PASS, PASS, USER, BIRTH, BIO);
+        JSONObject obj = performTest(new UserRequests().signup(NICK, "invalidMail", PASS, PASS, USER, BIRTH, BIO));
         Assert.assertEquals("wrongMail", obj.getString("error"));
     }
 
     @Test
     public void testErrorsNotEqualPass() {
-        JSONObject obj = new UserRequests().signup(NICK, MAIL, PASS, "a" + PASS, USER, BIRTH, BIO);
+        JSONObject obj = performTest(new UserRequests().signup(NICK, MAIL, PASS, "a" + PASS, USER, BIRTH, BIO));
         Assert.assertEquals("notEqualPass", obj.getString("error"));
     }
 
     @Test
     public void testOK() {
-        JSONObject obj = new UserRequests().signup(NICK, MAIL, PASS, PASS, USER, BIRTH, BIO);
+        JSONObject obj = performTest(new UserRequests().signup(NICK, MAIL, PASS, PASS, USER, BIRTH, BIO));
         Assert.assertEquals("ok", obj.getString("error"));
     }
 

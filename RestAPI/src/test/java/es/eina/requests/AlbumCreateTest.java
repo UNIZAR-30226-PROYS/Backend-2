@@ -42,45 +42,45 @@ public class AlbumCreateTest extends TestBase {
 
     @Test
     public void testErrorsInvalidArgs() {
-        JSONObject obj = new AlbumRequests().create("", user.getToken().getToken(), "RandomTitle", 2010);
+        JSONObject obj = performTest(new AlbumRequests().create("", user.getToken().getToken(), "RandomTitle", 2010));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new AlbumRequests().create(null, user.getToken().getToken(), "RandomTitle", 2010);
-        Assert.assertEquals("invalidArgs", obj.getString("error"));
-
-        obj = new AlbumRequests().create(user.getNick(), "", "RandomTitle", 2010);
-        Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new AlbumRequests().create(user.getNick(), null, "RandomTitle", 2010);
+        obj = performTest(new AlbumRequests().create(null, user.getToken().getToken(), "RandomTitle", 2010));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
 
-        obj = new AlbumRequests().create(user.getNick(), user.getToken().getToken(), "", 2010);
+        obj = performTest(new AlbumRequests().create(user.getNick(), "", "RandomTitle", 2010));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new AlbumRequests().create(user.getNick(), user.getToken().getToken(), null, 2010);
+        obj = performTest(new AlbumRequests().create(user.getNick(), null, "RandomTitle", 2010));
+        Assert.assertEquals("invalidArgs", obj.getString("error"));
+
+        obj = performTest(new AlbumRequests().create(user.getNick(), user.getToken().getToken(), "", 2010));
+        Assert.assertEquals("invalidArgs", obj.getString("error"));
+        obj = performTest(new AlbumRequests().create(user.getNick(), user.getToken().getToken(), null, 2010));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
 
     }
 
     @Test
     public void testErrorsInvalidYear() {
-        JSONObject obj = new AlbumRequests().create(user.getNick(), user.getToken().getToken(), "RandomTitle", 1000);
+        JSONObject obj = performTest(new AlbumRequests().create(user.getNick(), user.getToken().getToken(), "RandomTitle", 1000));
         Assert.assertEquals("invalidYear", obj.getString("error"));
     }
 
     @Test
     public void testErrorsUnknownUser() {
-        JSONObject obj = new AlbumRequests().create("invalid-user", user.getToken().getToken(), "RandomTitle", 2010);
+        JSONObject obj = performTest(new AlbumRequests().create("invalid-user", user.getToken().getToken(), "RandomTitle", 2010));
         Assert.assertEquals("unknownUser", obj.getString("error"));
     }
 
     @Test
     public void testErrorsInvalidToken() {
-        JSONObject obj = new AlbumRequests().create(user.getNick(), "invalid+" + user.getToken().getToken(), "RandomTitle", 2010);
+        JSONObject obj = performTest(new AlbumRequests().create(user.getNick(), "invalid+" + user.getToken().getToken(), "RandomTitle", 2010));
         Assert.assertEquals("invalidToken", obj.getString("error"));
     }
 
     @Test
     public void testOK() {
 
-        JSONObject obj = new AlbumRequests().create(user.getNick(), user.getToken().getToken(), "RandomTitle", 2010);
+        JSONObject obj = performTest(new AlbumRequests().create(user.getNick(), user.getToken().getToken(), "RandomTitle", 2010));
 
         openSession();
         Assert.assertEquals(1, SQLUtils.getRowCount(s, "album", "user_id = " + user.getId()));

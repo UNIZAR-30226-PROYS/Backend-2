@@ -71,28 +71,28 @@ public class UserPutDataTest extends TestBase {
 
     @Test
     public void testUpdateUserInvalidArgs() {
-        JSONObject obj = new UserRequests().putUserData(user.getNick(), "", update.toString());
+        JSONObject obj = performTest(new UserRequests().putUserData(user.getNick(), "", update.toString()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new UserRequests().putUserData(user.getNick(), null, update.toString());
+        obj = performTest(new UserRequests().putUserData(user.getNick(), null, update.toString()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
 
-        obj = new UserRequests().putUserData(user.getNick(), user.getToken().getToken(), "");
+        obj = performTest(new UserRequests().putUserData(user.getNick(), user.getToken().getToken(), ""));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new UserRequests().putUserData(user.getNick(), user.getToken().getToken(), null);
+        obj = performTest(new UserRequests().putUserData(user.getNick(), user.getToken().getToken(), null));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
     }
 
     @Test
     public void testUpdateUserNoUpdate() {
-        JSONObject obj = new UserRequests().putUserData(user.getNick(), user.getToken().getToken(), "{}");
+        JSONObject obj = performTest(new UserRequests().putUserData(user.getNick(), user.getToken().getToken(), "{}"));
         Assert.assertEquals("noUpdate", obj.getString("error"));
-        obj = new UserRequests().putUserData(user.getNick(), user.getToken().getToken(), "{\"updates\": 1}");
+        obj = performTest(new UserRequests().putUserData(user.getNick(), user.getToken().getToken(), "{\"updates\": 1}"));
         Assert.assertEquals("parseError", obj.getString("error"));
     }
 
     @Test
     public void testUpdateUserUnknownUser() {
-        JSONObject obj = new UserRequests().putUserData("invalid-user", user.getToken().getToken(), update.toString());
+        JSONObject obj = performTest(new UserRequests().putUserData("invalid-user", user.getToken().getToken(), update.toString()));
         Assert.assertEquals("unknownUser", obj.getString("error"));
     }
 
@@ -101,19 +101,19 @@ public class UserPutDataTest extends TestBase {
         openSession();
         user.deleteToken(s);
         closeSession();
-        JSONObject obj = new UserRequests().putUserData(user.getNick(), "invalid-token", update.toString());
+        JSONObject obj = performTest(new UserRequests().putUserData(user.getNick(), "invalid-token", update.toString()));
         Assert.assertEquals("closedSession", obj.getString("error"));
     }
 
     @Test
     public void testUpdateUserInvalidToken() {
-        JSONObject obj = new UserRequests().putUserData(user.getNick(), "invalid-token", update.toString());
+        JSONObject obj = performTest(new UserRequests().putUserData(user.getNick(), "invalid-token", update.toString()));
         Assert.assertEquals("invalidToken", obj.getString("error"));
     }
 
     @Test
     public void testUpdateInvalidValue() {
-        JSONObject obj = new UserRequests().putUserData(user.getNick(), user.getToken().getToken(), update2.toString());
+        JSONObject obj = performTest(new UserRequests().putUserData(user.getNick(), user.getToken().getToken(), update2.toString()));
 
         JSONObject up2 = update2.getJSONObject("updates");
         openSession();
@@ -128,7 +128,7 @@ public class UserPutDataTest extends TestBase {
 
     @Test
     public void testUpdateOK() {
-        JSONObject obj = new UserRequests().putUserData(user.getNick(), user.getToken().getToken(), update.toString());
+        JSONObject obj = performTest(new UserRequests().putUserData(user.getNick(), user.getToken().getToken(), update.toString()));
         JSONObject up2 = update.getJSONObject("updates");
         openSession();
         for(String key : up2.keySet()) {
@@ -142,7 +142,7 @@ public class UserPutDataTest extends TestBase {
 
     @Test
     public void testUpdatePassInvalidValue() {
-        JSONObject obj = new UserRequests().putUserData(user.getNick(), user.getToken().getToken(), passUpdate2.toString());
+        JSONObject obj = performTest(new UserRequests().putUserData(user.getNick(), user.getToken().getToken(), passUpdate2.toString()));
 
         JSONObject up2 = passUpdate2.getJSONObject("updates");
         for(String key : up2.keySet()) {
@@ -154,7 +154,7 @@ public class UserPutDataTest extends TestBase {
 
     @Test
     public void testUpdatePassOK() {
-        JSONObject obj = new UserRequests().putUserData(user.getNick(), user.getToken().getToken(), passUpdate.toString());
+        JSONObject obj = performTest(new UserRequests().putUserData(user.getNick(), user.getToken().getToken(), passUpdate.toString()));
 
         JSONObject up2 = passUpdate.getJSONObject("updates");
         for(String key : up2.keySet()) {

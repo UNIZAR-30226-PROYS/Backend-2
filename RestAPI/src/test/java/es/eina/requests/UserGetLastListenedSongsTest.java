@@ -59,23 +59,23 @@ public class UserGetLastListenedSongsTest extends TestBase {
     @Test
     public void testInvalidArgs(){
         closeSession();
-        JSONObject obj = new UserRequests().getLastListenedSongs("", 1);
+        JSONObject obj = performTest(new UserRequests().getLastListenedSongs("", 1));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new UserRequests().getLastListenedSongs(null, 1);
+        obj = performTest(new UserRequests().getLastListenedSongs(null, 1));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
     }
 
     @Test
     public void testInvalidAmount(){
         closeSession();
-        JSONObject obj = new UserRequests().getLastListenedSongs(user.getNick(), 0);
+        JSONObject obj = performTest(new UserRequests().getLastListenedSongs(user.getNick(), 0));
         Assert.assertEquals("invalidAmount", obj.getString("error"));
     }
 
     @Test
     public void testUnknownUser(){
         closeSession();
-        JSONObject obj = new UserRequests().getLastListenedSongs("invalid-user", 1);
+        JSONObject obj = performTest(new UserRequests().getLastListenedSongs("invalid-user", 1));
         Assert.assertEquals("unknownUser", obj.getString("error"));
     }
 
@@ -89,12 +89,12 @@ public class UserGetLastListenedSongsTest extends TestBase {
         Thread.sleep(1);
         user.listenSong(song);
         closeSession();
-        JSONObject obj = new UserRequests().getLastListenedSongs(user.getNick(), 1);
+        JSONObject obj = performTest(new UserRequests().getLastListenedSongs(user.getNick(), 1));
         Assert.assertEquals("ok", obj.getString("error"));
         Assert.assertEquals(1, obj.getInt("size"));
         Assert.assertEquals((long)song.getId(), obj.getJSONArray("songs").getLong(0));
 
-        obj = new UserRequests().getLastListenedSongs(user.getNick(), 4);
+        obj = performTest(new UserRequests().getLastListenedSongs(user.getNick(), 4));
         Assert.assertEquals("ok", obj.getString("error"));
         Assert.assertEquals(4, obj.getInt("size"));
         Assert.assertEquals((long)song.getId(), obj.getJSONArray("songs").getLong(0));
@@ -102,7 +102,7 @@ public class UserGetLastListenedSongsTest extends TestBase {
         Assert.assertEquals((long)song.getId(), obj.getJSONArray("songs").getLong(2));
         Assert.assertEquals((long)song3.getId(), obj.getJSONArray("songs").getLong(3));
 
-        obj = new UserRequests().getLastListenedSongs(user.getNick(), 10);
+        obj = performTest(new UserRequests().getLastListenedSongs(user.getNick(), 10));
         Assert.assertEquals("ok", obj.getString("error"));
         Assert.assertEquals(4, obj.getInt("size"));
         Assert.assertEquals((long)song.getId(), obj.getJSONArray("songs").getLong(0));

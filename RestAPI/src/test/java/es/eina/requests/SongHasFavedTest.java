@@ -71,39 +71,39 @@ public class SongHasFavedTest extends TestBase {
 
     @Test
     public void testErrorsInvalidArgs() {
-        JSONObject obj = new SongRequests().hasFaved("", song.getId());
+        JSONObject obj = performTest(new SongRequests().hasFaved("", song.getId()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new SongRequests().hasFaved(null, song.getId());
+        obj = performTest(new SongRequests().hasFaved(null, song.getId()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
     }
 
     @Test
     public void testErrorsUnknownUser() {
-        JSONObject obj = new SongRequests().hasFaved("invalid-user", song.getId());
+        JSONObject obj = performTest(new SongRequests().hasFaved("invalid-user", song.getId()));
         Assert.assertEquals("unknownUser", obj.getString("error"));
     }
 
     @Test
     public void testErrorsUnknownSong() {
-        JSONObject obj = new SongRequests().hasFaved(user.getNick(), -1L);
+        JSONObject obj = performTest(new SongRequests().hasFaved(user.getNick(), -1L));
         Assert.assertEquals("unknownSong", obj.getString("error"));
-        obj = new SongRequests().hasFaved(user.getNick(), Long.MAX_VALUE);
+        obj = performTest(new SongRequests().hasFaved(user.getNick(), Long.MAX_VALUE));
         Assert.assertEquals("unknownSong", obj.getString("error"));
     }
 
     @Test
     public void testErrorsNoFav() {
-        JSONObject obj = new SongRequests().hasFaved(user.getNick(), song3.getId());
+        JSONObject obj = performTest(new SongRequests().hasFaved(user.getNick(), song3.getId()));
         Assert.assertEquals("noFav", obj.getString("error"));
-        obj = new SongRequests().hasFaved(user2.getNick(), song2.getId());
+        obj = performTest(new SongRequests().hasFaved(user2.getNick(), song2.getId()));
         Assert.assertEquals("noFav", obj.getString("error"));
     }
 
     @Test
     public void testErrorsOK() {
-        JSONObject obj = new SongRequests().hasFaved(user.getNick(), song2.getId());
+        JSONObject obj = performTest(new SongRequests().hasFaved(user.getNick(), song2.getId()));
         Assert.assertEquals("ok", obj.getString("error"));
-        obj = new SongRequests().hasFaved(user2.getNick(), song4.getId());
+        obj = performTest(new SongRequests().hasFaved(user2.getNick(), song4.getId()));
         Assert.assertEquals("ok", obj.getString("error"));
     }
 

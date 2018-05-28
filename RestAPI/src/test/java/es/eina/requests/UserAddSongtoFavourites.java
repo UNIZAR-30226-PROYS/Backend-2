@@ -53,55 +53,55 @@ public class UserAddSongtoFavourites extends TestBase {
 
     @Test
     public void testErrorsInvalidArgs(){
-        JSONObject obj = new SongRequests().favSong("", user.getToken().getToken(), song.getId());
+        JSONObject obj = performTest(new SongRequests().favSong("", user.getToken().getToken(), song.getId()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new SongRequests().favSong(null, user.getToken().getToken(), song.getId());
+        obj = performTest(new SongRequests().favSong(null, user.getToken().getToken(), song.getId()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
 
-        obj = new SongRequests().favSong(user.getNick(), "", song.getId());
+        obj = performTest(new SongRequests().favSong(user.getNick(), "", song.getId()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new SongRequests().favSong(user.getNick(), null, song.getId());
+        obj = performTest(new SongRequests().favSong(user.getNick(), null, song.getId()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
 
     }
 
     @Test
     public void testErrorsUnknownUser(){
-        JSONObject obj = new SongRequests().favSong("invalid-user", user.getToken().getToken(), song.getId());
+        JSONObject obj = performTest(new SongRequests().favSong("invalid-user", user.getToken().getToken(), song.getId()));
         Assert.assertEquals("unknownUser", obj.getString("error"));
     }
 
     @Test
     public void testErrorsInvalidToken(){
-        JSONObject obj = new SongRequests().favSong(user.getNick(), "invalid+" + user.getToken().getToken(), song.getId());
+        JSONObject obj = performTest(new SongRequests().favSong(user.getNick(), "invalid+" + user.getToken().getToken(), song.getId()));
         Assert.assertEquals("invalidToken", obj.getString("error"));
     }
 
     @Test
     public void testErrorsUnknownSong(){
-        JSONObject obj = new SongRequests().favSong(user.getNick(), user.getToken().getToken(), -1L);
+        JSONObject obj = performTest(new SongRequests().favSong(user.getNick(), user.getToken().getToken(), -1L));
         Assert.assertEquals("unknownSong", obj.getString("error"));
-        obj = new SongRequests().favSong(user.getNick(), user.getToken().getToken(), Long.MAX_VALUE);
+        obj = performTest(new SongRequests().favSong(user.getNick(), user.getToken().getToken(), Long.MAX_VALUE));
         Assert.assertEquals("unknownSong", obj.getString("error"));
     }
 
     @Test
     public void testErrorsAlreadyFaved(){
-        JSONObject obj = new SongRequests().favSong(user.getNick(), user.getToken().getToken(), song.getId());
+        JSONObject obj = performTest(new SongRequests().favSong(user.getNick(), user.getToken().getToken(), song.getId()));
 
         openSession();
         Assert.assertEquals(1, SQLUtils.getRowCountSQL(s,"user_faved_songs", "user_id = " + user.getId() + " and song_id = " + song.getId()));
         closeSession();
         Assert.assertEquals("ok", obj.getString("error"));
 
-        obj = new SongRequests().favSong(user.getNick(), user.getToken().getToken(), song.getId());
+        obj = performTest(new SongRequests().favSong(user.getNick(), user.getToken().getToken(), song.getId()));
         Assert.assertEquals("alreadyFav", obj.getString("error"));
     }
 
     @Test
     public void testOK(){
 
-        JSONObject obj = new SongRequests().favSong(user.getNick(), user.getToken().getToken(), song.getId());
+        JSONObject obj = performTest(new SongRequests().favSong(user.getNick(), user.getToken().getToken(), song.getId()));
 
         openSession();
         Assert.assertEquals(1, SQLUtils.getRowCountSQL(s,"user_faved_songs", "user_id = " + user.getId() + " and song_id = " + song.getId()));

@@ -53,21 +53,21 @@ public class UserGetAlbumsTest extends TestBase {
 
     @Test
     public void testInvalidArgs(){
-        JSONObject obj = new UserRequests().getUserAlbums("");
+        JSONObject obj = performTest(new UserRequests().getUserAlbums(""));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new UserRequests().getUserAlbums(null);
+        obj = performTest(new UserRequests().getUserAlbums(null));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
     }
 
     @Test
     public void testUnknownAlbum(){
-        JSONObject obj = new UserRequests().getUserAlbums("unknown-user");
+        JSONObject obj = performTest(new UserRequests().getUserAlbums("unknown-user"));
         Assert.assertEquals("unknownUser", obj.getString("error"));
     }
 
     @Test
     public void testOK(){
-        JSONObject obj = new UserRequests().getUserAlbums(user.getNick());
+        JSONObject obj = performTest(new UserRequests().getUserAlbums(user.getNick()));
         Assert.assertEquals("ok", obj.getString("error"));
         Assert.assertEquals(2, obj.getInt("size"));
 

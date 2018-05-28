@@ -73,21 +73,21 @@ public class SongUserGetFavedTest extends TestBase {
 
     @Test
     public void testErrorsInvalidArgs() {
-        JSONObject obj = new SongRequests().getFavedSongs("");
+        JSONObject obj = performTest(new SongRequests().getFavedSongs(""));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new SongRequests().getFavedSongs(null);
+        obj = performTest(new SongRequests().getFavedSongs(null));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
     }
 
     @Test
     public void testErrorsUnknownUser() {
-        JSONObject obj = new SongRequests().getFavedSongs("invalid-user");
+        JSONObject obj = performTest(new SongRequests().getFavedSongs("invalid-user"));
         Assert.assertEquals("unknownUser", obj.getString("error"));
     }
 
     @Test
     public void testErrorsOK() {
-        JSONObject obj = new SongRequests().getFavedSongs(user.getNick());
+        JSONObject obj = performTest(new SongRequests().getFavedSongs(user.getNick()));
         Assert.assertEquals("ok", obj.getString("error"));
         Assert.assertEquals(3, obj.getInt("size"));
         JSONArray songs = obj.getJSONArray("songs");
@@ -95,7 +95,7 @@ public class SongUserGetFavedTest extends TestBase {
         Assert.assertTrue(contains(songs, song2.getId()));
         Assert.assertTrue(contains(songs, song4.getId()));
 
-        obj = new SongRequests().getFavedSongs(user2.getNick());
+        obj = performTest(new SongRequests().getFavedSongs(user2.getNick()));
         Assert.assertEquals("ok", obj.getString("error"));
         Assert.assertEquals(2, obj.getInt("size"));
         songs = obj.getJSONArray("songs");

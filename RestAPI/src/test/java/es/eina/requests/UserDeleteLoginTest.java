@@ -41,45 +41,45 @@ public class UserDeleteLoginTest extends TestBase {
 
     @Test
     public void testErrorsInvalidArgs() {
-        JSONObject obj = new UserRequests().deleteLogin("", user.getToken().getToken());
+        JSONObject obj = performTest(new UserRequests().deleteLogin("", user.getToken().getToken()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new UserRequests().deleteLogin(null, user.getToken().getToken());
+        obj = performTest(new UserRequests().deleteLogin(null, user.getToken().getToken()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
 
-        obj = new UserRequests().deleteLogin(user.getNick(), "");
+        obj = performTest(new UserRequests().deleteLogin(user.getNick(), ""));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new UserRequests().deleteLogin(user.getNick(), null);
+        obj = performTest(new UserRequests().deleteLogin(user.getNick(), null));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
     }
 
     @Test
     public void testErrorsUnknownUser() {
-        JSONObject obj = new UserRequests().deleteLogin("invalid-user", user.getToken().getToken());
+        JSONObject obj = performTest(new UserRequests().deleteLogin("invalid-user", user.getToken().getToken()));
         Assert.assertEquals("unknownUser", obj.getString("error"));
     }
 
     @Test
     public void testErrorsWrongMail() {
-        JSONObject obj = new UserRequests().deleteLogin(user.getNick(), "invalid" + user.getToken().getToken());
+        JSONObject obj = performTest(new UserRequests().deleteLogin(user.getNick(), "invalid" + user.getToken().getToken()));
         Assert.assertEquals("invalidToken", obj.getString("error"));
     }
 
     @Test
     public void testErrorsClosedSession() {
-        JSONObject obj = new UserRequests().deleteLogin(user.getNick(), user.getToken().getToken());
+        JSONObject obj = performTest(new UserRequests().deleteLogin(user.getNick(), user.getToken().getToken()));
         Assert.assertEquals("ok", obj.getString("error"));
 
         openSession();
         Assert.assertEquals(0, SQLUtils.getRowCount(s, "token", "user_id = " + user.getId()));
         closeSession();
 
-        obj = new UserRequests().deleteLogin(user.getNick(), "token");
+        obj = performTest(new UserRequests().deleteLogin(user.getNick(), "token"));
         Assert.assertEquals("invalidToken", obj.getString("error"));
     }
 
     @Test
     public void testOK() {
-        JSONObject obj = new UserRequests().deleteLogin(user.getNick(), user.getToken().getToken());
+        JSONObject obj = performTest(new UserRequests().deleteLogin(user.getNick(), user.getToken().getToken()));
         Assert.assertEquals("ok", obj.getString("error"));
 
         openSession();

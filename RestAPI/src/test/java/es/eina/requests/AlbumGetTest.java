@@ -54,21 +54,21 @@ public class AlbumGetTest extends TestBase {
 
     @Test
     public void testInvalidArgs(){
-        JSONObject obj = new AlbumRequests().get(0);
+        JSONObject obj = performTest(new AlbumRequests().get(0));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new AlbumRequests().get(-1);
+        obj = performTest(new AlbumRequests().get(-1));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
     }
 
     @Test
     public void testUnknownAlbum(){
-        JSONObject obj = new AlbumRequests().get(Integer.MAX_VALUE);
+        JSONObject obj = performTest(new AlbumRequests().get(Integer.MAX_VALUE));
         Assert.assertEquals("unknownAlbum", obj.getString("error"));
     }
 
     @Test
     public void testOK(){
-        JSONObject obj = new AlbumRequests().get(album.getAlbumId());
+        JSONObject obj = performTest(new AlbumRequests().get(album.getAlbumId()));
         Assert.assertEquals("ok", obj.getString("error"));
 
         JSONObject expected = album.toJSON();

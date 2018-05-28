@@ -43,29 +43,29 @@ public class UserVerifyTest extends TestBase {
     @Test
     public void testVerifyInvalidArgs() {
         closeSession();
-        JSONObject obj = new UserRequests().verifyAccount("", user.getNick(), user.getToken().getToken(), true);
+        JSONObject obj = performTest(new UserRequests().verifyAccount("", user.getNick(), user.getToken().getToken(), true));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new UserRequests().verifyAccount(null, user.getNick(), user.getToken().getToken(), true);
-        Assert.assertEquals("invalidArgs", obj.getString("error"));
-
-        obj = new UserRequests().verifyAccount(verify.getNick(), "", user.getToken().getToken(), true);
-        Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new UserRequests().verifyAccount(verify.getNick(), null, user.getToken().getToken(), true);
+        obj = performTest(new UserRequests().verifyAccount(null, user.getNick(), user.getToken().getToken(), true));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
 
-        obj = new UserRequests().verifyAccount(verify.getNick(), user.getNick(), "", true);
+        obj = performTest(new UserRequests().verifyAccount(verify.getNick(), "", user.getToken().getToken(), true));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new UserRequests().verifyAccount(verify.getNick(), user.getNick(), null, true);
+        obj = performTest(new UserRequests().verifyAccount(verify.getNick(), null, user.getToken().getToken(), true));
+        Assert.assertEquals("invalidArgs", obj.getString("error"));
+
+        obj = performTest(new UserRequests().verifyAccount(verify.getNick(), user.getNick(), "", true));
+        Assert.assertEquals("invalidArgs", obj.getString("error"));
+        obj = performTest(new UserRequests().verifyAccount(verify.getNick(), user.getNick(), null, true));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
     }
 
     @Test
     public void testUnknownUser() {
         closeSession();
-        JSONObject obj = new UserRequests().verifyAccount("invalid", user.getNick(), user.getToken().getToken(), true);
+        JSONObject obj = performTest(new UserRequests().verifyAccount("invalid", user.getNick(), user.getToken().getToken(), true));
         Assert.assertEquals("unknownUser", obj.getString("error"));
 
-        obj = new UserRequests().verifyAccount(verify.getNick(), "invalid", user.getToken().getToken(), true);
+        obj = performTest(new UserRequests().verifyAccount(verify.getNick(), "invalid", user.getToken().getToken(), true));
         Assert.assertEquals("unknownUser", obj.getString("error"));
     }
 
@@ -73,14 +73,14 @@ public class UserVerifyTest extends TestBase {
     public void testClosedSession() {
         user.deleteToken(s);
         closeSession();
-        JSONObject obj = new UserRequests().verifyAccount(user.getNick(), user.getNick(), "token", true);
+        JSONObject obj = performTest(new UserRequests().verifyAccount(user.getNick(), user.getNick(), "token", true));
         Assert.assertEquals("closedSession", obj.getString("error"));
     }
 
     @Test
     public void testInvalidToken() {
         closeSession();
-        JSONObject obj = new UserRequests().verifyAccount(user.getNick(), user.getNick(), "invalid" + user.getToken().getToken(), true);
+        JSONObject obj = performTest(new UserRequests().verifyAccount(user.getNick(), user.getNick(), "invalid" + user.getToken().getToken(), true));
         Assert.assertEquals("invalidToken", obj.getString("error"));
     }
 
@@ -89,14 +89,14 @@ public class UserVerifyTest extends TestBase {
         user.demoteAdmin();
         closeSession();
 
-        JSONObject obj = new UserRequests().verifyAccount(user.getNick(), user.getNick(), user.getToken().getToken(), true);
+        JSONObject obj = performTest(new UserRequests().verifyAccount(user.getNick(), user.getNick(), user.getToken().getToken(), true));
         Assert.assertEquals("noPermission", obj.getString("error"));
     }
 
     @Test
     public void testVerifyOK() {
         closeSession();
-        JSONObject obj = new UserRequests().verifyAccount(verify.getNick(), user.getNick(), user.getToken().getToken(), true);
+        JSONObject obj = performTest(new UserRequests().verifyAccount(verify.getNick(), user.getNick(), user.getToken().getToken(), true));
 
         openSession();
         Assert.assertEquals(1, SQLUtils.getRowCountSQL(s,"user_values", "user_id = " + verify.getId() + " and verified = '1'"));
@@ -108,7 +108,7 @@ public class UserVerifyTest extends TestBase {
     public void testUnVerifyOK() {
         verify.verifyAccount();
         closeSession();
-        JSONObject obj = new UserRequests().verifyAccount(verify.getNick(), user.getNick(), user.getToken().getToken(), false);
+        JSONObject obj = performTest(new UserRequests().verifyAccount(verify.getNick(), user.getNick(), user.getToken().getToken(), false));
 
         openSession();
         Assert.assertEquals(0, SQLUtils.getRowCountSQL(s,"user_values", "user_id = " + verify.getId() + " and verified = '1'"));
@@ -120,14 +120,14 @@ public class UserVerifyTest extends TestBase {
     public void testUnVerifyError() {
         verify.verifyAccount();
         closeSession();
-        JSONObject obj = new UserRequests().verifyAccount(verify.getNick(), user.getNick(), user.getToken().getToken(), false);
+        JSONObject obj = performTest(new UserRequests().verifyAccount(verify.getNick(), user.getNick(), user.getToken().getToken(), false));
 
         openSession();
         Assert.assertEquals(0, SQLUtils.getRowCountSQL(s,"user_values", "user_id = " + user.getId() + " and verified = '1'"));
         closeSession();
         Assert.assertEquals("ok", obj.getString("error"));
 
-        obj = new UserRequests().verifyAccount(verify.getNick(), user.getNick(), user.getToken().getToken(), false);
+        obj = performTest(new UserRequests().verifyAccount(verify.getNick(), user.getNick(), user.getToken().getToken(), false));
 
         openSession();
         Assert.assertEquals(0, SQLUtils.getRowCountSQL(s,"user_values", "user_id = " + user.getId() + " and verified = '1'"));
@@ -138,7 +138,7 @@ public class UserVerifyTest extends TestBase {
     @Test
     public void testUnVerifyError2() {
         closeSession();
-        JSONObject obj = new UserRequests().verifyAccount(verify.getNick(), user.getNick(), user.getToken().getToken(), false);
+        JSONObject obj = performTest(new UserRequests().verifyAccount(verify.getNick(), user.getNick(), user.getToken().getToken(), false));
 
         openSession();
         Assert.assertEquals(0, SQLUtils.getRowCountSQL(s,"user_values", "user_id = " + user.getId() + " and verified = '1'"));

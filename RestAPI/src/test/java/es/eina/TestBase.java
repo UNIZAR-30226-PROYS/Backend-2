@@ -5,6 +5,7 @@ import es.eina.sql.utils.HibernateUtilsTest;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.json.JSONObject;
 import org.junit.Assert;
 
 import java.io.InputStream;
@@ -34,5 +35,9 @@ public class TestBase {
 
     protected static void closeDB() {
         HibernateUtils.shutdown();
+    }
+
+    protected JSONObject performTest(String test){
+        return new JSONObject(test);
     }
 }

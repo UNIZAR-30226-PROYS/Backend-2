@@ -52,19 +52,19 @@ public class SongGetTest extends TestBase {
 
     @Test
     public void testErrorsInvalidArgs() {
-        JSONObject obj = new SongRequests().getSong(-1);
+        JSONObject obj = performTest(new SongRequests().getSong(-1));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
     }
 
     @Test
     public void testErrorsUnknownSong() {
-        JSONObject obj = new SongRequests().getSong(Long.MAX_VALUE);
+        JSONObject obj = performTest(new SongRequests().getSong(Long.MAX_VALUE));
         Assert.assertEquals("unknownSong", obj.getString("error"));
     }
 
     @Test
     public void testOK() {
-        JSONObject obj = new SongRequests().getSong(song.getId());
+        JSONObject obj = performTest(new SongRequests().getSong(song.getId()));
         Assert.assertEquals("ok", obj.getString("error"));
         Assert.assertEquals((long)song.getId(), obj.getJSONObject("song").getLong("id"));
         Assert.assertEquals((long)user.getId(), obj.getJSONObject("song").getLong("user_id"));

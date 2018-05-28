@@ -24,7 +24,7 @@ public class SongRequests {
 
     @Path("/{id}/")
     @GET
-    public JSONObject getSong(@PathParam("id") long id){
+    public String getSong(@PathParam("id") long id){
         JSONObject obj = new JSONObject();
         JSONObject songJSON = new JSONObject(defaultSongJSON, JSONObject.getNames(defaultSongJSON));
 
@@ -51,7 +51,7 @@ public class SongRequests {
 
         obj.put("song", songJSON);
 
-        return obj;
+        return obj.toString();
     }
 
 
@@ -91,7 +91,7 @@ public class SongRequests {
      */
     @Path("{songId}/listen")
     @POST
-    public JSONObject listenSong(@FormParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
+    public String listenSong(@FormParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
                                  @PathParam("songId") long songId) {
         JSONObject result = new JSONObject();
         if (StringUtils.isValid(nick) && StringUtils.isValid(userToken)) {
@@ -129,7 +129,7 @@ public class SongRequests {
             result.put("error", "invalidArgs");
         }
 
-        return result;
+        return result.toString();
 
     }
 
@@ -143,7 +143,7 @@ public class SongRequests {
      */
     @Path("user/{nick}/fav")
     @POST
-    public JSONObject favSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String token,
+    public String favSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String token,
                                  @FormParam("songId") Long songID) {
         JSONObject result = new JSONObject();
         if (StringUtils.isValid(nick) && StringUtils.isValid(token)) {
@@ -184,7 +184,7 @@ public class SongRequests {
             result.put("error", "invalidArgs");
         }
 
-        return result;
+        return result.toString();
     }
 
     /**
@@ -197,7 +197,7 @@ public class SongRequests {
      */
     @Path("user/{nick}/unfav")
     @POST
-    public JSONObject unfavSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String token,
+    public String unfavSong(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String token,
                                    @FormParam("songId") Long songID) {
         JSONObject result = new JSONObject();
         if (StringUtils.isValid(nick) && StringUtils.isValid(token)) {
@@ -239,7 +239,7 @@ public class SongRequests {
             result.put("error", "invalidArgs");
         }
 
-        return result;
+        return result.toString();
     }
 
     /**
@@ -251,7 +251,7 @@ public class SongRequests {
      */
     @Path("user/{nick}/faved/{songId}")
     @GET
-    public JSONObject hasFaved(@PathParam("nick") String nick, @PathParam("songId") Long songID) {
+    public String hasFaved(@PathParam("nick") String nick, @PathParam("songId") Long songID) {
         JSONObject result = new JSONObject();
         if (StringUtils.isValid(nick)) {
             try(Session s = HibernateUtils.getSession()) {
@@ -284,7 +284,7 @@ public class SongRequests {
             result.put("error", "invalidArgs");
         }
 
-        return result;
+        return result.toString();
     }
 
     /**
@@ -295,7 +295,7 @@ public class SongRequests {
      */
     @Path("user/{nick}/faved")
     @GET
-    public JSONObject getFavedSongs(@PathParam("nick") String nick) {
+    public String getFavedSongs(@PathParam("nick") String nick) {
         JSONObject result = new JSONObject();
         if (StringUtils.isValid(nick)) {
             try(Session s = HibernateUtils.getSession()) {
@@ -322,7 +322,7 @@ public class SongRequests {
             result.put("error", "invalidArgs");
         }
 
-        return result;
+        return result.toString();
     }
 
     static {

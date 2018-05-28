@@ -40,27 +40,27 @@ public class UserDeleteTest extends TestBase {
 
     @Test
     public void testErrorsInvalidArgs() {
-        JSONObject obj = new UserRequests().deleteUserData(user.getNick(), "");
+        JSONObject obj = performTest(new UserRequests().deleteUserData(user.getNick(), ""));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new UserRequests().deleteUserData(user.getNick(), null);
+        obj = performTest(new UserRequests().deleteUserData(user.getNick(), null));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
     }
 
     @Test
     public void testErrorsUnknownUser() {
-        JSONObject obj = new UserRequests().deleteUserData("invalid-user", user.getToken().getToken());
+        JSONObject obj = performTest(new UserRequests().deleteUserData("invalid-user", user.getToken().getToken()));
         Assert.assertEquals("unknownUser", obj.getString("error"));
     }
 
     @Test
     public void testErrorsInvalidToken() {
-        JSONObject obj = new UserRequests().deleteUserData(user.getNick(), "invalid-token");
+        JSONObject obj = performTest(new UserRequests().deleteUserData(user.getNick(), "invalid-token"));
         Assert.assertEquals("invalidToken", obj.getString("error"));
     }
 
     @Test
     public void testOK() {
-        JSONObject obj = new UserRequests().deleteUserData(user.getNick(), user.getToken().getToken());
+        JSONObject obj = performTest(new UserRequests().deleteUserData(user.getNick(), user.getToken().getToken()));
         Assert.assertEquals("ok", obj.getString("error"));
         openSession();
         Assert.assertEquals(0, SQLUtils.getRowCountSQL(s,"users", "id = " + user.getId()));

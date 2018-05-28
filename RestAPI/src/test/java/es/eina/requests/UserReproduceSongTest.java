@@ -50,42 +50,42 @@ public class UserReproduceSongTest extends TestBase {
 
     @Test
     public void testErrorsInvalidArgs(){
-        JSONObject obj = new SongRequests().listenSong("", user.getToken().getToken(), song.getId());
+        JSONObject obj = performTest(new SongRequests().listenSong("", user.getToken().getToken(), song.getId()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new SongRequests().listenSong(null, user.getToken().getToken(), song.getId());
+        obj = performTest(new SongRequests().listenSong(null, user.getToken().getToken(), song.getId()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
 
-        obj = new SongRequests().listenSong(user.getNick(), "", song.getId());
+        obj = performTest(new SongRequests().listenSong(user.getNick(), "", song.getId()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new SongRequests().listenSong(user.getNick(), null, song.getId());
+        obj = performTest(new SongRequests().listenSong(user.getNick(), null, song.getId()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
 
     }
 
     @Test
     public void testErrorsUnknownUser(){
-        JSONObject obj = new SongRequests().listenSong("invalid-user", user.getToken().getToken(), song.getId());
+        JSONObject obj = performTest(new SongRequests().listenSong("invalid-user", user.getToken().getToken(), song.getId()));
         Assert.assertEquals("unknownUser", obj.getString("error"));
     }
 
     @Test
     public void testErrorsInvalidToken(){
-        JSONObject obj = new SongRequests().listenSong(user.getNick(), "invalid+" + user.getToken().getToken(), song.getId());
+        JSONObject obj = performTest(new SongRequests().listenSong(user.getNick(), "invalid+" + user.getToken().getToken(), song.getId()));
         Assert.assertEquals("invalidToken", obj.getString("error"));
     }
 
     @Test
     public void testErrorsUnknownSong(){
-        JSONObject obj = new SongRequests().listenSong(user.getNick(), user.getToken().getToken(), -1);
+        JSONObject obj = performTest(new SongRequests().listenSong(user.getNick(), user.getToken().getToken(), -1));
         Assert.assertEquals("unknownSong", obj.getString("error"));
-        obj = new SongRequests().listenSong(user.getNick(), user.getToken().getToken(), Integer.MAX_VALUE);
+        obj = performTest(new SongRequests().listenSong(user.getNick(), user.getToken().getToken(), Integer.MAX_VALUE));
         Assert.assertEquals("unknownSong", obj.getString("error"));
     }
 
     @Test
     public void testOK(){
 
-        JSONObject obj = new SongRequests().listenSong(user.getNick(), user.getToken().getToken(), song.getId());
+        JSONObject obj = performTest(new SongRequests().listenSong(user.getNick(), user.getToken().getToken(), song.getId()));
 
         openSession();
         Assert.assertEquals(1, SQLUtils.getRowCountSQL(s,"user_listened_songs", "user_id = " + user.getId() + " and song_id = " + song.getId()));

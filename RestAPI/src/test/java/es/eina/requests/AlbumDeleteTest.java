@@ -46,44 +46,44 @@ public class AlbumDeleteTest extends TestBase {
 
     @Test
     public void testErrorsInvalidArgs() {
-        JSONObject obj = new AlbumRequests().delete("", user.getToken().getToken(), album.getAlbumId());
+        JSONObject obj = performTest(new AlbumRequests().delete("", user.getToken().getToken(), album.getAlbumId()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new AlbumRequests().delete(null, user.getToken().getToken(), album.getAlbumId());
+        obj = performTest(new AlbumRequests().delete(null, user.getToken().getToken(), album.getAlbumId()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
 
-        obj = new AlbumRequests().delete(user.getNick(), "", album.getAlbumId());
+        obj = performTest(new AlbumRequests().delete(user.getNick(), "", album.getAlbumId()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new AlbumRequests().delete(user.getNick(), null, album.getAlbumId());
+        obj = performTest(new AlbumRequests().delete(user.getNick(), null, album.getAlbumId()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
     }
 
     @Test
     public void testErrorsUnknownUser() {
-        JSONObject obj = new AlbumRequests().delete("invalid-user", user.getToken().getToken(), album.getAlbumId());
+        JSONObject obj = performTest(new AlbumRequests().delete("invalid-user", user.getToken().getToken(), album.getAlbumId()));
         Assert.assertEquals("unknownUser", obj.getString("error"));
     }
 
     @Test
     public void testErrorsInvalidToken() {
-        JSONObject obj = new AlbumRequests().delete(user.getNick(), "invalid+" + user.getToken().getToken(), album.getAlbumId());
+        JSONObject obj = performTest(new AlbumRequests().delete(user.getNick(), "invalid+" + user.getToken().getToken(), album.getAlbumId()));
         Assert.assertEquals("invalidToken", obj.getString("error"));
     }
 
     @Test
     public void testErrorsInvalidAlbum() {
-        JSONObject obj = new AlbumRequests().delete(user.getNick(), user.getToken().getToken(), -1);
+        JSONObject obj = performTest(new AlbumRequests().delete(user.getNick(), user.getToken().getToken(), -1));
         Assert.assertEquals("invalidAlbum", obj.getString("error"));
     }
     @Test
     public void testErrorsUnknownAlbum() {
-        JSONObject obj = new AlbumRequests().delete(user.getNick(), user.getToken().getToken(), Long.MAX_VALUE);
+        JSONObject obj = performTest(new AlbumRequests().delete(user.getNick(), user.getToken().getToken(), Long.MAX_VALUE));
         Assert.assertEquals("unknownAlbum", obj.getString("error"));
     }
 
     @Test
     public void testOK() {
 
-        JSONObject obj = new AlbumRequests().delete(user.getNick(), user.getToken().getToken(), album.getAlbumId());
+        JSONObject obj = performTest(new AlbumRequests().delete(user.getNick(), user.getToken().getToken(), album.getAlbumId()));
 
         openSession();
         Assert.assertEquals(0, SQLUtils.getRowCount(s, "album", "user_id = " + user.getId()));

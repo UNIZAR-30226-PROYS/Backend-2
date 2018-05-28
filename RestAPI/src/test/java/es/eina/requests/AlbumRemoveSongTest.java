@@ -51,49 +51,49 @@ public class AlbumRemoveSongTest extends TestBase {
 
     @Test
     public void testErrorsInvalidArgs() {
-        JSONObject obj = new AlbumRequests().removeSongFromAlbum("", user.getToken().getToken(), album.getAlbumId(), song.getId());
+        JSONObject obj = performTest(new AlbumRequests().removeSongFromAlbum("", user.getToken().getToken(), album.getAlbumId(), song.getId()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new AlbumRequests().removeSongFromAlbum(null, user.getToken().getToken(), album.getAlbumId(), song.getId());
+        obj = performTest(new AlbumRequests().removeSongFromAlbum(null, user.getToken().getToken(), album.getAlbumId(), song.getId()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
 
-        obj = new AlbumRequests().removeSongFromAlbum(user.getNick(), "", album.getAlbumId(), song.getId());
+        obj = performTest(new AlbumRequests().removeSongFromAlbum(user.getNick(), "", album.getAlbumId(), song.getId()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new AlbumRequests().removeSongFromAlbum(user.getNick(), null, album.getAlbumId(), song.getId());
+        obj = performTest(new AlbumRequests().removeSongFromAlbum(user.getNick(), null, album.getAlbumId(), song.getId()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
     }
 
     @Test
     public void testErrorsUnknownUser() {
-        JSONObject obj = new AlbumRequests().removeSongFromAlbum("invalid-user", user.getToken().getToken(), album.getAlbumId(), song.getId());
+        JSONObject obj = performTest(new AlbumRequests().removeSongFromAlbum("invalid-user", user.getToken().getToken(), album.getAlbumId(), song.getId()));
         Assert.assertEquals("unknownUser", obj.getString("error"));
     }
 
     @Test
     public void testErrorsInvalidToken() {
-        JSONObject obj = new AlbumRequests().removeSongFromAlbum(user.getNick(), "invalid+" + user.getToken().getToken(), album.getAlbumId(), song.getId());
+        JSONObject obj = performTest(new AlbumRequests().removeSongFromAlbum(user.getNick(), "invalid+" + user.getToken().getToken(), album.getAlbumId(), song.getId()));
         Assert.assertEquals("invalidToken", obj.getString("error"));
     }
 
     @Test
     public void testErrorsInvalidAlbum() {
-        JSONObject obj = new AlbumRequests().removeSongFromAlbum(user.getNick(), user.getToken().getToken(), -1, song.getId());
+        JSONObject obj = performTest(new AlbumRequests().removeSongFromAlbum(user.getNick(), user.getToken().getToken(), -1, song.getId()));
         Assert.assertEquals("invalidAlbum", obj.getString("error"));
     }
     @Test
     public void testErrorsUnknownAlbum() {
-        JSONObject obj = new AlbumRequests().removeSongFromAlbum(user.getNick(), user.getToken().getToken(), Long.MAX_VALUE, song.getId());
+        JSONObject obj = performTest(new AlbumRequests().removeSongFromAlbum(user.getNick(), user.getToken().getToken(), Long.MAX_VALUE, song.getId()));
         Assert.assertEquals("unknownAlbum", obj.getString("error"));
     }
 
     @Test
     public void testErrorsInvalidSong() {
-        JSONObject obj = new AlbumRequests().removeSongFromAlbum(user.getNick(), user.getToken().getToken(), album.getAlbumId(), -1);
+        JSONObject obj = performTest(new AlbumRequests().removeSongFromAlbum(user.getNick(), user.getToken().getToken(), album.getAlbumId(), -1));
         Assert.assertEquals("invalidSong", obj.getString("error"));
     }
 
     @Test
     public void testErrorsUnknownSong() {
-        JSONObject obj = new AlbumRequests().removeSongFromAlbum(user.getNick(), user.getToken().getToken(), album.getAlbumId(), Long.MAX_VALUE);
+        JSONObject obj = performTest(new AlbumRequests().removeSongFromAlbum(user.getNick(), user.getToken().getToken(), album.getAlbumId(), Long.MAX_VALUE));
         Assert.assertEquals("unknownSong", obj.getString("error"));
     }
 
@@ -103,7 +103,7 @@ public class AlbumRemoveSongTest extends TestBase {
         EntityUser second = UserUtils.addUser(s, "second-user", "a@a.es", "1234", "SecUser", "", new Date(0), "O1");
         closeSession();
         Assert.assertNotNull(second);
-        JSONObject obj = new AlbumRequests().removeSongFromAlbum(second.getNick(), second.getToken().getToken(), album.getAlbumId(), song.getId());
+        JSONObject obj = performTest(new AlbumRequests().removeSongFromAlbum(second.getNick(), second.getToken().getToken(), album.getAlbumId(), song.getId()));
         Assert.assertEquals("notAuthor", obj.getString("error"));
         openSession();
         UserCache.deleteUser(s, second);
@@ -113,7 +113,7 @@ public class AlbumRemoveSongTest extends TestBase {
     @Test
     public void testOK() {
 
-        JSONObject obj = new AlbumRequests().removeSongFromAlbum(user.getNick(), user.getToken().getToken(), album.getAlbumId(), song.getId());
+        JSONObject obj = performTest(new AlbumRequests().removeSongFromAlbum(user.getNick(), user.getToken().getToken(), album.getAlbumId(), song.getId()));
 
         openSession();
         Assert.assertEquals(0, SQLUtils.getRowCount(s, "song", "id = " + song.getId() + " and album_id = " + album.getAlbumId()));
@@ -124,10 +124,10 @@ public class AlbumRemoveSongTest extends TestBase {
     @Test
     public void testAlreadyAdded() {
 
-        JSONObject obj = new AlbumRequests().removeSongFromAlbum(user.getNick(), user.getToken().getToken(), album.getAlbumId(), song.getId());
+        JSONObject obj = performTest(new AlbumRequests().removeSongFromAlbum(user.getNick(), user.getToken().getToken(), album.getAlbumId(), song.getId()));
         Assert.assertEquals("ok", obj.getString("error"));
 
-        obj = new AlbumRequests().removeSongFromAlbum(user.getNick(), user.getToken().getToken(), album.getAlbumId(), song.getId());
+        obj = performTest(new AlbumRequests().removeSongFromAlbum(user.getNick(), user.getToken().getToken(), album.getAlbumId(), song.getId()));
         Assert.assertEquals("alreadyRemoved", obj.getString("error"));
     }
 }

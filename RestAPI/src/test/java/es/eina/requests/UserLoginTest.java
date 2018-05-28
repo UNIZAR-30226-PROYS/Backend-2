@@ -43,34 +43,34 @@ public class UserLoginTest extends TestBase {
 
     @Test
     public void testErrorsInvalidArgs(){
-        JSONObject obj = new UserRequests().login("", PASS);
+        JSONObject obj = performTest(new UserRequests().login("", PASS));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new UserRequests().login(null, PASS);
+        obj = performTest(new UserRequests().login(null, PASS));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
 
-        obj = new UserRequests().login(user.getNick(), "");
+        obj = performTest(new UserRequests().login(user.getNick(), ""));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = new UserRequests().login(user.getNick(), null);
+        obj = performTest(new UserRequests().login(user.getNick(), null));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
 
     }
 
     @Test
     public void testErrorsUnknownUser(){
-        JSONObject obj = new UserRequests().login("invalid-user", PASS);
+        JSONObject obj = performTest(new UserRequests().login("invalid-user", PASS));
         Assert.assertEquals("userNotExists", obj.getString("error"));
     }
 
     @Test
     public void testErrorsPassError(){
-        JSONObject obj = new UserRequests().login(user.getNick(), PASS + "abc");
+        JSONObject obj = performTest(new UserRequests().login(user.getNick(), PASS + "abc"));
         Assert.assertEquals("passError", obj.getString("error"));
     }
 
     @Test
     public void testOK(){
 
-        JSONObject obj = new UserRequests().login(user.getNick(), PASS);
+        JSONObject obj = performTest(new UserRequests().login(user.getNick(), PASS));
         Assert.assertEquals("ok", obj.getString("error"));
     }
 
