@@ -398,7 +398,7 @@ public class UserRequests {
     @Path("/{nick}/popular_songs")
     @GET
     public String popular_songs(@PathParam("nick") String nick,
-                                @DefaultValue("") @FormParam("token") String token,
+                                @DefaultValue("") @QueryParam("token") String token,
                                 @DefaultValue("" + SongRequests.MAX_POPULAR_SONGS) @QueryParam("n") int amount) {
         JSONObject obj = new JSONObject();
 
