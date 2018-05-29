@@ -104,6 +104,52 @@ public class UserRequests {
     }
 
     /**
+     * Try login a user in the system.
+     * <p>
+     * URI: /users/{nick}/login
+     * </p>
+     *
+     * @param nick : Username of a user to search
+     * @param token : Password of the User whose username is provided.
+     * @return The result of this search as specified in API.
+     */
+    @Path("/{nick}/session_open")
+    @GET
+    public String isSessionOpened(@PathParam("nick") String nick, @FormParam("token") String token) {
+        JSONObject response = new JSONObject();
+        response.put("user", nick);
+        response.put("error", "");
+
+        if (StringUtils.isValid(nick) && StringUtils.isValid(token)) {
+            try (Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntityUser user = UserCache.getUser(s, nick);
+                if (user != null) {
+                    if(user.getToken() != null && user.getToken().isValid(token)) {
+                        response.put("error", "ok");
+                    }else{
+                        response.put("error", "sessionClosed");
+                    }
+                    ok = true;
+                } else {
+                    response.put("error", "unknownUser");
+                }
+                if (ok) {
+                    t.commit();
+                } else {
+                    t.rollback();
+                }
+            }
+        } else {
+            response.put("error", "invalidArgs");
+        }
+
+
+        return response.toString();
+    }
+
+    /**
      * Try register and login a nick in the system.
      * <p>
      * URI: /users/{nick}/signup
@@ -914,7 +960,7 @@ public class UserRequests {
      * @return The result of this search as specified in API.
      */
     @Path("/{nick}/follows/{nick2}")
-    @POST
+    @GET
     public String follows(@PathParam("nick") String nick, @PathParam("nick2") String nick2) {
         JSONObject response = new JSONObject();
         JSONArray usersJSON = new JSONArray();
