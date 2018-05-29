@@ -20,7 +20,6 @@ public class AlbumCache {
     }
 
     public static boolean deleteAlbum(Session session, EntityAlbum ent) {
-        ent.clearSongs();
         return HibernateUtils.deleteFromDB(session, ent);
     }
 

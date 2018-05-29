@@ -120,13 +120,13 @@ public class SongRequests {
                                     obj.put("error", "ok");
                                     ok = true;
                                 } else {
-                                    obj.put("error", "unknownAlbum");
+                                    obj.put("error", "unknownSong");
                                 }
                             } else {
-                                obj.put("error", "unknownAlbum");
+                                obj.put("error", "unknownSong");
                             }
                         } else {
-                            obj.put("error", "invalidAlbum");
+                            obj.put("error", "invalidSong");
                         }
                     } else {
                         obj.put("error", "invalidToken");

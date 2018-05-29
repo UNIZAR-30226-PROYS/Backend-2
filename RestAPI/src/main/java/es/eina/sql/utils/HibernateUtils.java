@@ -154,6 +154,7 @@ public class HibernateUtils {
     }
 
     public static boolean deleteFromDB(Session s, EntityBase entity) {
+        if(!s.contains(entity)) return false;
         boolean b = false;
         try {
             s.delete(entity);
