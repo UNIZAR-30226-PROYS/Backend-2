@@ -1,0 +1,34 @@
+GET http://localhost:8080/users/lAngelP
+Accept: */*
+Cache-Control: no-cache
+Content-Type:application/x-www-form-urlencoded
+
+###
+
+PUT http://localhost:8080/user-lists/Usertest/create/
+Accept: */*
+Cache-Control: no-cache
+Content-Type:application/x-www-form-urlencoded
+
+token=mytoken&title=mytitle
+###
+GET http://localhost:8080/user-lists/Usertest
+Accept: */*
+Cache-Control: no-cache
+Content-Type:application/x-www-form-urlencoded
+
+###
+DELETE http://localhost:8080/user-lists/Usertest/delete?token=mytoken&listid=12213123
+Accept: */*
+Cache-Control: no-cache
+
+###
+POST http://localhost:8080/user-lists/Usertest/123121231/add/
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json
+
+{"token":"mytoken",
+ "songsIds":[1,2,3,4]}
+
+###

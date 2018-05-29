@@ -10,6 +10,10 @@ import org.json.JSONObject;
 import javax.persistence.*;
 import javax.persistence.Entity;
 import java.sql.Date;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity(name="user")
 @Table(name="users")
@@ -50,6 +54,10 @@ public class EntityUser extends EntityBase {
 
     @OneToOne(mappedBy = "user")
     private EntityUserValues userValues;
+
+
+    @ManyToMany(mappedBy = "followers")
+    private Set<EntitySongList> following = new LinkedHashSet<>();
 
     /**
      * DO NOT use this method as it can only be used by Hibernate
@@ -214,4 +222,22 @@ public class EntityUser extends EntityBase {
     public boolean isVerified() {
         return userValues != null && userValues.isVerified();
     }
+
+
+
+    public Set<EntitySongList> getFollowing() {
+        return following;
+    }
+
+    public void setFollowing(Set<EntitySongList> followedlists) {
+        this.following= followedlists;
+    }
+
+    public void addfollowing(EntitySongList songlist){
+        this.following.add(songlist);
+    }
+    public void removefollowimg(EntitySongList songlist){
+        this.following.remove(songlist);
+    }
+
 }

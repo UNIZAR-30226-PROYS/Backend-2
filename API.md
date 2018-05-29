@@ -411,3 +411,238 @@ Types:
 | :---: |:---|
 | *"error"* | String |
 | *"size"* | Long |
+
+
+## SongList
+### PUT /user-lists/{nick}/create/
+
+Crear una lista de reproducción
+
+type: application/x-www-form-urlencoded
+
+Params:
+| Parameter | Type |
+| :---: |:---|
+| *"token"* | String |
+| *"title"* | String |
+
+Return:
+
+Si hay error:
+
+    {"error":ERROR_CODE}
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| invalidArgs | *token* or *title* is null or empty. |
+| unknownUser | No user is registered with that nick. |
+| invalidToken | Cannot authenticate this user. |
+| unexpectedError | An unknown error happened. |
+
+Si no hay error
+
+    {"error":"ok",
+    "id": id}
+
+### GET /user-lists/{nick}
+
+Devuelve las listas de un usuario
+
+Return:
+
+Si hay error:
+
+    {"error":ERROR_CODE}
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| invalidArgs | *token* or *title* is null or empty. |
+| unknownUser | No user is registered with that nick. |
+| invalidToken | Cannot authenticate this user. |
+| unexpectedError | An unknown error happened. |
+
+Si no hay error
+
+    {"error":"ok",
+    "id": [id1, id2,...]}
+
+### DELETE /user-lists/{nick}/delete
+
+Borrar una lista
+
+type: application/x-www-form-urlencoded
+
+Params:
+| Parameter | Type |
+| :---: |:---|
+| *"token"* | String |
+| *"listid"* | long |
+
+### POST /user-lists/{nick}/{listId}/add
+
+Añade canciones a una lista de reproducción
+
+type: application/json
+
+Params:
+
+{"token":TOKEN,
+"songsIds":[id1, id2,....]}
+
+Return:
+
+Si hay error:
+
+    {"error":ERROR_CODE}
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| invalidArgs | *token* or *title* is null or empty. |
+| unknownUser | No user is registered with that nick. |
+| invalidToken | Cannot authenticate this user. |
+| unexpectedError | An unknown error happened. |
+| invalidSongList| Id de la lista no valida |
+| invalidAuthor | El usuario no coincide con el autor |
+
+Si no hay error
+
+    {"error":"ok"}
+
+
+### POST /user-lists/{nick}/{listId}/remove
+
+Elimina canciones a una lista de reproducción
+
+type: application/json
+
+Params:
+
+{"token":TOKEN,
+"songsIds":[id1, id2,....]}
+
+Return:
+
+Si hay error:
+
+    {"error":ERROR_CODE}
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| invalidArgs | *token* or *title* is null or empty. |
+| unknownUser | No user is registered with that nick. |
+| invalidToken | Cannot authenticate this user. |
+| unexpectedError | An unknown error happened. |
+| invalidSongList| Id de la lista no valida |
+| invalidAuthor | El usuario no coincide con el autor |
+
+Si no hay error
+
+    {"error":"ok"}
+
+### PUT /user-lists/{nick}/{listId}/follow
+
+Seguir una lista de reproducción
+
+type: application/x-www-form-urlencoded
+
+Params:
+| Parameter | Type |
+| :---: |:---|
+| *"token"* | String |
+
+Return:
+
+Si hay error:
+
+    {"error":ERROR_CODE}
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| invalidArgs | *token* or *title* is null or empty. |
+| unknownUser | No user is registered with that nick. |
+| invalidToken | Cannot authenticate this user. |
+| unexpectedError | An unknown error happened. |
+| invalidSongList| Id de la lista no valida |
+| invalidAuthor | El usuario no coincide con el autor |
+
+Si no hay error
+
+    {"error":"ok"}
+
+### DELETE /user-lists/{nick}/{listId}/unfollow
+
+Seguir una lista de reproducción
+
+type: application/x-www-form-urlencoded
+
+Params:
+| Parameter | Type |
+| :---: |:---|
+| *"token"* | String |
+
+Return:
+
+Si hay error:
+
+    {"error":ERROR_CODE}
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| invalidArgs | *token* or *title* is null or empty. |
+| unknownUser | No user is registered with that nick. |
+| invalidToken | Cannot authenticate this user. |
+| unexpectedError | An unknown error happened. |
+| invalidSongList| Id de la lista no valida |
+| invalidAuthor | El usuario no coincide con el autor |
+
+Si no hay error
+
+    {"error":"ok"}
+
+### GET /user-lists/{list}
+
+Si hay error:
+
+    {"error":ERROR_CODE}
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| invalidArgs | *token* or *title* is null or empty. |
+| unknownUser | No user is registered with that nick. |
+| invalidToken | Cannot authenticate this user. |
+| unexpectedError | An unknown error happened. |
+| invalidSongList| Id de la lista no valida |
+| invalidAuthor | El usuario no coincide con el autor |
+
+Si no hay error
+
+    {"error":"ok",
+    "title":list_title,
+    "author": list_author,
+    "creation_time": creation_time,
+    "songs_size": number of songs,
+    "songs":[songid1, songid2...],
+    "followers_size": number of followers,
+    "followers": [user1id, user2id...]}
+
+### GET /user-lists/{nick}/following
+
+Devuelve las ids de las listas que sigue el usuario
+
+Return:
+
+Si hay error:
+
+    {"error":ERROR_CODE}
+
+| {ERROR_CODE} | Description |
+| :---: |:---|
+| invalidArgs | *token* or *title* is null or empty. |
+| unknownUser | No user is registered with that nick. |
+| invalidToken | Cannot authenticate this user. |
+| unexpectedError | An unknown error happened. |
+
+Si no hay error
+
+    {"error":"ok",
+    "id": [songlist1id, songlist2id...]}
