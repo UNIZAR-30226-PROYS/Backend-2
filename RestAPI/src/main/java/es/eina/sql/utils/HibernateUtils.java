@@ -52,7 +52,6 @@ public class HibernateUtils {
                 settings.put(Environment.USER, login.getProperty("user"));
                 settings.put(Environment.PASS, login.getProperty("pass"));
                 settings.put(Environment.HBM2DDL_AUTO, "update");
-                settings.put(Environment.SHOW_SQL, true);
                 //settings.put(Environment.USE_SQL_COMMENTS, true);
 
                 //settings.put(Environment.FORMAT_SQL, true);
@@ -61,6 +60,11 @@ public class HibernateUtils {
                 if ("true".equals(createDrop)) {
                     LOG.debug("Enable CREATE-DROP property!!!! Beware, this MUST be a debug/test environment.");
                     settings.put(Environment.HBM2DDL_AUTO, "create-drop");
+                }
+                String showSql = login.getProperty("show-sql");
+                if ("true".equals(showSql)) {
+                    LOG.debug("Enable CREATE-DROP property!!!! Beware, this MUST be a debug/test environment.");
+                    settings.put(Environment.SHOW_SQL, true);
                 }
 
                 // HikariCP settings
