@@ -2,6 +2,7 @@ package es.eina.requests;
 
 import es.eina.TestBase;
 import es.eina.cache.AlbumCache;
+import es.eina.cache.UserCache;
 import es.eina.sql.SQLUtils;
 import es.eina.sql.entities.EntityAlbum;
 import es.eina.sql.entities.EntityUser;
@@ -36,7 +37,7 @@ public class AlbumCreateTest extends TestBase {
     @After
     public void endTest() {
         openSession();
-        HibernateUtils.deleteFromDB(s, user);
+        HibernateUtils.deleteFromDB(s, UserCache.getUser(s, user.getId()));
         closeSession();
     }
 

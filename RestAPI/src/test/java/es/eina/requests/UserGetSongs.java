@@ -49,13 +49,13 @@ public class UserGetSongs extends TestBase {
     @After
     public void endTest() {
         openSession();
-        SongCache.deleteSong(s, song1);
-        SongCache.deleteSong(s, song2);
-        SongCache.deleteSong(s, song3);
-        AlbumCache.deleteAlbum(s, album);
-        AlbumCache.deleteAlbum(s, album2);
-        UserCache.deleteUser(s, user);
-        UserCache.deleteUser(s, user2);
+        SongCache.deleteSong(s, SongCache.getSong(s, song1.getId()));
+        SongCache.deleteSong(s, SongCache.getSong(s, song2.getId()));
+        SongCache.deleteSong(s, SongCache.getSong(s, song3.getId()));
+        AlbumCache.deleteAlbum(s, AlbumCache.getAlbum(s, album.getAlbumId()));
+        AlbumCache.deleteAlbum(s, AlbumCache.getAlbum(s, album2.getAlbumId()));
+        UserCache.deleteUser(s, UserCache.getUser(s, user.getId()));
+        UserCache.deleteUser(s, UserCache.getUser(s, user2.getId()));
         closeSession();
     }
 

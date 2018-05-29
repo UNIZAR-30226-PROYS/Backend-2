@@ -60,14 +60,14 @@ public class SongUserGetFavedTest extends TestBase {
     @After
     public void endTest() {
         openSession();
-        SongCache.deleteSong(s, song);
-        SongCache.deleteSong(s, song2);
-        SongCache.deleteSong(s, song3);
-        SongCache.deleteSong(s, song4);
-        SongCache.deleteSong(s, song5);
-        AlbumCache.deleteAlbum(s, album);
-        UserCache.deleteUser(s, user);
-        UserCache.deleteUser(s, user2);
+        SongCache.deleteSong(s, SongCache.getSong(s, song.getId()));
+        SongCache.deleteSong(s, SongCache.getSong(s, song2.getId()));
+        SongCache.deleteSong(s, SongCache.getSong(s, song3.getId()));
+        SongCache.deleteSong(s, SongCache.getSong(s, song4.getId()));
+        SongCache.deleteSong(s, SongCache.getSong(s, song5.getId()));
+        AlbumCache.deleteAlbum(s, AlbumCache.getAlbum(s, album.getAlbumId()));
+        UserCache.deleteUser(s, UserCache.getUser(s, user.getId()));
+        UserCache.deleteUser(s, UserCache.getUser(s, user2.getId()));
         closeSession();
     }
 

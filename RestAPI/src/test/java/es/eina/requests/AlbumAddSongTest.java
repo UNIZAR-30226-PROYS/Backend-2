@@ -45,9 +45,9 @@ public class AlbumAddSongTest extends TestBase {
     @After
     public void endTest() {
         openSession();
-        SongCache.deleteSong(s, song);
-        AlbumCache.deleteAlbum(s, album);
-        UserCache.deleteUser(s, user);
+        SongCache.deleteSong(s, SongCache.getSong(s, song.getId()));
+        AlbumCache.deleteAlbum(s, AlbumCache.getAlbum(s, album.getAlbumId()));
+        UserCache.deleteUser(s, UserCache.getUser(s, user.getId()));
         closeSession();
     }
 

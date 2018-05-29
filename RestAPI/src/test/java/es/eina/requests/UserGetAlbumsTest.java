@@ -43,11 +43,11 @@ public class UserGetAlbumsTest extends TestBase {
     @After
     public void endTest() {
         openSession();
-        AlbumCache.deleteAlbum(s, album);
-        AlbumCache.deleteAlbum(s, album2);
-        AlbumCache.deleteAlbum(s, album3);
-        UserCache.deleteUser(s, user);
-        UserCache.deleteUser(s, user2);
+        AlbumCache.deleteAlbum(s, AlbumCache.getAlbum(s, album.getAlbumId()));
+        AlbumCache.deleteAlbum(s, AlbumCache.getAlbum(s, album2.getAlbumId()));
+        AlbumCache.deleteAlbum(s, AlbumCache.getAlbum(s, album3.getAlbumId()));
+        UserCache.deleteUser(s, UserCache.getUser(s, user.getId()));
+        UserCache.deleteUser(s, UserCache.getUser(s, user2.getId()));
         closeSession();
     }
 

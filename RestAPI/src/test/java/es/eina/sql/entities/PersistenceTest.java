@@ -57,7 +57,7 @@ public class PersistenceTest extends TestBase {
 
         String nick = user.getNick();
         long id = user.getId();
-        UserCache.deleteUser(s, user);
+        UserCache.deleteUser(s, UserCache.getUser(s, nick));
         closeSession();
 
         openSession();

@@ -40,9 +40,9 @@ public class UserIsFollowingUsersTest extends TestBase {
     @After
     public void endTest() {
         openSession();
-        UserCache.deleteUser(s, user);
-        UserCache.deleteUser(s, user2);
-        UserCache.deleteUser(s, user3);
+        UserCache.deleteUser(s, UserCache.getUser(s, user.getId()));
+        UserCache.deleteUser(s, UserCache.getUser(s, user2.getId()));
+        UserCache.deleteUser(s, UserCache.getUser(s, user3.getId()));
         closeSession();
     }
 

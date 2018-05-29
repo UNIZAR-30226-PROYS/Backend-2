@@ -36,7 +36,7 @@ public class UserGetTest extends TestBase {
     @After
     public void endTest(){
         openSession();
-        Assert.assertTrue(UserCache.deleteUser(s, user));
+        UserCache.deleteUser(s, UserCache.getUser(s, user.getId()));
         closeSession();
     }
 

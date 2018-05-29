@@ -80,7 +80,7 @@ public class PlaylistDeleteTest extends TestBase {
 
     @Test
     public void testErrorsOK(){
-        JSONObject obj = performTest(new UserSongListRequests().delete("", user.getToken().getToken(), list.getId()));
+        JSONObject obj = performTest(new UserSongListRequests().delete(user.getNick(), user.getToken().getToken(), list.getId()));
 
         openSession();
         Assert.assertEquals(0, SQLUtils.getRowCount(s,"song_list", "id = " + list.getId()));

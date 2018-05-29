@@ -1,6 +1,8 @@
 package es.eina.requests;
 
 import es.eina.TestBase;
+import es.eina.cache.AlbumCache;
+import es.eina.cache.SongCache;
 import es.eina.cache.UserCache;
 import es.eina.sql.SQLUtils;
 import es.eina.sql.entities.EntityAlbum;
@@ -43,9 +45,9 @@ public class AlbumRemoveSongTest extends TestBase {
     @After
     public void endTest() {
         openSession();
-        HibernateUtils.deleteFromDB(s, album);
-        HibernateUtils.deleteFromDB(s, song);
-        HibernateUtils.deleteFromDB(s, user);
+        HibernateUtils.deleteFromDB(s, AlbumCache.getAlbum(s, album.getAlbumId()));
+        HibernateUtils.deleteFromDB(s, SongCache.getSong(s, song.getId()));
+        HibernateUtils.deleteFromDB(s, UserCache.getUser(s, user.getId()));
         closeSession();
     }
 

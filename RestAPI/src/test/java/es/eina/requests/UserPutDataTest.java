@@ -54,7 +54,7 @@ public class UserPutDataTest extends TestBase {
     @After
     public void endTest() {
         openSession();
-        UserCache.deleteUser(s, user);
+        UserCache.deleteUser(s, UserCache.getUser(s, user.getId()));
         closeSession();
     }
 

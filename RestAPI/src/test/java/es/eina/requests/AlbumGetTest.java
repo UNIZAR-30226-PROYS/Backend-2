@@ -47,8 +47,8 @@ public class AlbumGetTest extends TestBase {
     public void endTest() {
         LOG.info("END TEST!!");
         openSession();
-        AlbumCache.deleteAlbum(s, album);
-        UserCache.deleteUser(s, user);
+        AlbumCache.deleteAlbum(s, AlbumCache.getAlbum(s, album.getAlbumId()));
+        UserCache.deleteUser(s, UserCache.getUser(s, user.getId()));
         closeSession();
     }
 

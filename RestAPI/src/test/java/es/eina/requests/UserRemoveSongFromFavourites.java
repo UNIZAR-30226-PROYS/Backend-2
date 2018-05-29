@@ -43,8 +43,8 @@ public class UserRemoveSongFromFavourites extends TestBase {
     @After
     public void endTest(){
         openSession();
-        UserCache.deleteUser(s, user);
-        AlbumCache.deleteAlbum(s, album);
+        UserCache.deleteUser(s, UserCache.getUser(s, user.getId()));
+        AlbumCache.deleteAlbum(s, AlbumCache.getAlbum(s, album.getAlbumId()));
         closeSession();
     }
 
