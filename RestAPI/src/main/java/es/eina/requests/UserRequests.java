@@ -866,7 +866,7 @@ public class UserRequests {
      * @return The result of this search as specified in API.
      */
     @Path("/{nick}/followers")
-    @POST
+    @GET
     public String getFollowers(@PathParam("nick") String nick) {
         JSONObject response = new JSONObject();
         JSONArray usersJSON = new JSONArray();
@@ -973,7 +973,7 @@ public class UserRequests {
      * @return The result of this search as specified in API.
      */
     @Path("/{nick}/follows")
-    @POST
+    @GET
     public String getFollowed(@PathParam("nick") String nick) {
         JSONObject response = new JSONObject();
         JSONArray usersJSON = new JSONArray();
