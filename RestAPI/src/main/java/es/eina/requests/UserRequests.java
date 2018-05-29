@@ -28,6 +28,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.sql.Date;
 import java.util.List;
+import java.util.Set;
 
 @Path("/users/")
 @Produces(MediaType.APPLICATION_JSON)
@@ -754,6 +755,212 @@ public class UserRequests {
         obj.put("users", users);
         return obj.toString();
     }
+
+    /**
+     * Try follow a user in the system.
+     * <p>
+     * URI: /users/{nick}/follow
+     * </p>
+     *
+     * @param nick  : Nickname of a user to register (unique)
+     * @return The result of this search as specified in API.
+     */
+    @Path("/{nick}/follow/{nick2}")
+    @POST
+    public String follow(@PathParam("nick") String nick, @PathParam("nick2") String nick2) {
+        JSONObject response = new JSONObject();
+        response.put("error", "");
+        //String birth_date = StringUtils.isValid(birth) ? StringUtils.isDate(birth) : null;
+
+        if (StringUtils.isValid(nick) && StringUtils.isValid(nick2)) {
+            try (Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntityUser user1 = UserCache.getUser(s, nick);
+                if (user1 != null) {
+                    EntityUser user2 = UserCache.getUser(s, nick2);
+                    if (user2 != null) {
+                        if (user1.followUser(user2)) {
+                            response.put("error", "ok");
+                            ok = true;
+                        } else {
+                            response.put("error", "alreadyFollowing");
+                        }
+                    }else{
+                        response.put("error", "user2NotExists");
+                    }
+                } else {
+                    response.put("error", "user1NotExists");
+                }
+                if (ok) {
+                    t.commit();
+                } else {
+                    t.rollback();
+                }
+            }
+        } else {
+            response.put("error", "invalidArgs");
+        }
+
+
+        return response.toString();
+    }
+
+    /**
+     * Try follow a user in the system.
+     * <p>
+     * URI: /users/{nick}/follow
+     * </p>
+     *
+     * @param nick  : Nickname of a user to register (unique)
+     * @return The result of this search as specified in API.
+     */
+    @Path("/{nick}/unfollow/{nick2}")
+    @POST
+    public String unfollow(@PathParam("nick") String nick, @PathParam("nick2") String nick2) {
+        JSONObject response = new JSONObject();
+        response.put("error", "");
+        //String birth_date = StringUtils.isValid(birth) ? StringUtils.isDate(birth) : null;
+
+        if (StringUtils.isValid(nick) && StringUtils.isValid(nick2)) {
+            try (Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntityUser user1 = UserCache.getUser(s, nick);
+                if (user1 != null) {
+                    EntityUser user2 = UserCache.getUser(s, nick2);
+                    if (user2 != null) {
+                        if (user1.unFollowUser(s, user2)) {
+                            response.put("error", "ok");
+                            ok = true;
+                        } else {
+                            response.put("error", "unknownError");
+                        }
+                    }else{
+                        response.put("error", "user2NotExists");
+                    }
+                } else {
+                    response.put("error", "user1NotExists");
+                }
+                if (ok) {
+                    t.commit();
+                } else {
+                    t.rollback();
+                }
+            }
+        } else {
+            response.put("error", "invalidArgs");
+        }
+
+
+        return response.toString();
+    }
+
+    /**
+     * Try follow a user in the system.
+     * <p>
+     * URI: /users/{nick}/follow
+     * </p>
+     *
+     * @param nick  : Nickname of a user to register (unique)
+     * @return The result of this search as specified in API.
+     */
+    @Path("/{nick}/followers")
+    @POST
+    public String getFollowers(@PathParam("nick") String nick) {
+        JSONObject response = new JSONObject();
+        JSONArray usersJSON = new JSONArray();
+        response.put("error", "");
+        //String birth_date = StringUtils.isValid(birth) ? StringUtils.isDate(birth) : null;
+
+        if (StringUtils.isValid(nick)) {
+            try (Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntityUser user1 = UserCache.getUser(s, nick);
+                if (user1 != null) {
+                    Set<EntityUser> users = user1.getFollowers();
+                    for(EntityUser user : users){
+                        usersJSON.put(user.getId());
+                    }
+                    response.put("size", users.size());
+                    response.put("error", "ok");
+                    ok = true;
+                } else {
+                    response.put("error", "user1NotExists");
+                }
+                if (ok) {
+                    t.commit();
+                } else {
+                    t.rollback();
+                }
+            }
+        } else {
+            response.put("error", "invalidArgs");
+        }
+        response.put("users", usersJSON);
+
+
+        return response.toString();
+    }
+
+    /**
+     * Try follow a user in the system.
+     * <p>
+     * URI: /users/{nick}/follow
+     * </p>
+     *
+     * @param nick  : Nickname of a user to register (unique)
+     * @return The result of this search as specified in API.
+     */
+    @Path("/{nick}/follows/{nick2}")
+    @POST
+    public String follows(@PathParam("nick") String nick, @PathParam("nick2") String nick2) {
+        JSONObject response = new JSONObject();
+        JSONArray usersJSON = new JSONArray();
+        response.put("error", "");
+        //String birth_date = StringUtils.isValid(birth) ? StringUtils.isDate(birth) : null;
+
+        if (StringUtils.isValid(nick) && StringUtils.isValid(nick2)) {
+            try (Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntityUser user1 = UserCache.getUser(s, nick);
+                if (user1 != null) {
+                    EntityUser user2 = UserCache.getUser(s, nick);
+                    if (user2 != null) {
+                    Set<EntityUser> users = user1.getFollowers();
+                    for(EntityUser user : users){
+                        if(user.getId().equals(user2.getId())){
+                            ok = true;
+                            break;
+                        }
+                    }
+                    response.put("size", users.size());
+                    response.put("error", ok ? "ok" : "notFollows");
+                    ok = true;
+                    } else {
+                        response.put("error", "user2NotExists");
+                    }
+                } else {
+                    response.put("error", "user1NotExists");
+                }
+                if (ok) {
+                    t.commit();
+                } else {
+                    t.rollback();
+                }
+            }
+        } else {
+            response.put("error", "invalidArgs");
+        }
+        response.put("users", usersJSON);
+
+
+        return response.toString();
+    }
+
+
 
     static {
         defaultUserJSON = new JSONObject();

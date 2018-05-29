@@ -97,12 +97,12 @@ public class EntityUser extends EntityBase {
     Set<EntityUserSongData> songsListened = new HashSet<>();
 
     //This user has this followers
-    @OneToMany(mappedBy = "followee", cascade=CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade=CascadeType.ALL, orphanRemoval = true, mappedBy = "followee")
     //@Cascade(org.hibernate.annotations.CascadeType.ALL)
     private Set<EntityUserFollowers> followers = new HashSet<>();
 
     //This user follows this users
-    @OneToMany(mappedBy = "follower", cascade=CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade=CascadeType.ALL, orphanRemoval = true, mappedBy = "follower")
     private Set<EntityUserFollowers> followees = new HashSet<>();
 
     /**
@@ -408,5 +408,15 @@ public class EntityUser extends EntityBase {
             array.put(song.getId());
         }
         return array;
+    }
+
+    public void removeFollowers(Session s) {
+        for(EntityUserFollowers user : followees){
+            s.delete(user);
+        }
+
+        for(EntityUserFollowers user : followers){
+            s.delete(user);
+        }
     }
 }

@@ -55,9 +55,12 @@ public class EntityToken extends EntityBase{
 
     void updateToken() {
         if(time < System.currentTimeMillis()) {
-            //this.token = randomTokenGenerator.nextString();
             this.amount++;
             this.time = System.currentTimeMillis() + TOKEN_VALID_TIME;
+        }
+
+        if(this.token == null){
+            this.token = randomTokenGenerator.nextString();
         }
     }
 

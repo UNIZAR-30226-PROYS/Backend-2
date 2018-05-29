@@ -1,5 +1,7 @@
 package es.eina.sql.entities;
 
+import org.json.JSONObject;
+
 import javax.persistence.*;
 import java.util.HashSet;
 import java.util.List;
@@ -65,5 +67,16 @@ public class EntitySongList extends EntityBase{
     }
     public void removeSong(EntitySong song){
         this.songs.remove(song);
+    }
+
+    public JSONObject toJSON(){
+        JSONObject obj = new JSONObject();
+        obj.put("id", id);
+        obj.put("title", title);
+        obj.put("creation_time", creationTime);
+        obj.put("author", author.getId());
+        obj.put("amount", songs.size());
+
+        return obj;
     }
 }

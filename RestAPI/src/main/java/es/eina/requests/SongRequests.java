@@ -44,8 +44,8 @@ public class SongRequests {
     @Path("{nick}/create")
     @POST
     public String create(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
-                         @FormParam("title") String title, @DefaultValue("-1") @FormParam("title") long albumID,
-                         @FormParam("year") String country) {
+                         @FormParam("title") String title, @DefaultValue("-1") @FormParam("albumID") long albumID,
+                         @FormParam("country") String country) {
 
         JSONObject obj = new JSONObject();
         JSONObject songJSON = new JSONObject(EntitySong.defaultSongJSON);
@@ -87,7 +87,7 @@ public class SongRequests {
             obj.put("error", "invalidArgs");
         }
 
-        obj.put("album", songJSON);
+        obj.put("song", songJSON);
 
         return obj.toString();
     }

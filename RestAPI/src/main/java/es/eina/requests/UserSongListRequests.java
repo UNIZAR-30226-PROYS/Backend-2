@@ -10,6 +10,7 @@ import es.eina.sql.utils.HibernateUtils;
 import es.eina.utils.StringUtils;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
@@ -80,6 +81,7 @@ public class UserSongListRequests {
         return result.toString();
 
     }
+
     /**
      * Get all list from a user
      * <p>
@@ -93,6 +95,7 @@ public class UserSongListRequests {
     @POST
     public String getLists(@PathParam("nick") String nick) {
         JSONObject result = new JSONObject();
+        JSONArray array = new JSONArray();
         if(StringUtils.isValid(nick)){
             try(Session s = HibernateUtils.getSession()) {
                 Transaction t = s.beginTransaction();
@@ -102,7 +105,7 @@ public class UserSongListRequests {
                     List<EntitySongList> songlists = SongListCache.getSongLists(s, nick);
                     result.put("size", songlists.size());
                     for (EntitySongList song : songlists) {
-                        result.put(Objects.toString(song.getId()), song);
+                        array.put(song.getId());
                     }
                     result.put("error", "ok");
                     ok = true;
@@ -118,6 +121,49 @@ public class UserSongListRequests {
         }else{
             result.put("error", "invalidArgs");
         }
+
+        result.put("songs", array);
+
+        return result.toString();
+    }
+
+    /**
+     * Get a list
+     * <p>
+     * URI: /user-lists/{nick}/lists
+     * </p>
+     *
+     * @param nick  : Nickname of a user to create the list
+     * @return Si no hay error devuelve todas las ids de las playlists del usuario.
+     */
+    @Path("{id}")
+    @GET
+    public String getList(@PathParam("id") int id) {
+        JSONObject result = new JSONObject();
+        JSONArray array = new JSONArray();
+        if(id > 0){
+            try(Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntitySongList list = SongListCache.getSongList(s, id);
+                if(list != null){
+                    result.put("list", list.toJSON());
+                    result.put("error", "ok");
+                    ok = true;
+                } else {
+                    result.put("error", "unknownList");
+                }
+                if(ok){
+                    t.commit();
+                }else{
+                    t.rollback();
+                }
+            }
+        }else{
+            result.put("error", "invalidArgs");
+        }
+
+        result.put("songs", array);
 
         return result.toString();
     }
@@ -201,16 +247,16 @@ public class UserSongListRequests {
                     if (song != null) {
                         if (user.getToken() != null && user.getToken().isValid(userToken)) {
                             EntitySongList list = SongListCache.getSongList(s, listId);
-                            if(list.getAuthor().getId().equals(user.getId())) {
-                                if (list != null) {
+                            if (list != null) {
+                                if(list.getAuthor().getId().equals(user.getId())) {
                                     list.addSong(song);
                                     result.put("error", "ok");
                                     ok = true;
                                 } else {
-                                    result.put("error", "unknownList");
+                                    result.put("error", "notAuthor");
                                 }
                             } else {
-                                result.put("error", "notAuthor");
+                                result.put("error", "unknownList");
                             }
                         } else {
                             result.put("error", "invalidToken");
