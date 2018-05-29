@@ -4,8 +4,11 @@ import es.eina.geolocalization.Geolocalizer;
 import org.hibernate.annotations.Cascade;
 import org.json.JSONObject;
 
+import org.hibernate.annotations.Cascade;
+
 import javax.persistence.*;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Entity(name = "song")
@@ -34,6 +37,9 @@ public class EntitySong extends EntityBase {
 
     @ManyToMany(mappedBy = "songsLiked", cascade = CascadeType.ALL)
     private Set<EntityUser> usersLikers = new HashSet<>();
+
+    @ManyToMany (mappedBy = "songs", cascade = CascadeType.ALL)
+    private Set<EntitySongList> lists = new LinkedHashSet<>();
 
     @ManyToMany(mappedBy = "songsFaved", cascade = CascadeType.ALL)
     private Set<EntityUser> usersFavers = new HashSet<>();
@@ -77,6 +83,14 @@ public class EntitySong extends EntityBase {
 
     public long getUploadTime() {
         return uploadTime;
+    }
+
+    public Set<EntitySongList> getLists() {
+        return lists;
+    }
+
+    public void setLists(Set<EntitySongList> lists) {
+        this.lists = lists;
     }
 
     public boolean isSongFaved(EntityUser user) {

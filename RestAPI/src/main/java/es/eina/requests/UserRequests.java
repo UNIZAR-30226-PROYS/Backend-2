@@ -510,7 +510,7 @@ public class UserRequests {
         return result.toString();
     }
 
-    @Path("/{nick}")
+    @Path("/delete/{nick}")
     @DELETE
     public String deleteUserData(
             @PathParam("nick") String nick,

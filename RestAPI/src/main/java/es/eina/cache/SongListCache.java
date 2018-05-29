@@ -10,7 +10,6 @@ import org.hibernate.query.Query;
 
 import javax.persistence.NamedQuery;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class SongListCache {
 

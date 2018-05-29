@@ -4,7 +4,9 @@ import es.eina.sql.entities.*;
 import org.hibernate.Session;
 import es.eina.RestApp;
 import es.eina.sql.entities.*;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
@@ -18,6 +20,8 @@ import java.io.Serializable;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.InputStream;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -119,6 +123,13 @@ public class HibernateUtils {
         }
         //return session;
         return sessionFactory.openSession();
+    }
+
+    public static SessionFactory getSessionFactory() {
+        if (sessionFactory == null) {
+            throw new RuntimeException("Cannot access a non-built SessionFactory.");
+        }
+        return sessionFactory;
     }
 
     public static void shutdown() {

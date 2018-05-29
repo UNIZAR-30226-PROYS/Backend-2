@@ -19,6 +19,10 @@ import javax.persistence.Entity;
 import javax.transaction.Transactional;
 import java.sql.Date;
 import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity(name="user")
 @Table(name="users")
@@ -68,6 +72,10 @@ public class EntityUser extends EntityBase {
 
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true)
     private EntityUserValues userValues;
+
+
+    @ManyToMany(mappedBy = "followers")
+    private Set<EntitySongList> following = new LinkedHashSet<>();
 
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "user")
@@ -419,4 +427,22 @@ public class EntityUser extends EntityBase {
             s.delete(user);
         }
     }
+
+
+
+    public Set<EntitySongList> getFollowing() {
+        return following;
+    }
+
+    public void setFollowing(Set<EntitySongList> followedlists) {
+        this.following= followedlists;
+    }
+
+    public void addfollowing(EntitySongList songlist){
+        this.following.add(songlist);
+    }
+    public void removefollowimg(EntitySongList songlist){
+        this.following.remove(songlist);
+    }
+
 }

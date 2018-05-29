@@ -32,7 +32,7 @@ public class Listener implements ServletContextListener,
 	 */
 	public void contextInitialized(ServletContextEvent sce) {
 	  /* This method is called when the servlet context is
-         initialized(when the Web application is deployed). 
+         initialized(when the Web application is deployed).
          You can initialize servlet context related data here.
       */
 		InputStream stream = Listener.class.getResourceAsStream("/GeoLite2-Country.mmdb");
@@ -43,13 +43,13 @@ public class Listener implements ServletContextListener,
 
 	}
 
-    /**
-     * This method is invoked when the Servlet Context (the Web application) is undeployed or Application Server shuts down.
-     * @param sce : Servlet context
-     */
+	/**
+	 * This method is invoked when the Servlet Context (the Web application) is undeployed or Application Server shuts down.
+	 * @param sce : Servlet context
+	 */
 	public void contextDestroyed(ServletContextEvent sce) {
-      /* This method is invoked when the Servlet Context 
-         (the Web application) is undeployed or 
+      /* This method is invoked when the Servlet Context
+         (the Web application) is undeployed or
          Application Server shuts down.
       */
 		System.out.println("Close MySQL");
@@ -61,11 +61,11 @@ public class Listener implements ServletContextListener,
 	// HttpSessionListener implementation
 	// -------------------------------------------------------
 	public void sessionCreated(HttpSessionEvent se) {
-      /* Session is created. */
+		/* Session is created. */
 	}
 
 	public void sessionDestroyed(HttpSessionEvent se) {
-      /* Session is destroyed. */
+		/* Session is destroyed. */
 	}
 
 	// -------------------------------------------------------
@@ -73,7 +73,7 @@ public class Listener implements ServletContextListener,
 	// -------------------------------------------------------
 
 	public void attributeAdded(HttpSessionBindingEvent sbe) {
-      /* This method is called when an attribute 
+      /* This method is called when an attribute
          is added to a session.
       */
 	}
