@@ -136,7 +136,7 @@ public class UserSongListRequests {
      * </p>
      *
      * @return Si no hay error devuelve todas las ids de las playlists del usuario.
-     */
+     *
     @Path("{id}")
     @GET
     public String getList(@PathParam("id") int id) {
@@ -167,7 +167,7 @@ public class UserSongListRequests {
         result.put("songs", array);
 
         return result.toString();
-    }
+    }*/
 
 
     /**

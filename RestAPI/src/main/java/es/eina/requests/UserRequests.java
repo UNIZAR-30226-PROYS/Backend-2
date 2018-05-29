@@ -115,7 +115,7 @@ public class UserRequests {
      */
     @Path("/{nick}/session_open")
     @GET
-    public String isSessionOpened(@PathParam("nick") String nick, @FormParam("token") String token) {
+    public String isSessionOpened(@PathParam("nick") String nick, @QueryParam("token") String token) {
         JSONObject response = new JSONObject();
         response.put("user", nick);
         response.put("error", "");
@@ -556,7 +556,7 @@ public class UserRequests {
         return result.toString();
     }
 
-    @Path("/delete/{nick}")
+    @Path("/{nick}")
     @DELETE
     public String deleteUserData(
             @PathParam("nick") String nick,

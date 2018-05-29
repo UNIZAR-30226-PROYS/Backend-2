@@ -11,19 +11,22 @@ import org.json.JSONObject;
 import java.util.List;
 
 public class FeedCache {
-    private static final String SQL_QUERY_FOLLOW = "SELECT song_list_id as id, follow_time as time\n" +
-            "FROM song_list_user_follows\n" +
-            "WHERE user_id = :user_id\n" +
-            "ORDER BY follow_time DESC\n" +
+    private static final String SQL_QUERY_FOLLOW = "SELECT s.id as id, follow_time as time\n" +
+            "FROM user_followers\n" +
+            "INNER JOIN album a ON a.user_id = follower " +
+            "INNER JOIN songs s ON a.id = s.album_id " +
+            "WHERE followee = :user_id\n" +
+            "ORDER BY time DESC\n" +
             "LIMIT :amount";
     private static final String SQL_QUERY_REPR = "SELECT song_id as id, time\n" +
-            "FROM song_reproductions\n" +
+            "FROM user_listened_songs\n" +
             "WHERE user_id = :user_id\n" +
             "ORDER BY time DESC\n" +
             "LIMIT :amount";
     private static final String SQL_QUERY_SONG = "SELECT id, upload_time as time\n" +
-            "FROM songs\n" +
-            "WHERE user_id = :user_id\n" +
+            "FROM songs s\n" +
+            "INNER JOIN album a ON a.id = s.album_id" +
+            "WHERE a.user_id = :user_id\n" +
             "ORDER BY time DESC\n" +
             "LIMIT :amount";
 

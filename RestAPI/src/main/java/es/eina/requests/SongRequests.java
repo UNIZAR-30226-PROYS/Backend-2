@@ -323,16 +323,16 @@ public class SongRequests {
      * @param id : Song's ID.
      * @return A JSON with response.
      */
-    @Path("/{id}/likes")
+    @Path("/{id}/favs")
     @GET
-    public static String getLikes(@PathParam("id") long id) {
+    public String getFavs(@PathParam("id") long id) {
         JSONObject result = new JSONObject();
 
         try (Session s = HibernateUtils.getSession()) {
             Transaction t = s.beginTransaction();
             EntitySong song = SongCache.getSong(s, id);
             if (song != null) {
-                result.put("likes", SQLUtils.getRowCountSQL(s, "song_likes", "song_id = " + id));
+                result.put("favs", SQLUtils.getRowCountSQL(s, "user_faved_songs", "song_id = " + id));
                 result.put("error", "ok");
                 t.commit();
             } else {
