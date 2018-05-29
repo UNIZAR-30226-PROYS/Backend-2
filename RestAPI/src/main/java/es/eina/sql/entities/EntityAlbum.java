@@ -34,7 +34,7 @@ public class EntityAlbum extends EntityBase {
     @Column(name = "upload_time",nullable = false)
     private long uploadTime;
 
-    @OneToMany(mappedBy = "album", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "album")
     private Set<EntitySong> songs = new HashSet<>();
 
 
@@ -120,5 +120,9 @@ public class EntityAlbum extends EntityBase {
         defaultAlbumJSON.put("publish_year", -1);
         defaultAlbumJSON.put("update_time", -1L);
         defaultAlbumJSON.put("image", "");
+    }
+
+    public void clearSongs() {
+        songs.clear();
     }
 }

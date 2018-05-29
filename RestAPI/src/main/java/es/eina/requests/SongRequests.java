@@ -69,7 +69,7 @@ public class SongRequests {
                                 obj.put("error", "unknownError");
                             }
                         } else {
-                            obj.put("error", "invalidYear");
+                            obj.put("error", "invalidAlbum");
                         }
                     } else {
                         obj.put("error", "invalidToken");
