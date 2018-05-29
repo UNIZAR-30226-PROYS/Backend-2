@@ -1,0 +1,96 @@
+package es.eina.requests;
+
+import es.eina.TestBase;
+import es.eina.cache.UserCache;
+import es.eina.sql.SQLUtils;
+import es.eina.sql.entities.EntityUser;
+import es.eina.utils.UserUtils;
+import org.json.JSONObject;
+import org.junit.*;
+
+import java.sql.Date;
+
+public class UserUnFollowUserTest extends TestBase {
+
+    private static final String PASS = "123456";
+    private EntityUser user;
+    private EntityUser user2;
+
+    @BeforeClass
+    public static void start() {
+        openDB();
+    }
+
+    @AfterClass
+    public static void stop() {
+        closeDB();
+    }
+
+    @Before
+    public void setupTest() {
+        openSession();
+        user = UserUtils.addUser(s, "test-user", "a@a.net", PASS, "Username :D", "Random BIO", new Date(0), "ES");
+        user2 = UserUtils.addUser(s, "test-user2", "a@a.net", PASS, "Username :D", "Random BIO", new Date(0), "ES");
+        user.followUser(user2);
+        closeSession();
+    }
+
+    @After
+    public void endTest() {
+        openSession();
+        UserCache.deleteUser(s, UserCache.getUser(s, user.getNick()));
+        UserCache.deleteUser(s, UserCache.getUser(s, user2.getNick()));
+        closeSession();
+    }
+
+    @Test
+    public void testErrorsInvalidArgs() {
+        JSONObject obj = performTest(new UserRequests().unfollow("", user2.getNick()));
+        Assert.assertEquals("invalidArgs", obj.getString("error"));
+        obj = performTest(new UserRequests().unfollow(null, user2.getNick()));
+        Assert.assertEquals("invalidArgs", obj.getString("error"));
+
+        obj = performTest(new UserRequests().unfollow(user.getNick(), ""));
+        Assert.assertEquals("invalidArgs", obj.getString("error"));
+        obj = performTest(new UserRequests().unfollow(user.getNick(), null));
+        Assert.assertEquals("invalidArgs", obj.getString("error"));
+
+    }
+
+    @Test
+    public void testErrorsUnknownUser1() {
+        JSONObject obj = performTest(new UserRequests().unfollow("invalid-user", user2.getNick()));
+        Assert.assertEquals("user1NotExists", obj.getString("error"));
+    }
+
+    @Test
+    public void testErrorsUnknownUser2() {
+        JSONObject obj = performTest(new UserRequests().unfollow(user.getNick(), "invalid-user"));
+        Assert.assertEquals("user2NotExists", obj.getString("error"));
+    }
+
+    @Test
+    public void testOK() {
+        JSONObject obj = performTest(new UserRequests().unfollow(user.getNick(), user2.getNick()));
+        Assert.assertEquals("ok", obj.getString("error"));
+        openSession();
+        Assert.assertEquals(0, SQLUtils.getRowCountSQL(s, "user_followers", "follower = " + user.getId() + " and followee = " + user2.getId()));
+        closeSession();
+    }
+
+    @Test
+    public void testNotFollowing() {
+        JSONObject obj = performTest(new UserRequests().unfollow(user.getNick(), user2.getNick()));
+        Assert.assertEquals("ok", obj.getString("error"));
+        openSession();
+        Assert.assertEquals(0, SQLUtils.getRowCountSQL(s, "user_followers", "follower = " + user.getId() + " and followee = " + user2.getId()));
+        closeSession();
+
+        obj = performTest(new UserRequests().unfollow(user.getNick(), user2.getNick()));
+        Assert.assertEquals("notFollowing", obj.getString("error"));
+        openSession();
+        Assert.assertEquals(0, SQLUtils.getRowCountSQL(s, "user_followers", "follower = " + user.getId() + " and followee = " + user2.getId()));
+        closeSession();
+    }
+
+}

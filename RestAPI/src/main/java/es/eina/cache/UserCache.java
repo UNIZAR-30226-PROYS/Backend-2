@@ -30,7 +30,6 @@ public class UserCache {
     }
 
     public static boolean deleteUser(Session s, EntityUser user) {
-        user.removeFollowers(s);
         return HibernateUtils.deleteFromDB(s, user);
     }
 

@@ -74,7 +74,7 @@ public class EntityUser extends EntityBase {
     private EntityUserValues userValues;
 
 
-    @ManyToMany(mappedBy = "followers")
+    @ManyToMany(mappedBy = "followers", cascade = CascadeType.ALL)
     private Set<EntitySongList> following = new LinkedHashSet<>();
 
 
@@ -401,9 +401,10 @@ public class EntityUser extends EntityBase {
 
     public boolean unFollowUser(Session s, EntityUser other){
         if(getFollowees().contains(other)){
-            EntityUserFollowers obj = UserFollowersCache.getFollower(s, other.getId(), getId());
+            EntityUserFollowers obj = UserFollowersCache.getFollower(s, getId(), other.getId());
             other.removeFollowee(obj);
             this.followees.remove(obj);
+            obj.cleanUp();
             return true;
         }
 

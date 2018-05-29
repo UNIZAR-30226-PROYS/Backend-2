@@ -9,12 +9,12 @@ import java.io.Serializable;
 public class EntityUserFollowers extends EntityBase{
 
     @Id
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "follower")
     private EntityUser follower;
 
     @Id
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "followee")
     private EntityUser followee;
 
@@ -39,6 +39,11 @@ public class EntityUserFollowers extends EntityBase{
 
     public long getTime() {
         return time;
+    }
+
+    public void cleanUp(){
+        this.followee = null;
+        this.follower = null;
     }
 
     public static class FollowerPrimaryKey implements Serializable {

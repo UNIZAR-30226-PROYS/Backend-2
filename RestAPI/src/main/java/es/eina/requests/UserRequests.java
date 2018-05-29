@@ -834,7 +834,7 @@ public class UserRequests {
                             response.put("error", "ok");
                             ok = true;
                         } else {
-                            response.put("error", "unknownError");
+                            response.put("error", "notFollowing");
                         }
                     }else{
                         response.put("error", "user2NotExists");
@@ -947,6 +947,54 @@ public class UserRequests {
                     }
                 } else {
                     response.put("error", "user1NotExists");
+                }
+                if (ok) {
+                    t.commit();
+                } else {
+                    t.rollback();
+                }
+            }
+        } else {
+            response.put("error", "invalidArgs");
+        }
+        response.put("users", usersJSON);
+
+
+        return response.toString();
+    }
+
+    /**
+     * Try follow a user in the system.
+     * <p>
+     * URI: /users/{nick}/follow
+     * </p>
+     *
+     * @param nick  : Nickname of a user to register (unique)
+     * @return The result of this search as specified in API.
+     */
+    @Path("/{nick}/follows")
+    @POST
+    public String getFollowed(@PathParam("nick") String nick) {
+        JSONObject response = new JSONObject();
+        JSONArray usersJSON = new JSONArray();
+        response.put("error", "");
+        //String birth_date = StringUtils.isValid(birth) ? StringUtils.isDate(birth) : null;
+
+        if (StringUtils.isValid(nick)) {
+            try (Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntityUser user1 = UserCache.getUser(s, nick);
+                if (user1 != null) {
+                    Set<EntityUser> users = user1.getFollowees();
+                    for(EntityUser user : users){
+                        usersJSON.put(user.getId());
+                    }
+                    response.put("size", users.size());
+                    response.put("error", "ok");
+                    ok = true;
+                } else {
+                    response.put("error", "unknownUser");
                 }
                 if (ok) {
                     t.commit();

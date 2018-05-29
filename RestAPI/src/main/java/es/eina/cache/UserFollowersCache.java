@@ -11,8 +11,8 @@ public class UserFollowersCache {
         return HibernateUtils.addEntityToDB(s, entity);
     }
 
-    public static EntityUserFollowers getFollower(Session s, long follower, long followee) {
-        return HibernateUtils.getEntity(s, EntityUserFollowers.class, new EntityUserFollowers.FollowerPrimaryKey(follower, followee));
+    public static EntityUserFollowers getFollower(Session s, long followee, long follower) {
+        return HibernateUtils.getEntity(s, EntityUserFollowers.class, new EntityUserFollowers.FollowerPrimaryKey(followee, follower));
     }
 
     public static boolean deleteFollower(Session s, EntityUserFollowers ent) {
