@@ -371,9 +371,12 @@ public class UserSongListRequests {
                             EntitySongList list = SongListCache.getSongList(s, listId);
                             if (list != null) {
                                 if(user.getId().equals(list.getAuthor().getId())) {
-                                    list.removeSong(song);
-                                    ok = true;
-                                    result.put("error", "ok");
+                                    if(list.removeSong(song)) {
+                                        ok = true;
+                                        result.put("error", "ok");
+                                    }else{
+                                        result.put("error", "alreadyRemoved");
+                                    }
                                 }else{
                                     result.put("error", "notAuthor");
                                 }

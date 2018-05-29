@@ -81,8 +81,8 @@ public class EntitySongList extends EntityBase{
     public boolean addSong(EntitySong song){
         return this.songs.add(song);
     }
-    public void removeSong(EntitySong song){
-        this.songs.remove(song);
+    public boolean removeSong(EntitySong song){
+        return this.songs.remove(song);
     }
 
     public JSONObject toJSON(){
