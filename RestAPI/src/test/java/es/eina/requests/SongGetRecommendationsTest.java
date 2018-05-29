@@ -41,8 +41,8 @@ public class SongGetRecommendationsTest extends TestBase {
     @Before
     public void setupTest() throws InterruptedException {
         openSession();
-        user = UserUtils.addUser(s, "test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
-        user2 = UserUtils.addUser(s, "test-user2", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        user = UserUtils.addList(s, "test-user", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
+        user2 = UserUtils.addList(s, "test-user2", "a@a.net", "123456", "Username :D", "Random BIO", new Date(0), "ES");
         album = AlbumUtils.createAlbum(s, user, "Random Album", 1900);
         song = SongUtils.addSong(s, album, "Random Song", "O1");
         song2 = SongUtils.addSong(s, album, "Random Song", "O1");

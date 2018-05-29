@@ -30,8 +30,9 @@ public class SongListCache {
     }
 
     public static List<EntitySongList> getSongLists(Session s, String nick) {
+        EntityUser user = UserCache.getUser(s, nick);
         Query<EntitySongList> q = s.createQuery("from song_list where author_id = :author", EntitySongList.class)
-                .setParameter("author", nick);
+                .setParameter("author", user.getId());
         return q.list();
     }
 }

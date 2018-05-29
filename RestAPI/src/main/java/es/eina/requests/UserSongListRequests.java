@@ -125,7 +125,7 @@ public class UserSongListRequests {
             result.put("error", "invalidArgs");
         }
 
-        result.put("songs", array);
+        result.put("lists", array);
         return result.toString();
     }
 
@@ -305,9 +305,12 @@ public class UserSongListRequests {
                             EntitySongList list = SongListCache.getSongList(s, listId);
                             if (list != null) {
                                 if(list.getAuthor().getId().equals(user.getId())) {
-                                    list.addSong(song);
-                                    result.put("error", "ok");
-                                    ok = true;
+                                    if(list.addSong(song)) {
+                                        result.put("error", "ok");
+                                        ok = true;
+                                    }else{
+                                        result.put("error", "alreadyAdded");
+                                    }
                                 } else {
                                     result.put("error", "notAuthor");
                                 }

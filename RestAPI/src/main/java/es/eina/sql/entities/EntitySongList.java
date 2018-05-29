@@ -78,8 +78,8 @@ public class EntitySongList extends EntityBase{
         this.songs = songs;
     }
 
-    public void addSong(EntitySong song){
-        this.songs.add(song);
+    public boolean addSong(EntitySong song){
+        return this.songs.add(song);
     }
     public void removeSong(EntitySong song){
         this.songs.remove(song);
