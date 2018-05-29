@@ -26,6 +26,7 @@ public class SongListsUtils {
 	EntitySongList addList(Session s, String title, EntityUser user) {
         //(nick, username, mail, pass, birth_date, bio, country, register_date)
 		EntitySongList list = new EntitySongList(title, user);
-        return SongListCache.addSongList(s, list) ? list : null;
+        SongListCache.addSongList(s, list);
+        return list;
     }
 }

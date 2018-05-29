@@ -3,6 +3,7 @@ package es.eina.requests;
 import es.eina.cache.SongCache;
 import es.eina.cache.SongListCache;
 import es.eina.cache.UserCache;
+import es.eina.sql.SQLUtils;
 import es.eina.sql.entities.EntitySong;
 import es.eina.sql.entities.EntitySongList;
 import es.eina.sql.entities.EntityUser;
@@ -220,6 +221,57 @@ public class UserSongListRequests {
             }
         } else {
             result.put("error", "invalidList");
+        }
+
+        return result.toString();
+    }
+
+    /**
+     * Get all list info
+     * <p>
+     * URI: /user-lists/{list}
+     * </p>
+     *
+     * @return Si no hay error devuelve todas la info de la playlist{list}.
+     */
+    @Path("{nick}/follows/{list}")
+    @GET
+    public String isFollowingList(@PathParam("list") Long listID, @PathParam("nick") String nick) {
+        JSONObject result = new JSONObject();
+
+        if(StringUtils.isValid(nick)) {
+            if (listID > 0) {
+                try (Session s = HibernateUtils.getSession()) {
+                    boolean ok = false;
+                    Transaction t = s.beginTransaction();
+                    EntityUser user = UserCache.getUser(s, nick);
+                    if (user != null) {
+                        EntitySongList songlist = SongListCache.getSongList(s, listID);
+                        if (songlist != null) {
+                            if (SQLUtils.getRowCountSQL(s, "song_list_user_follows", "song_list_id = " + songlist.getId() + " and user_id = " + user.getId()) == 1) {
+                                result.put("error", "ok");
+                                ok = true;
+                            } else {
+                                result.put("error", "notFollows");
+                            }
+                        } else {
+                            result.put("error", "unknownList");
+                        }
+                    } else {
+                        result.put("error", "unknownUser");
+                    }
+
+                    if (ok) {
+                        t.commit();
+                    } else {
+                        t.rollback();
+                    }
+                }
+            } else {
+                result.put("error", "invalidList");
+            }
+        } else {
+            result.put("error", "invalidArgs");
         }
 
         return result.toString();
