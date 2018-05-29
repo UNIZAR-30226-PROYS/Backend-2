@@ -136,7 +136,7 @@ public class UserSongListRequests {
                     ) {
                 jsonarray.put(user.getId());
             }
-            result.put("songs", jsonarray);
+            result.put("followers", jsonarray);
             result.put("error", "ok");
             }else{
                 result.put("error", "unknownList");
