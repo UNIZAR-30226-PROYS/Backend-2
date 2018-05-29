@@ -379,7 +379,7 @@ public class EntityUser extends EntityBase {
         return user;
     }
 
-    private void addFollowee(EntityUser usr, EntityUserFollowers data){
+    private void addFollowee(EntityUserFollowers data){
         this.followers.add(data);
     }
 
@@ -388,9 +388,9 @@ public class EntityUser extends EntityBase {
     }
 
     public boolean followUser(EntityUser other){
-        if(!getFollowers().contains(other)){
+        if(!getFollowees().contains(other)){
             EntityUserFollowers obj = new EntityUserFollowers(this, other);
-            other.addFollowee(this, obj);
+            other.addFollowee(obj);
             this.followees.add(obj);
 
             return true;
@@ -400,7 +400,7 @@ public class EntityUser extends EntityBase {
     }
 
     public boolean unFollowUser(Session s, EntityUser other){
-        if(getFollowers().contains(other)){
+        if(getFollowees().contains(other)){
             EntityUserFollowers obj = UserFollowersCache.getFollower(s, other.getId(), getId());
             other.removeFollowee(obj);
             this.followees.remove(obj);

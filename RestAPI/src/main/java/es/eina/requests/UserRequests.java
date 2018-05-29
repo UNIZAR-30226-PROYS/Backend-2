@@ -887,7 +887,7 @@ public class UserRequests {
                     response.put("error", "ok");
                     ok = true;
                 } else {
-                    response.put("error", "user1NotExists");
+                    response.put("error", "unknownUser");
                 }
                 if (ok) {
                     t.commit();
@@ -927,18 +927,21 @@ public class UserRequests {
                 boolean ok = false;
                 EntityUser user1 = UserCache.getUser(s, nick);
                 if (user1 != null) {
-                    EntityUser user2 = UserCache.getUser(s, nick);
+                    EntityUser user2 = UserCache.getUser(s, nick2);
                     if (user2 != null) {
-                    Set<EntityUser> users = user1.getFollowers();
-                    for(EntityUser user : users){
-                        if(user.getId().equals(user2.getId())){
+                        if(!user1.getId().equals(user2.getId())) {
+                            Set<EntityUser> users = user2.getFollowers();
+                            for (EntityUser follower : users) {
+                                if (follower.getId().equals(user1.getId())) {
+                                    ok = true;
+                                    break;
+                                }
+                            }
+                            response.put("error", ok ? "ok" : "notFollows");
                             ok = true;
-                            break;
+                        } else {
+                            response.put("error", "sameUser");
                         }
-                    }
-                    response.put("size", users.size());
-                    response.put("error", ok ? "ok" : "notFollows");
-                    ok = true;
                     } else {
                         response.put("error", "user2NotExists");
                     }
