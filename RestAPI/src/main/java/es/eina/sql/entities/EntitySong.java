@@ -156,4 +156,12 @@ public class EntitySong extends EntityBase {
         defaultSongJSON.put("country", Geolocalizer.DEFAULT_COUNTRY);
         defaultSongJSON.put("upload_time", -1L);
     }
+
+    public void setTime(long l) {
+        this.uploadTime = l;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
 }

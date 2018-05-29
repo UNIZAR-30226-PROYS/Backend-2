@@ -257,12 +257,14 @@ public class SongRequests {
 
     @Path("/popular/")
     @GET
-    public String getPopularSongs(@QueryParam("n") @DefaultValue("" + MAX_POPULAR_SONGS) int amount) {
+    public String getPopularSongs(@QueryParam("n") @DefaultValue("" + MAX_POPULAR_SONGS) int amount,
+                                @QueryParam("daily") @DefaultValue("false") boolean daily) {
         amount = Math.max(0, Math.min(MAX_POPULAR_SONGS, amount));
+        long initTime = System.currentTimeMillis() - (daily ? 86400000L : 604800000L) ;
         JSONObject obj;
         try (Session s = HibernateUtils.getSession()) {
             Transaction t = s.beginTransaction();
-            obj = PopularSongCache.getPopularSongs(s, amount);
+            obj = PopularSongCache.getPopularSongs(s, amount, initTime);
             if ("ok".equals(obj.getString("error"))) {
                 t.commit();
             } else {
@@ -274,12 +276,14 @@ public class SongRequests {
 
     @Path("/popular/{country}/")
     @GET
-    public String getPopularSongs(@PathParam("country") String country, @QueryParam("n") @DefaultValue("" + MAX_POPULAR_SONGS) int amount) {
+    public String getPopularSongs(@PathParam("country") String country, @QueryParam("n") @DefaultValue("" + MAX_POPULAR_SONGS) int amount,
+                                  @QueryParam("daily") @DefaultValue("false") boolean daily) {
         amount = Math.max(0, Math.min(MAX_POPULAR_SONGS, amount));
+        long initTime = System.currentTimeMillis() - (daily ? 86400000L : 604800000L) ;
         JSONObject obj;
         try (Session s = HibernateUtils.getSession()) {
             Transaction t = s.beginTransaction();
-            obj = PopularSongCache.getPopularSongs(s, amount, country);
+            obj = PopularSongCache.getPopularSongs(s, amount, country, initTime);
             if ("ok".equals(obj.getString("error"))) {
                 t.commit();
             } else {

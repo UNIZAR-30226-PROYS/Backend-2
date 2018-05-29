@@ -9,21 +9,24 @@ import org.json.JSONObject;
 import java.util.List;
 
 public class PopularSongCache {
-    private static final String SQL_QUERY_BEFORE = "SELECT s.id, s.user_id, s.title, s.country, s.upload_time,\n" +
+    private static final String SQL_QUERY_BEFORE = "SELECT s.id, a.user_id, s.title, s.country, s.upload_time,\n" +
             "  CASE WHEN l.likes is NULL THEN 0 ELSE l.likes END AS likes,\n" +
             "  CASE WHEN r.reprs is NULL THEN 0 ELSE r.reprs END AS reprs\n" +
             "\n" +
-            "FROM songs s\n" +
+            "FROM songs s " +
+            "INNER JOIN albums a ON s.album_id = a.id\n" +
             "LEFT JOIN\n" +
-            "  (SELECT COUNT(song_id) AS likes, song_id AS like_sid FROM song_likes GROUP BY song_id) l\n" +
+            "  (SELECT COUNT(song_id) AS likes, song_id AS like_sid FROM user_liked_songs GROUP BY song_id) l\n" +
             "  ON l.like_sid = s.id\n" +
             "LEFT JOIN\n" +
             "  (SELECT\n" +
             "     COUNT(song_id) AS reprs,\n" +
-            "     song_id AS repr_sid FROM song_reproductions GROUP BY song_id) r\n" +
+            "     song_id AS repr_sid FROM user_listened_songs GROUP BY song_id) r\n" +
             "    ON r.repr_sid = s.id\n";
-    private static final String SQL_QUERY_AFTER = "  ORDER BY likes DESC, reprs DESC\n" +
-            "  LIMIT ";
+    private static final String SQL_QUERY_AFTER = " WHERE s.upload_time > :time ORDER BY likes DESC, reprs DESC\n" +
+            "  LIMIT :amount ;";
+    private static final String SQL_QUERY_AFTER_COUNTRY = " s.upload_time > :time ORDER BY likes DESC, reprs DESC\n" +
+            "  LIMIT :amount ;";
     private static final String FULL_QUERY = SQL_QUERY_BEFORE + SQL_QUERY_AFTER;
 
     private static JSONObject parseResult(Query q) {
@@ -39,21 +42,34 @@ public class PopularSongCache {
             array.put(song);
         }
 
+        obj.put("error", "ok");
         obj.put("songs", array);
         obj.put("results", data.size());
         return obj;
     }
 
-    public static JSONObject getPopularSongs(Session s, int amount) {
-        Query q = s.createSQLQuery(FULL_QUERY + amount + ";");
+    public static JSONObject getPopularSongs(Session s, int amount){
+        return getPopularSongs(s, amount, 0L);
+    }
+
+    public static JSONObject getPopularSongs(Session s, int amount, long initTime) {
+        Query q = s.createSQLQuery(FULL_QUERY);
+        q.setParameter("amount", amount);
+        q.setParameter("time", initTime);
         //query.setResultTransformer(Transformers.aliasToBean(LogEntry.class))
         return parseResult(q);
     }
 
     public static JSONObject getPopularSongs(Session s, int amount, String country) {
+        return getPopularSongs(s, amount, 0);
+    }
+
+    public static JSONObject getPopularSongs(Session s, int amount, String country, long initTime) {
         if (country == null || country.length() != 2) country = Geolocalizer.DEFAULT_COUNTRY;
 
-        Query q = s.createSQLQuery(SQL_QUERY_BEFORE + " WHERE s.country = '" + country + "' " + SQL_QUERY_AFTER + amount + ";");
+        Query q = s.createSQLQuery(SQL_QUERY_BEFORE + " WHERE s.country = '" + country + "' and " + SQL_QUERY_AFTER_COUNTRY);
+        q.setParameter("amount", amount);
+        q.setParameter("time", initTime);
         //query.setResultTransformer(Transformers.aliasToBean(LogEntry.class))
         return parseResult(q);
     }
