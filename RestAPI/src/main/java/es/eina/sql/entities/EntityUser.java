@@ -85,14 +85,6 @@ public class EntityUser extends EntityBase {
 
     @ManyToMany(cascade=CascadeType.ALL)
     @JoinTable(
-        name = "user_liked_songs",
-        joinColumns = { @JoinColumn(name = "user_id")},
-        inverseJoinColumns = {@JoinColumn(name = "song_id")}
-    )
-    Set<EntitySong> songsLiked = new HashSet<>();
-
-    @ManyToMany(cascade=CascadeType.ALL)
-    @JoinTable(
             name = "user_faved_songs",
             joinColumns = { @JoinColumn(name = "user_id")},
             inverseJoinColumns = {@JoinColumn(name = "song_id")}

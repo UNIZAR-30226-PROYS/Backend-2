@@ -35,9 +35,6 @@ public class EntitySong extends EntityBase {
     @JoinColumn(name = "album_id")
     private EntityAlbum album;
 
-    @ManyToMany(mappedBy = "songsLiked", cascade = CascadeType.ALL)
-    private Set<EntityUser> usersLikers = new HashSet<>();
-
     @ManyToMany (mappedBy = "songs", cascade = CascadeType.ALL)
     private Set<EntitySongList> lists = new LinkedHashSet<>();
 
