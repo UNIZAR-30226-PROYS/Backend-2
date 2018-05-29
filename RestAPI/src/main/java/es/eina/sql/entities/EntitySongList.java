@@ -104,11 +104,11 @@ public class EntitySongList extends EntityBase{
     public void setFollowed(Set<EntityUser> followedby) {
         this.followers = followedby;
     }
-    public void addfollower(EntityUser user){
-        this.followers.add(user);
+    public boolean addfollower(EntityUser user){
+        return this.followers.add(user);
     }
-    public void removefollower(EntityUser user){
-        this.followers.remove(user);
+    public boolean removefollower(EntityUser user){
+        return this.followers.remove(user);
     }
 
 }

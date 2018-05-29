@@ -440,7 +440,7 @@ public class UserRequests {
     public String putUserData(
             @PathParam("nick") String nick,
             @DefaultValue("") @QueryParam("token") String token,
-            String c
+            @DefaultValue("{}") @QueryParam("body") String c
     ) {
         JSONObject result = new JSONObject();
 

@@ -135,7 +135,6 @@ public class UserSongListRequests {
      * URI: /user-lists/{nick}/lists
      * </p>
      *
-     * @param nick  : Nickname of a user to create the list
      * @return Si no hay error devuelve todas las ids de las playlists del usuario.
      */
     @Path("{id}")
@@ -183,28 +182,41 @@ public class UserSongListRequests {
     @GET
     public String getLists(@PathParam("list") Long listID) {
         JSONObject result = new JSONObject();
-        EntitySongList songlist = SongListCache.getSongList(listID);
-        if (songlist != null) {
-            result.put("title", songlist.getTitle());
-            result.put("author", songlist.getUserId());
-            result.put("creation_time", songlist.getCreationTime());
-            result.put("songs_size", songlist.getSongs().size());
-            JSONArray jsonarray = new JSONArray();
-            for (EntitySong song : songlist.getSongs()
-            ) {
-                jsonarray.put(song.getId());
+        if(listID > 0) {
+            try (Session s = HibernateUtils.getSession()) {
+                boolean ok = false;
+                Transaction t = s.beginTransaction();
+                EntitySongList songlist = SongListCache.getSongList(s, listID);
+                if (songlist != null) {
+                    result.put("title", songlist.getTitle());
+                    result.put("author", songlist.getAuthor().getId());
+                    result.put("creation_time", songlist.getCreationTime());
+                    result.put("songs_size", songlist.getSongs().size());
+                    JSONArray jsonarray = new JSONArray();
+                    for (EntitySong song : songlist.getSongs()) {
+                        jsonarray.put(song.getId());
+                    }
+                    result.put("songs", jsonarray);
+                    result.put("followers_size", songlist.getSongs().size());
+                    jsonarray = new JSONArray();
+                    for (EntityUser user : songlist.getFollowed()) {
+                        jsonarray.put(user.getId());
+                    }
+                    result.put("followers", jsonarray);
+                    result.put("error", "ok");
+                    ok = true;
+                } else {
+                    result.put("error", "unknownList");
+                }
+
+                if(ok){
+                    t.commit();
+                }else{
+                    t.rollback();
+                }
             }
-            result.put("songs", jsonarray);
-            result.put("followers_size", songlist.getSongs().size());
-            jsonarray = new JSONArray();
-            for (EntityUser user : songlist.getFollowed()
-            ) {
-                jsonarray.put(user.getId());
-            }
-            result.put("followers", jsonarray);
-            result.put("error", "ok");
         } else {
-            result.put("error", "unknownList");
+            result.put("error", "invalidList");
         }
 
         return result.toString();
@@ -406,33 +418,40 @@ public class UserSongListRequests {
     @PUT
     public String addfollower(@PathParam("nick") String nick, @FormParam("token") String userToken,
                               @PathParam("listId") Long listId) {
-
         JSONObject result = new JSONObject();
         if (StringUtils.isValid(nick) && StringUtils.isValid(userToken)) {
-            EntityUser user = UserCache.getUser(nick);
-            if (user != null) {
-                if (user.getToken() != null && user.getToken().isValid(userToken)) {
-                    int error = SongListCache.addFollower(listId, user);
-                    switch (error) {
-                        case 0:
-                            result.put("error", "ok");
-                            break;
-                        case 1:
-                            result.put("error", "invalidSongList");
-                            break;
-                        case 2:
-                            result.put("error", "invalidAuthor");
-                            break;
-                        default:
-                            result.put("error", "unexpectedError");
-                            break;
+            try (Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntityUser user = UserCache.getUser(s, nick);
+                if (user != null) {
+                    if (user.getToken() != null && user.getToken().isValid(userToken)) {
+                        EntitySongList list = SongListCache.getSongList(s, listId);
+                        if(list != null) {
+                            if(list.addfollower(user)) {
+                                result.put("error", "ok");
+                                ok = true;
+                            }else{
+                                result.put("error", "alreadyAdded");
+                            }
+                        } else {
+                            result.put("error", "unknownList");
+                        }
+                    } else {
+                        result.put("error", "invalidToken");
                     }
+                } else{
+                    result.put("error", "unknownUser");
                 }
-            } else {
-                result.put("error", "invalidToken");
+
+                if(ok){
+                    t.commit();
+                }else{
+                    t.rollback();
+                }
             }
-        } else {
-            result.put("error", "unknownUser");
+        }else {
+            result.put("error", "invalidArgs");
         }
         return result.toString();
 
@@ -455,33 +474,40 @@ public class UserSongListRequests {
     public String removefollower(@PathParam("nick") String nick, @QueryParam("token") String userToken,
                                  @PathParam("listId") Long listId) {
 
-
         JSONObject result = new JSONObject();
         if (StringUtils.isValid(nick) && StringUtils.isValid(userToken)) {
-            EntityUser user = UserCache.getUser(nick);
-            if (user != null) {
-                if (user.getToken() != null && user.getToken().isValid(userToken)) {
-                    int error = SongListCache.removeFollower(listId, user);
-                    switch (error) {
-                        case 0:
-                            result.put("error", "ok");
-                            break;
-                        case 1:
-                            result.put("error", "invalidSongList");
-                            break;
-                        case 2:
-                            result.put("error", "invalidAuthor");
-                            break;
-                        default:
-                            result.put("error", "unexpectedError");
-                            break;
+            try (Session s = HibernateUtils.getSession()) {
+                Transaction t = s.beginTransaction();
+                boolean ok = false;
+                EntityUser user = UserCache.getUser(s, nick);
+                if (user != null) {
+                    if (user.getToken() != null && user.getToken().isValid(userToken)) {
+                        EntitySongList list = SongListCache.getSongList(s, listId);
+                        if(list != null) {
+                            if(list.removefollower(user)) {
+                                result.put("error", "ok");
+                                ok = true;
+                            }else{
+                                result.put("error", "alreadyRemoved");
+                            }
+                        } else {
+                            result.put("error", "unknownList");
+                        }
+                    } else {
+                        result.put("error", "invalidToken");
                     }
+                } else{
+                    result.put("error", "unknownUser");
                 }
-            } else {
-                result.put("error", "invalidToken");
+
+                if(ok){
+                    t.commit();
+                }else{
+                    t.rollback();
+                }
             }
-        } else {
-            result.put("error", "unknownUser");
+        }else {
+            result.put("error", "invalidArgs");
         }
         return result.toString();
 
@@ -504,20 +530,31 @@ public class UserSongListRequests {
 
         JSONObject result = new JSONObject();
         if (StringUtils.isValid(nick)) {
-            EntityUser user = UserCache.getUser(nick);
-            if (user != null) {
-                EntityUser oneuser = UserCache.getUser(nick);
-                Set<EntitySongList> following = user.getFollowing();
-                JSONArray jsonarray = new JSONArray();
-                for (EntitySongList songlist : following
-                ) {
-                    jsonarray.put(songlist.getId());
+            try(Session s = HibernateUtils.getSession()) {
+                boolean ok = false;
+                Transaction t = s.beginTransaction();
+                EntityUser user = UserCache.getUser(s, nick);
+                if (user != null) {
+                    Set<EntitySongList> following = user.getFollowing();
+                    JSONArray jsonarray = new JSONArray();
+                    for (EntitySongList songlist : following) {
+                        jsonarray.put(songlist.getId());
+                    }
+                    result.put("id", jsonarray);
+                    result.put("error", "ok");
+                    ok = true;
+                }else{
+                    result.put("error", "unknownUser");
                 }
-                result.put("id", jsonarray);
-                result.put("error", "ok");
+
+                if(ok){
+                    t.commit();
+                }else{
+                    t.rollback();
+                }
             }
         } else {
-            result.put("error", "unknownUser");
+            result.put("error", "invalidArgs");
         }
         return result.toString();
 
@@ -530,7 +567,7 @@ public class UserSongListRequests {
      * token
      * </p>
      *
-     * @param listid : Nickname of a user to create the list
+     * @param listID : Nickname of a user to create the list
      * @return The result of this query as specified in API.
      */
     @Path("{listid}/followed")
@@ -538,16 +575,29 @@ public class UserSongListRequests {
     @GET
     public String followed(@PathParam("listid") Long listID) {
         JSONObject result = new JSONObject();
-        EntitySongList sg = SongListCache.getSongList(listID);
-        if (sg != null) {
-            Set<EntityUser> following = sg.getFollowed();
-            JSONArray jsonarray = new JSONArray();
-            for (EntityUser user : following
-            ) {
-                jsonarray.put(user.getId());
+        if(listID > 0) {
+            try(Session s = HibernateUtils.getSession()) {
+                boolean ok = false;
+                Transaction t = s.beginTransaction();
+                EntitySongList sg = SongListCache.getSongList(s, listID);
+                if (sg != null) {
+                    Set<EntityUser> following = sg.getFollowed();
+                    JSONArray jsonarray = new JSONArray();
+                    for (EntityUser user : following) {
+                        jsonarray.put(user.getId());
+                    }
+                    result.put("id", jsonarray);
+                    result.put("error", "ok");
+                    ok = true;
+                }else{
+                    result.put("error", "unknownSongList");
+                }
+                if(ok){
+                    t.commit();
+                }else{
+                    t.rollback();
+                }
             }
-            result.put("id", jsonarray);
-            result.put("error", "ok");
         }
         return result.toString();
     }
