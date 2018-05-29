@@ -178,7 +178,7 @@ public class UserSongListRequests {
      *
      * @return Si no hay error devuelve todas la info de la playlist{list}.
      */
-    @Path("{list}")
+    @Path("{list}/list")
     @GET
     public String getLists(@PathParam("list") Long listID) {
         JSONObject result = new JSONObject();
@@ -188,21 +188,24 @@ public class UserSongListRequests {
                 Transaction t = s.beginTransaction();
                 EntitySongList songlist = SongListCache.getSongList(s, listID);
                 if (songlist != null) {
-                    result.put("title", songlist.getTitle());
-                    result.put("author", songlist.getAuthor().getId());
-                    result.put("creation_time", songlist.getCreationTime());
-                    result.put("songs_size", songlist.getSongs().size());
+                    JSONObject object = new JSONObject();
+                    object.put("id", songlist.getId());
+                    object.put("title", songlist.getTitle());
+                    object.put("author", songlist.getAuthor().getId());
+                    object.put("creation_time", songlist.getCreationTime());
+                    object.put("songs_size", songlist.getSongs().size());
                     JSONArray jsonarray = new JSONArray();
                     for (EntitySong song : songlist.getSongs()) {
                         jsonarray.put(song.getId());
                     }
-                    result.put("songs", jsonarray);
-                    result.put("followers_size", songlist.getSongs().size());
+                    object.put("songs", jsonarray);
+                    object.put("followers_size", songlist.getSongs().size());
                     jsonarray = new JSONArray();
                     for (EntityUser user : songlist.getFollowed()) {
                         jsonarray.put(user.getId());
                     }
-                    result.put("followers", jsonarray);
+                    object.put("followers", jsonarray);
+                    result.put("list", object);
                     result.put("error", "ok");
                     ok = true;
                 } else {
