@@ -11,7 +11,7 @@ import org.junit.*;
 import java.sql.Date;
 
 public class UserFollowUserTest extends TestBase {
-/*
+
     private static final String PASS = "123456";
     private EntityUser user;
     private EntityUser user2;
@@ -37,8 +37,8 @@ public class UserFollowUserTest extends TestBase {
     @After
     public void endTest(){
         openSession();
-        UserCache.deleteUser(s, user);
-        UserCache.deleteUser(s, user2);
+        UserCache.deleteUser(s, UserCache.getUser(s, user.getNick()));
+        UserCache.deleteUser(s, UserCache.getUser(s, user2.getNick()));
         closeSession();
     }
 
@@ -91,5 +91,5 @@ public class UserFollowUserTest extends TestBase {
         Assert.assertEquals(1, SQLUtils.getRowCountSQL(s, "user_followers", "follower = " + user.getId() + " and followee = " + user2.getId()));
         closeSession();
     }
-*/
+
 }
