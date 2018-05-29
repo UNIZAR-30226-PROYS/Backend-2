@@ -60,10 +60,11 @@ public class UserSongListRequests {
                     if (user.getToken() != null && user.getToken().isValid(userToken)) {
                         EntitySongList newSong = new EntitySongList(title, user);
                         if (SongListCache.addSongList(s, newSong)) {
+                            result.put("list", newSong.toJSON());
                             result.put("error", "ok");
                             ok = true;
                         } else {
-                            result.put("error", "unexpectedError");
+                            result.put("error", "unknownError");
                         }
                     } else {
                         result.put("error", "invalidToken");

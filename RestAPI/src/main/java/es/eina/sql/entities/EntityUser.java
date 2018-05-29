@@ -83,6 +83,11 @@ public class EntityUser extends EntityBase {
     //@Cascade(org.hibernate.annotations.CascadeType.ALL)
     private Set<EntityAlbum> albums = new HashSet<>();
 
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "author")
+    //@Cascade({org.hibernate.annotations.CascadeType.SAVE_UPDATE, org.hibernate.annotations.CascadeType.DELETE})
+    //@Cascade(org.hibernate.annotations.CascadeType.ALL)
+    private Set<EntitySongList> lists = new HashSet<>();
+
     @ManyToMany(cascade=CascadeType.ALL)
     @JoinTable(
             name = "user_faved_songs",

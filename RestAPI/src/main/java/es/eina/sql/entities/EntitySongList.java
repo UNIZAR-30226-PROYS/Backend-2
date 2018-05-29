@@ -23,11 +23,11 @@ public class EntitySongList extends EntityBase{
     private Long creationTime;
 
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "author_id")
     private EntityUser author;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinTable(
             name = "song_list_songs",
             joinColumns = { @JoinColumn(name = "list_id")},
@@ -35,7 +35,7 @@ public class EntitySongList extends EntityBase{
     )
     private Set<EntitySong> songs = new HashSet<>();
 
-    @ManyToMany (fetch = FetchType.EAGER)
+    @ManyToMany (cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(
             name = "song_list_user_follows",
             joinColumns = { @JoinColumn(name = "song_list_id", nullable = false, referencedColumnName = "id")},
