@@ -346,7 +346,7 @@ public class UserSongListRequests {
     @Path("{nick}/{listId}/add")
     @Consumes(MediaType.APPLICATION_JSON)
     @POST
-    public String add(@FormParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
+    public String add(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
                          @PathParam("listId") long listId, @FormParam("songId") Long songsId) {
         JSONObject result = new JSONObject();
         if(StringUtils.isValid(nick) && StringUtils.isValid(userToken)){
@@ -412,7 +412,7 @@ public class UserSongListRequests {
     @Path("{nick}/{listId}/remove")
     @Consumes(MediaType.APPLICATION_JSON)
     @POST
-    public String remove(@FormParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
+    public String remove(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
                       @PathParam("listId") long listId, @FormParam("songId") Long songsId) {
         JSONObject result = new JSONObject();
         if(StringUtils.isValid(nick) && StringUtils.isValid(userToken)){
