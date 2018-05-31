@@ -47,8 +47,6 @@ public class UserRequests {
     @Context
     private HttpServletRequest request;
 
-    private static final int DEFAULT_COMMENT_NUMBER = 10;
-
     private static final JSONObject defaultUserJSON;
     private static final JSONObject defaultCommentJSON;
 
@@ -307,6 +305,7 @@ public class UserRequests {
                     userJSON.put("country", user.getCountry());
                     userJSON.put("birth_date", user.getBirthDate());
                     userJSON.put("register_date", user.getRegisterDate());
+                    userJSON.put("admin", user.isAdmin());
                 }
                 obj.put("error", false);
                 ok = true;
@@ -363,6 +362,7 @@ public class UserRequests {
                     userJSON.put("country", user.getCountry());
                     userJSON.put("birth_date", user.getBirthDate());
                     userJSON.put("register_date", user.getRegisterDate());
+                    userJSON.put("admin", user.isAdmin());
                 }
                 obj.put("error", false);
                 ok = true;
@@ -482,7 +482,6 @@ public class UserRequests {
 
     @Path("/{nick}")
     @PUT
-    @Consumes(MediaType.APPLICATION_JSON)
     public String putUserData(
             @PathParam("nick") String nick,
             @DefaultValue("") @QueryParam("token") String token,
@@ -740,7 +739,7 @@ public class UserRequests {
     /**
      * Perform a search of products in the database.<br>
      * <p>
-     * URI: /songs/search/?query=[&n={number}][&country={country}][&genre={genre}][&min_time={min_time}][&max_time={max_time}]
+     * URI: /users/search/?query=[&n={number}][&country={country}][&genre={genre}][&min_time={min_time}][&max_time={max_time}]
      * </p>
      *
      * @param number   : Number of results to return
@@ -813,27 +812,31 @@ public class UserRequests {
      */
     @Path("/{nick}/follow/{nick2}")
     @POST
-    public String follow(@PathParam("nick") String nick, @PathParam("nick2") String nick2) {
+    public String follow(@PathParam("nick") String nick, @PathParam("nick2") String nick2, @FormParam("token") String token) {
         JSONObject response = new JSONObject();
         response.put("error", "");
         //String birth_date = StringUtils.isValid(birth) ? StringUtils.isDate(birth) : null;
 
-        if (StringUtils.isValid(nick) && StringUtils.isValid(nick2)) {
+        if (StringUtils.isValid(nick) && StringUtils.isValid(nick2) && StringUtils.isValid(token)) {
             try (Session s = HibernateUtils.getSession()) {
                 Transaction t = s.beginTransaction();
                 boolean ok = false;
                 EntityUser user1 = UserCache.getUser(s, nick);
                 if (user1 != null) {
-                    EntityUser user2 = UserCache.getUser(s, nick2);
-                    if (user2 != null) {
-                        if (user1.followUser(user2)) {
-                            response.put("error", "ok");
-                            ok = true;
+                    if(user1.getToken() != null && user1.getToken().isValid(token)) {
+                        EntityUser user2 = UserCache.getUser(s, nick2);
+                        if (user2 != null) {
+                            if (user1.followUser(user2)) {
+                                response.put("error", "ok");
+                                ok = true;
+                            } else {
+                                response.put("error", "alreadyFollowing");
+                            }
                         } else {
-                            response.put("error", "alreadyFollowing");
+                            response.put("error", "user2NotExists");
                         }
                     }else{
-                        response.put("error", "user2NotExists");
+                        response.put("error", "invalidToken");
                     }
                 } else {
                     response.put("error", "user1NotExists");
@@ -863,27 +866,31 @@ public class UserRequests {
      */
     @Path("/{nick}/unfollow/{nick2}")
     @POST
-    public String unfollow(@PathParam("nick") String nick, @PathParam("nick2") String nick2) {
+    public String unfollow(@PathParam("nick") String nick, @PathParam("nick2") String nick2, @FormParam("token") String token) {
         JSONObject response = new JSONObject();
         response.put("error", "");
         //String birth_date = StringUtils.isValid(birth) ? StringUtils.isDate(birth) : null;
 
-        if (StringUtils.isValid(nick) && StringUtils.isValid(nick2)) {
+        if (StringUtils.isValid(nick) && StringUtils.isValid(nick2) && StringUtils.isValid(token)) {
             try (Session s = HibernateUtils.getSession()) {
                 Transaction t = s.beginTransaction();
                 boolean ok = false;
                 EntityUser user1 = UserCache.getUser(s, nick);
                 if (user1 != null) {
-                    EntityUser user2 = UserCache.getUser(s, nick2);
-                    if (user2 != null) {
-                        if (user1.unFollowUser(s, user2)) {
-                            response.put("error", "ok");
-                            ok = true;
+                    if(user1.getToken() != null && user1.getToken().isValid(token)) {
+                        EntityUser user2 = UserCache.getUser(s, nick2);
+                        if (user2 != null) {
+                            if (user1.unFollowUser(s, user2)) {
+                                response.put("error", "ok");
+                                ok = true;
+                            } else {
+                                response.put("error", "notFollowing");
+                            }
                         } else {
-                            response.put("error", "notFollowing");
+                            response.put("error", "user2NotExists");
                         }
                     }else{
-                        response.put("error", "user2NotExists");
+                        response.put("error", "invalidToken");
                     }
                 } else {
                     response.put("error", "user1NotExists");
@@ -905,7 +912,7 @@ public class UserRequests {
     /**
      * Try follow a user in the system.
      * <p>
-     * URI: /users/{nick}/follow
+     * URI: /users/{nick}/followers
      * </p>
      *
      * @param nick  : Nickname of a user to register (unique)

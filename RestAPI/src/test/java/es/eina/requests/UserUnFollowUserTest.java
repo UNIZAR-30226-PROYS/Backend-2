@@ -45,33 +45,39 @@ public class UserUnFollowUserTest extends TestBase {
 
     @Test
     public void testErrorsInvalidArgs() {
-        JSONObject obj = performTest(new UserRequests().unfollow("", user2.getNick()));
+        JSONObject obj = performTest(new UserRequests().unfollow("", user2.getNick(), user.getToken().getToken()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = performTest(new UserRequests().unfollow(null, user2.getNick()));
+        obj = performTest(new UserRequests().unfollow(null, user2.getNick(), user.getToken().getToken()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
 
-        obj = performTest(new UserRequests().unfollow(user.getNick(), ""));
+        obj = performTest(new UserRequests().unfollow(user.getNick(), "", user.getToken().getToken()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
-        obj = performTest(new UserRequests().unfollow(user.getNick(), null));
+        obj = performTest(new UserRequests().unfollow(user.getNick(), null, user.getToken().getToken()));
         Assert.assertEquals("invalidArgs", obj.getString("error"));
 
     }
 
     @Test
     public void testErrorsUnknownUser1() {
-        JSONObject obj = performTest(new UserRequests().unfollow("invalid-user", user2.getNick()));
+        JSONObject obj = performTest(new UserRequests().unfollow("invalid-user", user2.getNick(), user.getToken().getToken()));
         Assert.assertEquals("user1NotExists", obj.getString("error"));
     }
 
     @Test
     public void testErrorsUnknownUser2() {
-        JSONObject obj = performTest(new UserRequests().unfollow(user.getNick(), "invalid-user"));
+        JSONObject obj = performTest(new UserRequests().unfollow(user.getNick(), "invalid-user", user.getToken().getToken()));
         Assert.assertEquals("user2NotExists", obj.getString("error"));
     }
 
     @Test
+    public void testErrorsInvalidToken() {
+        JSONObject obj = performTest(new UserRequests().unfollow(user.getNick(), user2.getNick(), "invalidToken"));
+        Assert.assertEquals("invalidToken", obj.getString("error"));
+    }
+
+    @Test
     public void testOK() {
-        JSONObject obj = performTest(new UserRequests().unfollow(user.getNick(), user2.getNick()));
+        JSONObject obj = performTest(new UserRequests().unfollow(user.getNick(), user2.getNick(), user.getToken().getToken()));
         Assert.assertEquals("ok", obj.getString("error"));
         openSession();
         Assert.assertEquals(0, SQLUtils.getRowCountSQL(s, "user_followers", "follower = " + user.getId() + " and followee = " + user2.getId()));
@@ -80,13 +86,13 @@ public class UserUnFollowUserTest extends TestBase {
 
     @Test
     public void testNotFollowing() {
-        JSONObject obj = performTest(new UserRequests().unfollow(user.getNick(), user2.getNick()));
+        JSONObject obj = performTest(new UserRequests().unfollow(user.getNick(), user2.getNick(), user.getToken().getToken()));
         Assert.assertEquals("ok", obj.getString("error"));
         openSession();
         Assert.assertEquals(0, SQLUtils.getRowCountSQL(s, "user_followers", "follower = " + user.getId() + " and followee = " + user2.getId()));
         closeSession();
 
-        obj = performTest(new UserRequests().unfollow(user.getNick(), user2.getNick()));
+        obj = performTest(new UserRequests().unfollow(user.getNick(), user2.getNick(), user.getToken().getToken()));
         Assert.assertEquals("notFollowing", obj.getString("error"));
         openSession();
         Assert.assertEquals(0, SQLUtils.getRowCountSQL(s, "user_followers", "follower = " + user.getId() + " and followee = " + user2.getId()));

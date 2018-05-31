@@ -180,7 +180,7 @@ public class UserSongListRequests {
      *
      * @return Si no hay error devuelve todas la info de la playlist{list}.
      */
-    @Path("{list}/list")
+    @Path("{list}")
     @GET
     public String getLists(@PathParam("list") Long listID) {
         JSONObject result = new JSONObject();
@@ -230,7 +230,7 @@ public class UserSongListRequests {
     /**
      * Get all list info
      * <p>
-     * URI: /user-lists/{list}
+     * URI: /user-lists/{nick}/follows/{list}
      * </p>
      *
      * @return Si no hay error devuelve todas la info de la playlist{list}.
@@ -336,7 +336,7 @@ public class UserSongListRequests {
      * <p>
      * URI: /user-lists/{nick}/{list}/add
      * {token:"token"
-     * songsid:[1,2,3]}
+     * songId:2}
      * </p>
      *
      * @param nick    : Nickname of a user to create the list
@@ -344,7 +344,6 @@ public class UserSongListRequests {
      * @return The result of this query as specified in API.
      */
     @Path("{nick}/{listId}/add")
-    @Consumes(MediaType.APPLICATION_JSON)
     @POST
     public String add(@FormParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
                          @PathParam("listId") long listId, @FormParam("songId") Long songsId) {
@@ -402,7 +401,7 @@ public class UserSongListRequests {
      * <p>
      * URI: /user-lists/{nick}/{list}/remove
      * {token:"token"
-     * songsid:[1,2,3]}
+     * songid:2}
      * </p>
      *
      * @param nick    : Nickname of a user to create the list
@@ -410,7 +409,6 @@ public class UserSongListRequests {
      * @return The result of this query as specified in API.
      */
     @Path("{nick}/{listId}/remove")
-    @Consumes(MediaType.APPLICATION_JSON)
     @POST
     public String remove(@FormParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
                       @PathParam("listId") long listId, @FormParam("songId") Long songsId) {
@@ -476,7 +474,6 @@ public class UserSongListRequests {
      * @return The result of this query as specified in API.
      */
     @Path("{nick}/{listId}/follow")
-    @Consumes(MediaType.APPLICATION_JSON)
     @PUT
     public String addfollower(@PathParam("nick") String nick, @FormParam("token") String userToken,
                               @PathParam("listId") Long listId) {
@@ -531,7 +528,7 @@ public class UserSongListRequests {
      * @return The result of this query as specified in API.
      */
     @Path("{nick}/{listId}/unfollow")
-    @Consumes(MediaType.APPLICATION_JSON)
+    
     @DELETE
     public String removefollower(@PathParam("nick") String nick, @QueryParam("token") String userToken,
                                  @PathParam("listId") Long listId) {
@@ -586,7 +583,6 @@ public class UserSongListRequests {
      * @return The result of this query as specified in API.
      */
     @Path("{nick}/following")
-    @Consumes(MediaType.APPLICATION_JSON)
     @GET
     public String following(@PathParam("nick") String nick) {
 
@@ -633,7 +629,7 @@ public class UserSongListRequests {
      * @return The result of this query as specified in API.
      */
     @Path("{listid}/followed")
-    @Consumes(MediaType.APPLICATION_JSON)
+    
     @GET
     public String followed(@PathParam("listid") Long listID) {
         JSONObject result = new JSONObject();
