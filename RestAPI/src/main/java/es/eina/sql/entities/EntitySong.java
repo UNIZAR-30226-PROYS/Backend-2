@@ -31,11 +31,11 @@ public class EntitySong extends EntityBase {
     @Column(name = "upload_time", nullable = false)
     private long uploadTime;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "album_id")
     private EntityAlbum album;
 
-    @ManyToMany (mappedBy = "songs", cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "songs", cascade = CascadeType.ALL)
     private Set<EntitySongList> lists = new LinkedHashSet<>();
 
     @ManyToMany(mappedBy = "songsFaved", cascade = CascadeType.ALL)

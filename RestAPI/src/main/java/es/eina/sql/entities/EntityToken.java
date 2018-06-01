@@ -25,7 +25,7 @@ public class EntityToken extends EntityBase{
     private long amount;
 
     @Id
-    @OneToOne(cascade=CascadeType.ALL, orphanRemoval = true)
+    @OneToOne
     @JoinColumn(name = "user_id")
     private EntityUser user;
 

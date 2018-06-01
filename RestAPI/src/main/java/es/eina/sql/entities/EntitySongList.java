@@ -23,7 +23,7 @@ public class EntitySongList extends EntityBase{
     private Long creationTime;
 
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "author_id")
     private EntityUser author;
 

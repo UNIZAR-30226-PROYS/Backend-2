@@ -9,12 +9,12 @@ import java.io.Serializable;
 public class EntityUserFollowers extends EntityBase{
 
     @Id
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "follower")
     private EntityUser follower;
 
     @Id
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "followee")
     private EntityUser followee;
 
