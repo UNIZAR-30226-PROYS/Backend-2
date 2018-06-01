@@ -629,7 +629,6 @@ public class UserSongListRequests {
      * @return The result of this query as specified in API.
      */
     @Path("{listid}/followed")
-    
     @GET
     public String followed(@PathParam("listid") Long listID) {
         JSONObject result = new JSONObject();
@@ -656,6 +655,53 @@ public class UserSongListRequests {
                     t.rollback();
                 }
             }
+        }
+        return result.toString();
+    }
+
+    /**
+     * Delete a list
+     * <p>
+     * URI: /user-lists/{listid}/following
+     * token
+     * </p>
+     *
+     * @param nick : Nickname of a user to create the list
+     * @return The result of this query as specified in API.
+     */
+    @Path("{nick}/updates")
+    @GET
+    public String getLastUpdatedPlaylists(@PathParam("nick") String nick, @QueryParam("n") int amount) {
+        amount = Math.max(0, amount);
+        JSONObject result = new JSONObject();
+        if(StringUtils.isValid(nick)) {
+            try(Session s = HibernateUtils.getSession()) {
+                boolean ok = false;
+                Transaction t = s.beginTransaction();
+                EntityUser user = UserCache.getUser(s, nick);
+                if (user != null) {
+                    List following = s.createSQLQuery("SELECT u.id FROM song_list_user_follows f INNER JOIN user_song_lists u on f.song_list_id = u.id WHERE f.user_id = :user_id ORDER BY u.creation_time DESC")
+                            .setParameter("user_id", user.getId()).setMaxResults(amount).getResultList();
+                    JSONArray jsonarray = new JSONArray();
+
+                    for (Object rawCols: following) {
+                        jsonarray.put(rawCols);
+                    }
+                    result.put("list", jsonarray);
+                    result.put("size", jsonarray.length());
+                    result.put("error", "ok");
+                    ok = true;
+                }else{
+                    result.put("error", "unknownUser");
+                }
+                if(ok){
+                    t.commit();
+                }else{
+                    t.rollback();
+                }
+            }
+        }else {
+            result.put("error", "invalidArgs");
         }
         return result.toString();
     }
