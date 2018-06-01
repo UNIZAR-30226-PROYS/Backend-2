@@ -21,11 +21,10 @@ public class SongUtils {
      * Add a new song in the database.
      * @return Null if the user couldn't be added, the actual user if it could be added.
      */
-    @Transactional
     public static @Nullable
-    EntitySong addSong(Session s, EntityAlbum album, String title, String country) {
+    EntitySong addSong(Session s, EntityAlbum album, String title, String country, String genre) {
 
-        EntitySong entitySong = new EntitySong(album, title, country);
+        EntitySong entitySong = new EntitySong(album, title, country, genre);
         if(album != null) {
             album.addSong(entitySong);
         }
@@ -34,6 +33,11 @@ public class SongUtils {
 
     }
 
+
+    public static @Nullable
+    EntitySong addSong(Session s, EntityAlbum album, String title, String country) {
+        return addSong(s, album, title, country, "");
+    }
 
     public static JSONArray getLastListenedSongs(Session s, @NotNull EntityUser user, int limit){
         limit = Math.max(1, limit);

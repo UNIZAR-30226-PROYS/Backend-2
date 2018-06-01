@@ -11,13 +11,13 @@ import org.json.JSONObject;
 import java.util.List;
 
 public class FeedCache {
-    private static final String SQL_QUERY_FOLLOW = "SELECT s.id as id, time\n" +
-            "FROM user_followers\n" +
-            "INNER JOIN albums a ON a.user_id = follower " +
-            "INNER JOIN songs s ON a.id = s.album_id " +
-            "WHERE followee = :user_id\n" +
-            "ORDER BY time DESC\n" +
-            "LIMIT :amount";
+        private static final String SQL_QUERY_FOLLOW = "SELECT s.id as id, time\n" +
+                "FROM user_followers\n" +
+                "INNER JOIN albums a ON a.user_id = follower " +
+                "INNER JOIN songs s ON a.id = s.album_id " +
+                "WHERE followee = :user_id\n" +
+                "ORDER BY time DESC\n" +
+                "LIMIT :amount";
     private static final String SQL_QUERY_REPR = "SELECT song_id as id, time\n" +
             "FROM user_listened_songs\n" +
             "WHERE user_id = :user_id\n" +

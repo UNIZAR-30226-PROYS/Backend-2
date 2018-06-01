@@ -45,7 +45,7 @@ public class SongRequests {
     @POST
     public String create(@PathParam("nick") String nick, @DefaultValue("") @FormParam("token") String userToken,
                          @FormParam("title") String title, @DefaultValue("-1") @FormParam("albumID") long albumID,
-                         @FormParam("country") String country) {
+                         @FormParam("country") String country, @DefaultValue("") @FormParam("genre") String genre) {
 
         JSONObject obj = new JSONObject();
         JSONObject songJSON = new JSONObject(EntitySong.defaultSongJSON);
@@ -60,7 +60,7 @@ public class SongRequests {
                     if (user.getToken() != null && user.getToken().isValid(userToken)) {
                         EntityAlbum album = AlbumCache.getAlbum(s, albumID);
                         if (albumID == -1 || album != null) {
-                            EntitySong song = SongUtils.addSong(s, album, title, country);
+                            EntitySong song = SongUtils.addSong(s, album, title, country, genre);
                             if (song != null) {
                                 songJSON = song.toJSON();
                                 ok = true;
@@ -586,6 +586,20 @@ public class SongRequests {
         }
 
         return result.toString();
+    }
+
+    @Path("genres")
+    @GET
+    public String getGenres(){
+        JSONObject object = new JSONObject();
+        JSONArray genres = new JSONArray();
+
+        for(EntitySong.EnumSongGenre genre : EntitySong.EnumSongGenre.values()){
+            genres.put(genre.toString());
+        }
+
+        object.put("genres", genres);
+        return object.toString();
     }
 
 }

@@ -2,6 +2,7 @@ package es.eina.sql.entities;
 
 import es.eina.geolocalization.Geolocalizer;
 import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.ColumnDefault;
 import org.json.JSONObject;
 
 import org.hibernate.annotations.Cascade;
@@ -28,6 +29,10 @@ public class EntitySong extends EntityBase {
     @Column(name = "country", length = 3, nullable = false)
     private String country;
 
+    @Column(name = "genre", nullable = false)
+    @ColumnDefault("-1")
+    private int genre;
+
     @Column(name = "upload_time", nullable = false)
     private long uploadTime;
 
@@ -45,6 +50,8 @@ public class EntitySong extends EntityBase {
     @Cascade(org.hibernate.annotations.CascadeType.ALL)
     private Set<EntityUserSongData> usersListeners = new HashSet<>();
 
+    private EnumSongGenre enumGenre;
+
 
     /**
      * DO NOT use this method as it can only be used by Hibernate
@@ -52,11 +59,27 @@ public class EntitySong extends EntityBase {
     public EntitySong() {
     }
 
-    public EntitySong(EntityAlbum album, String title, String country) {
+    public EntitySong(EntityAlbum album, String title, String country, String genreStr) {
         this.album = album;
         this.title = title;
         this.country = country;
         this.uploadTime = System.currentTimeMillis();
+        setGenre(genreStr);
+    }
+
+    private void setGenre(String genreStr) {
+
+        this.genre = -1;
+        for(EnumSongGenre enumGenre : EnumSongGenre.values()){
+            if(enumGenre.toString().equals(genreStr)){
+                this.genre = enumGenre.getIndex();
+                this.enumGenre = enumGenre;
+            }
+        }
+        if(genre < 0 || genre >= EnumSongGenre.values().length) {
+            this.enumGenre = null;
+            this.genre = -1;
+        }
     }
 
     public Long getId() {
@@ -160,5 +183,32 @@ public class EntitySong extends EntityBase {
 
     public void setCountry(String country) {
         this.country = country;
+    }
+
+    public enum EnumSongGenre{
+
+        ROCK, POP, PUNK, FOLK;
+
+        private int index;
+
+        EnumSongGenre(){
+            this.index = -1;
+        }
+
+        private void setIndex(int i){
+            this.index = i;
+        }
+
+        public int getIndex() {
+            return index;
+        }
+    }
+
+    static {
+        int i = 0;
+        for(EnumSongGenre genre : EnumSongGenre.values()){
+            genre.setIndex(i);
+            i++;
+        }
     }
 }
